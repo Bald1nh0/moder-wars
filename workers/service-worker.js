@@ -1,6 +1,6 @@
 // Service Worker — versioned offline shell plus persistent runtime data cache
 
-const CACHE_VERSION = "mw-v0.28.6";
+const CACHE_VERSION = "mw-v0.28.7-server.3";
 const APP_SHELL_PREFIX = "mw-app-shell-";
 const RUNTIME_PREFIX = "mw-runtime-";
 const LEGACY_CACHE_PREFIX = "mw-cache-";
@@ -10,6 +10,12 @@ const APP_SHELL_CACHE = `${APP_SHELL_PREFIX}${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${RUNTIME_PREFIX}v1`;
 
 const APP_SHELL_PATHS = [
+	"src/feature-flags.js",
+	"src/simulation-mode-settings.js",
+	"src/device-performance-test.js",
+	"src/translations-device-test.js",
+	"src/simulation-wire.js",
+	"src/remote-simulation-worker.js",
 	"src/leaderboard.js",
 	"src/occupation-regions.js",
 	"src/render-occupation.js",

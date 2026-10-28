@@ -1,12 +1,30 @@
 # Performance and backend backlog
 
-Recorded on 2026-10-28. These are proposals, not an approved backend implementation. Release and measurement work precede the architecture decision.
+Recorded on 2026-10-28. Persistence and production backend work remain proposals. An isolated server-simulation prototype was approved after release measurements; see [prototype instructions](SERVER-SIMULATION-PROTOTYPE.md).
+
+The [post-prototype research](PERFORMANCE-NEXT-STEPS.md) ranks the next experiments and explains why extra compression, Redis, or a backend-language rewrite are not assumed speedups.
+
+## Gameplay proposals
+
+The [forces, economy, events and relationships proposal](GAMEPLAY-EXPANSION.md)
+records the player's ideas, existing mechanics, source limitations and delivery order.
+
+- [ ] Clarify formations versus personnel/equipment and add dated country force profiles with source attribution and editable game defaults.
+- [ ] Add a bounded event journal for cities, capitulation and mobilization; add region-control notifications after administrative cell indexing.
+- [ ] Add city income, upkeep, construction/training queues and AI budgets using the same rules as the player.
+- [ ] Introduce distinct force roles and aggregated air/air-defense/unmanned/missile capabilities without one agent per vehicle or projectile inventory item.
+- [ ] Extend typed country relationships using existing vassalage; keep sourced dependencies separate from alliances, occupation and scenario-created control.
+
+These are proposals, not implemented inventory imports or economy mechanics.
 
 ## Decision baseline
 
 - [x] Measure the released 0.28.6 build: scenario loading, simulation startup and execution mode, main-thread stalls, rendering, simulation tick distributions, and memory. See the [CPU baseline](PERFORMANCE-0.28.6.md) and [browser observations](PERFORMANCE-BROWSER-0.28.6.md) for measurement limits.
 - [x] Separate browser observations from CPU simulation, pathfinding, frontier scans, snapshot transport, and loading. Record hardware, settings, scenario hashes, units, sampling overhead, and repeat counts. Software-rendered browser results do not isolate physical GPU performance.
-- [ ] Repeat representative checks on a real Android phone and Mac. A small headless-browser viewport is not a phone performance measurement.
+- [x] Collect an initial real Mac browser/server pair; see the [Mac comparison](PERFORMANCE-MAC-0.28.7-server.2.md). Local worker startup succeeded; browser simulation sustained about 60 ticks/s versus about 28 on this server.
+- [x] Collect an initial real Android browser/server pair; see the [Android comparison](PERFORMANCE-ANDROID-0.28.7-server.2.md). Both owners sustain about 33 ticks/s; application paints are less frequent remotely (10.3/s versus 14.5/s locally).
+- [ ] Repeat both device pairs with similar temperature/background load. Single runs do not establish small gains or thermal/battery effects.
+- [ ] Show observed simulation ticks/s, logical pace and actual render-call rate separately from animation-loop cadence; the existing FPS verdict can pass while server game time runs slowly.
 
 The [0.28.6 browser observations](PERFORMANCE-BROWSER-0.28.6.md) reproduced a world-map worker startup timeout and substantial main-thread stalls. Prioritize tracing worker startup and measuring aggregate memory before assuming that persistence or a database will improve gameplay. The Eurasia run successfully used its worker, so this is not a universal worker failure.
 
@@ -17,7 +35,7 @@ The [0.28.6 browser observations](PERFORMANCE-BROWSER-0.28.6.md) reproduced a wo
 3. **Presentation transport:** examine snapshot packing and application before assuming that the current in-process protocol can simply become a network protocol. Keep measured payload bytes distinct from actual wire bandwidth.
 4. **Backend feature decision:** retain persistence/server simulation as options for cross-device saves or shared sessions. Do not provision a database as a performance fix for these observed bottlenecks.
 
-These priorities are recommendations; application optimizations and backend implementation have not been started by the measurement task.
+These priorities are recommendations; the measurement task did not implement application optimizations or a backend. The subsequent experimental branch now tests Option C.
 
 ## Option A: improve the browser simulation
 
@@ -25,6 +43,7 @@ Recommended first when the objective is smoother single-player gameplay.
 
 - [ ] Prioritize current measured hotspots; verify worker startup and any local fallback before changing architecture.
 - [ ] Evaluate incremental frontiers, bounded AI queries/planning, and smaller presentation updates where current profiles justify them.
+- [ ] Profile mobile rendering layers, labels and effects: the supplied Android pair spent approximately 46–57 ms per rendered frame in both owner modes. Evaluate presentation changes separately from simulation throughput.
 - [ ] Implement genuinely smaller regional grids with explicit origins/extents. The current Eurasian theater masks land but retains global arrays. Preserve coordinate conversion, pathfinding, naval movement, exports, imports, and restarts.
 - [ ] Compare identical workloads before and after each change; retain offline play.
 
@@ -41,7 +60,7 @@ Purpose: profiles, synchronized preferences, saved games, scenario metadata, and
 
 Purpose: reduce client CPU work, support shared multiplayer sessions, and optionally continue a game after its browser disconnects.
 
-- [ ] Prototype the existing browser-free simulation core on Node.js with isolated workers and bounded resources per session.
+- [x] Prototype the existing browser-free simulation core on Node.js with isolated workers and bounded sessions. This is a LAN experiment, not a production multiplayer service.
 - [ ] Use WebSocket commands and incremental presentation snapshots. Keep active simulation state in server memory and persist periodic checkpoints plus necessary commands, not every tick.
 - [ ] Define server authority, validated commands, ordering, reconnect/resynchronization, pause/disconnect policy, session lifetime, and recovery after process failure.
 - [ ] Measure network latency/bandwidth, CPU/RAM per session, client rendering cost, and feasible concurrent sessions before selecting hosting capacity.

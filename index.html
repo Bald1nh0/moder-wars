@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://esm.sh; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.websim.ai https://*.websim.com wss:; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self';">
-    <title>MW-V0.28.6</title>
+    <title>MW-V0.28.7-server.3</title>
     <link rel="stylesheet" href="styles/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 </head>
@@ -83,7 +83,15 @@
 <button class="mini-btn" id="preset-default-btn" style="flex: 1; padding: 10px; " data-i18n="UI_DEFAULT">DEFAULT</button>
 </div>
 <small style="margin-top: 8px;" data-i18n="UI_INSTANTLY_ADJUST_ALL_RESOLUTION_VISUAL_AND_UNIT_SETTINGS">Instantly adjust all resolution, visual, and unit settings.</small>
-</div><button class="mini-btn" id="benchmark-btn" data-i18n="UI_BENCHMARK">BENCHMARK</button></div>
+</div><div class="setting-group">
+<label class="device-test-toggle"><input id="server-simulation-enabled" type="checkbox"/><span data-i18n="SIMULATION_MODE_FLAG">Server simulation (experimental)</span></label>
+<small data-i18n="SIMULATION_MODE_HELP">Off by default: calculations run in your browser. Saved for future page loads; the current game keeps its mode. Server mode requires a compatible server and a connection throughout play.</small>
+<small id="simulation-mode-current" role="status" aria-live="polite"></small>
+<a id="simulation-mode-open" class="mini-btn simulation-mode-open" target="_blank" rel="noopener">Open a new game</a>
+</div><div class="setting-group">
+<label class="device-test-toggle"><input id="performance-test-enabled" type="checkbox"/><span data-i18n="DEVICE_TEST_FLAG">Performance testing</span></label>
+<small data-i18n="DEVICE_TEST_FLAG_HELP">Show optional browser/server tests. Saved on this browser; normal games are unchanged.</small>
+</div><button class="mini-btn" id="benchmark-btn" hidden data-i18n="DEVICE_TEST_TITLE">Performance test</button></div>
 <!-- Presets Tab -->
 <!-- Visuals Tab -->
 <div class="settings-tab-pane" id="settings-tab-vis" style="display:none"><div class="setting-group"><label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
@@ -190,6 +198,7 @@
 <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
 </button>
 
+<button class="menu-v2-link" id="device-test-menu-btn" hidden><span data-i18n="DEVICE_TEST_TITLE">Performance test</span></button>
 <button class="menu-v2-link" id="main-settings-btn"><span data-i18n="UI_SETTINGS">SETTINGS</span><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="currentColor" stroke="none"/><circle cx="15" cy="17" r="3" fill="currentColor" stroke="none"/></svg></button>
 </div>
 <!-- New Integrated Scenario Scroller -->

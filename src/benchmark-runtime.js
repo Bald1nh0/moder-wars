@@ -148,7 +148,8 @@ export function createBenchmarkRuntime(runtime) {
 		runtime._benchmarkReject = null;
 	}
 
-	async function startBenchmark(options = {}) {
+	async function runBenchmark(options = {}) {
+		options.signal?.throwIfAborted();
 		if (
 			runtime._isBenchmarking ||
 			runtime._isBenchmarkWarmingUp ||
@@ -217,6 +218,8 @@ export function createBenchmarkRuntime(runtime) {
 			}
 		}
 
+		options.signal?.throwIfAborted();
+
 		// Match Russia and China by name (China may be "People's Republic of China")
 		const metaRussia = runtime.countryMetadata.find(
 			(m) => m && m.name === "Russia",
@@ -273,7 +276,10 @@ export function createBenchmarkRuntime(runtime) {
 				? requestedUnits * runtime.CONFIG.UNIT_TO_SOLDIER_RATIO
 				: null;
 		runtime.updateSidesUI();
-		await runtime.startWar();
+		await runtime.startWar(
+			options.signal ? { signal: options.signal } : undefined,
+		);
+		options.signal?.throwIfAborted();
 		runtime._benchmarkForcePersonnelPerSide = null;
 		if (runtime.gameState !== "SIMULATING") {
 			restoreBenchmarkSettings();
@@ -312,6 +318,7 @@ export function createBenchmarkRuntime(runtime) {
 		if (warmupMs > 0) {
 			await new Promise((resolve) => setTimeout(resolve, warmupMs));
 		}
+		options.signal?.throwIfAborted();
 		runtime._isBenchmarkWarmingUp = false;
 		if (runtime.gameState !== "SIMULATING") {
 			restoreBenchmarkSettings();
@@ -355,6 +362,34 @@ export function createBenchmarkRuntime(runtime) {
 			}, durationMs + 250);
 		});
 	}
+	async function startBenchmark(options = {}) {
+		const signal = options.signal;
+		if (!signal) return runBenchmark(options);
+		signal.throwIfAborted();
+		const cancel = () => {
+			runtime._isBenchmarking = false;
+			runtime._isBenchmarkWarmingUp = false;
+			runtime.isPaused = true;
+			runtime.simulationClient?.stop();
+			if (runtime._benchmarkTimeoutId != null)
+				clearTimeout(runtime._benchmarkTimeoutId);
+			runtime._benchmarkTimeoutId = null;
+			runtime._benchmarkReject?.(
+				new Error(String(signal.reason || "cancelled")),
+			);
+			runtime._benchmarkResolve = null;
+			runtime._benchmarkReject = null;
+			restoreBenchmarkSettings();
+		};
+		signal.addEventListener("abort", cancel, { once: true });
+		try {
+			return await runBenchmark(options);
+		} finally {
+			signal.removeEventListener("abort", cancel);
+			if (signal.aborted) cancel();
+		}
+	}
+
 	return {
 		restoreBenchmarkSettings,
 		prepareIsolatedBenchmarkRun,

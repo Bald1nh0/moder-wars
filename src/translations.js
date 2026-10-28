@@ -1,5 +1,6 @@
 import { APP_TRANSLATIONS } from "./translations-app.js";
 import { COMMUNITY_TRANSLATIONS } from "./translations-community.js";
+import { DEVICE_TEST_TRANSLATIONS } from "./translations-device-test.js";
 import { EDITOR_TRANSLATIONS } from "./translations-editor.js";
 import { GAME_TRANSLATIONS } from "./translations-game.js";
 import { MAP_TRANSLATIONS } from "./translations-map.js";
@@ -8,6 +9,12 @@ import { UI_TRANSLATIONS } from "./translations-ui.js";
 
 export const TRANSLATIONS = {
 	en: {
+		SERVER_SIM_IDLE: "Server simulation · prototype · starts with the battle",
+		SERVER_SIM_CONNECTING: "Server simulation · connecting…",
+		SERVER_SIM_INITIALIZING: "Server simulation · transferring the map…",
+		SERVER_SIM_READY: "Server simulation · connected",
+		SERVER_SIM_ERROR: "Server simulation stopped. Reload to start a new game.",
+
 		MODERN_WARS: "Modern Wars",
 		LANGUAGE: "Language",
 
@@ -114,6 +121,13 @@ export const TRANSLATIONS = {
 		NATIONS: NATION_TRANSLATIONS.en,
 	},
 	ru: {
+		SERVER_SIM_IDLE: "Серверная симуляция · прототип · запуск вместе с битвой",
+		SERVER_SIM_CONNECTING: "Серверная симуляция · подключение…",
+		SERVER_SIM_INITIALIZING: "Серверная симуляция · передача карты…",
+		SERVER_SIM_READY: "Серверная симуляция · подключено",
+		SERVER_SIM_ERROR:
+			"Серверная симуляция остановлена. Перезагрузите страницу для новой игры.",
+
 		MODERN_WARS: "Современные войны",
 		LANGUAGE: "Язык",
 		MAP_RES: "Разрешение карты",
@@ -785,6 +799,13 @@ export const TRANSLATIONS = {
 		},
 	},
 	uk: {
+		SERVER_SIM_IDLE: "Серверна симуляція · прототип · запуск разом із битвою",
+		SERVER_SIM_CONNECTING: "Серверна симуляція · підключення…",
+		SERVER_SIM_INITIALIZING: "Серверна симуляція · передавання мапи…",
+		SERVER_SIM_READY: "Серверна симуляція · підключено",
+		SERVER_SIM_ERROR:
+			"Серверну симуляцію зупинено. Перезавантажте сторінку для нової гри.",
+
 		MODERN_WARS: "Сучасні війни",
 		LANGUAGE: "Мова",
 		MAP_RES: "Деталізація карти",
@@ -904,6 +925,7 @@ export const TRANSLATIONS = {
 };
 
 for (const source of [
+	DEVICE_TEST_TRANSLATIONS,
 	MAP_TRANSLATIONS,
 	COMMUNITY_TRANSLATIONS,
 	APP_TRANSLATIONS,

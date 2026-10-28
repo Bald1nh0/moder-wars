@@ -232,3 +232,21 @@ Select a language under **Settings → Interface → Language**. The selection i
 English, Ukrainian and Russian cover the interface dictionaries, menus, settings, tooltips, editor controls and gameplay messages. Built-in country names are localized; user-authored scenario names, descriptions, comments and custom names remain unchanged. Other listed languages retain their existing partial translations and fall back to English. Technical diagnostic codes and developer profiling output remain in English.
 
 Run `node scripts/i18n-smoke.mjs` to check dictionary coverage, placeholders, HTML references, translated attributes and language restoration. This check is also included in `npm run check`.
+
+## Experimental server simulation
+
+The `experiment/server-simulation` branch adds an opt-in Node/WebSocket owner for
+isolated browser sessions. See [setup, comparison URLs, and limitations](docs/SERVER-SIMULATION-PROTOTYPE.md).
+The stable Docker game remains independent; no database or public deployment is
+required for this experiment.
+
+Enable **Settings → Advanced → Performance testing** in the prototype for browser/server
+comparison runs and downloadable device reports. The flag is off by default;
+`?performanceTest=1` also exposes it. See the prototype guide above for test conditions.
+
+Normal play defaults to browser simulation. The separate **Settings → Advanced →
+Server simulation (experimental)** switch saves an opt-in for future page loads.
+Use its **Open a new game** link to apply the choice in a fresh tab; the current
+game keeps its mode. Explicit `?simulation=browser` or `?simulation=server` links
+override the saved preference. Server mode requires the prototype backend at the
+same origin; a static Docker image alone does not provide it.

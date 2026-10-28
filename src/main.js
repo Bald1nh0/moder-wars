@@ -1,11 +1,14 @@
 import { createConflictPresentation } from "./conflict-presentation.js";
+import { installDevicePerformanceTest } from "./device-performance-test.js";
 import { showConfirm } from "./dialogs.js";
+import { getSimulationMode } from "./feature-flags.js";
 import { buildLeaderboardRows, renderLeaderboard } from "./leaderboard.js";
 import {
 	createPresentationScheduler,
 	createUnitSpatialMirror,
 	setPresentationText,
 } from "./presentation-runtime.js";
+import { createRemoteSimulationOptions } from "./remote-simulation-worker.js";
 import { createLiveContext } from "./runtime-context.js";
 import { createSimulationClient } from "./simulation-client.js";
 import {
@@ -13,6 +16,7 @@ import {
 	LIVE_SIMULATION_CLOCK_OPTIONS,
 } from "./simulation-clock.js";
 import { PERF_COUNTER_DEFAULTS } from "./simulation-metrics.js";
+import { installSimulationModeSettings } from "./simulation-mode-settings.js";
 import { resizeSimulationGrid } from "./simulation-resize.js";
 
 // Shared live binding bridge. Systems receive commands/state without importing main.js.
@@ -1449,7 +1453,9 @@ const localSimulationClock = createSimulationClock(
 	},
 	{ ...LIVE_SIMULATION_CLOCK_OPTIONS, speed: 1, paused: true },
 );
+const simulationMode = getSimulationMode();
 const simulationClient = createSimulationClient(applicationRuntime, {
+	...createRemoteSimulationOptions(simulationMode),
 	onEvent: (type, ...args) => {
 		if (type === "showTreatyOffer") showTreatyOffer(...args);
 		else if (type === "playExplosionSound") playExplosionSound();
@@ -4932,7 +4938,7 @@ export async function loadCities(
 }
 
 export function handleCountryClick(...args) {
-	if (simulationClient.active && gameState.startsWith("EDITOR_"))
+	if (simulationClient.ownsState && gameState.startsWith("EDITOR_"))
 		return editSimulation(() => handleCountryClickOwned(...args));
 	return handleCountryClickOwned(...args);
 }
@@ -5589,9 +5595,12 @@ function reopenConflictSetupAfterWar(...args) {
 }
 
 export async function startWar(...args) {
+	const signal = args[0]?.signal;
+	signal?.throwIfAborted();
 	simulationClient.stop();
 	ensureSideInfluenceMaps();
 	const result = await lifecycle.startWar(...args);
+	signal?.throwIfAborted();
 	if (gameState === "SIMULATING") await simulationClient.start();
 	return result;
 }
@@ -6268,7 +6277,7 @@ export function capitulateCountry(...args) {
 }
 
 export function applyTreaty(...args) {
-	if (simulationClient.active)
+	if (simulationClient.ownsState)
 		return simulationClient.command({
 			type: "APPLY_TREATY",
 			treatyType: args[0],
@@ -6599,7 +6608,7 @@ export function preloadAssets() {
 
 // Initialization logic
 export function initializeEngine(refreshLoadedGeography = true) {
-	if (simulationClient.active)
+	if (simulationClient.ownsState)
 		return editSimulation(() => initializeEngineOwned(refreshLoadedGeography));
 	return initializeEngineOwned(refreshLoadedGeography);
 }
@@ -7093,3 +7102,7 @@ menu_controls.bindQuickRestartBtnClick();
 function removeCountryFormations(...args) {
 	return lifecycle.removeCountryFormations(...args);
 }
+
+// Install after all live UI and simulation bindings have initialized.
+installDevicePerformanceTest(applicationRuntime);
+installSimulationModeSettings(simulationMode);

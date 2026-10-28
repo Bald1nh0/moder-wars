@@ -4325,3 +4325,117 @@ input:focus-visible {
 	letter-spacing: 0.6px;
 	font-size: 11px;
 }
+
+/* Optional device benchmarks never cover an ordinary game unless opened. */
+#benchmark-btn[hidden],
+#device-test-menu-btn[hidden],
+#device-test-panel[hidden],
+#device-test-panel [hidden] {
+	display: none;
+}
+.device-test-toggle {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.simulation-mode-open {
+	display: inline-block;
+	box-sizing: border-box;
+	max-width: 100%;
+	margin-top: 10px;
+	white-space: normal;
+	text-decoration: none;
+}
+#simulation-mode-current {
+	display: block;
+	margin-top: 8px;
+	color: #9dd9f5;
+}
+#device-test-panel {
+	position: fixed;
+	inset: 0;
+	z-index: 11000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+	background: #07111de8;
+	color: #e3edf6;
+}
+.device-test-card {
+	width: min(760px, 100%);
+	max-height: calc(100dvh - 32px);
+	overflow: auto;
+	padding: 24px;
+	border: 1px solid #5c829f;
+	border-radius: 12px;
+	background: #10202f;
+	box-sizing: border-box;
+	font:
+		15px / 1.5 system-ui,
+		sans-serif;
+}
+.device-test-card h2 {
+	margin-top: 0;
+}
+.device-test-card p {
+	margin: 12px 0;
+}
+.device-test-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+.device-test-actions .mini-btn,
+.device-test-actions .start-btn {
+	width: auto;
+	max-width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
+	margin: 0;
+	padding: 10px 14px;
+	text-decoration: none;
+	white-space: normal;
+	overflow-wrap: anywhere;
+	font: inherit;
+}
+#device-test-status {
+	color: #9dd9f5;
+}
+#device-test-comparison {
+	overflow-x: auto;
+}
+#device-test-comparison table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+}
+#device-test-comparison th,
+#device-test-comparison td {
+	padding: 7px;
+	border-bottom: 1px solid #435767;
+	text-align: left;
+}
+#device-test-panel.device-test-running {
+	align-items: flex-start;
+	justify-content: flex-end;
+	background: transparent;
+}
+.device-test-running .device-test-card {
+	width: min(360px, 100%);
+	padding: 12px;
+	background: #10202fee;
+}
+.device-test-running .device-test-intro,
+.device-test-running h2 {
+	display: none;
+}
+@media (max-width: 480px) {
+	.device-test-card {
+		padding: 16px;
+	}
+	.device-test-actions > * {
+		flex: 1 1 100%;
+		text-align: center;
+	}
+}

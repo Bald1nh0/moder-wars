@@ -553,18 +553,7 @@ export function createMenuControls(runtime) {
 	}
 
 	function bindBenchmarkBtnClick() {
-		if (runtime.benchmarkBtn) {
-			runtime.benchmarkBtn.addEventListener("click", () => {
-				runtime.mainMenu.style.display = "none";
-				runtime.settingsOverlay.style.display = "none";
-				runtime.startBenchmark().catch((error) => {
-					console.error("[MW PERF] Benchmark failed:", error);
-					showAlert(
-						gameText("GAME_BENCHMARK_FAILED", { error: error.message }),
-					);
-				});
-			});
-		}
+		// The feature-flagged device test module owns this entry point.
 	}
 
 	function bindBenchmarkDismissBtnClick() {

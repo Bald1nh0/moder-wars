@@ -2,6 +2,26 @@
 
 ## 2026-10-28
 
+### 0.28.7-server.3 (experimental, unreleased)
+
+- Add a separate persistent server-simulation feature flag, off by default, with an explicit current-tab mode and a fresh-game link; switching the preference leaves the current game intact.
+- Pin browser/server benchmark links to their requested owner regardless of the saved play preference.
+- Record the proposed force composition, city economy, mobilization, event journal and dependency systems, including existing mechanics, public sources and data limitations.
+
+### 0.28.7-server.2 (experimental, unreleased)
+
+- Record the player's Android comparison: similar observed simulation rates, fewer remote-mode paint calls, and substantial client rendering cost in both modes.
+- Record the player's real Mac comparison: healthy local worker, slower server logical pace, and the distinction between animation callbacks and actual render calls.
+- Add an opt-in device performance test with a persistent feature toggle, separate browser/server runs, owner diagnostics, and downloadable reports.
+- Record negotiated WebSocket extensions alongside uncompressed packet counters.
+- Document evidence-based follow-up experiments for scenario initialization, presentation traffic, navigation, regional grids, compression, and backend technology choices.
+
+### 0.28.7-server.1 (experimental, unreleased)
+
+- Add an opt-in Node/WebSocket simulation prototype with an isolated simulation worker per browser session, binary state transport, explicit connection status, and failure handling.
+- Yield the Node worker between backlogged simulation turns so browser acknowledgements and controls remain responsive; wait for socket closure before replacing a full-capacity session.
+- Keep normal browser simulation and the frozen 0.28.6 Docker release available for comparison; no database, shared multiplayer rooms, or persistent saves are introduced.
+
 ### 0.28.6
 
 - Package the tested 0.28.6 build for the Docker playtest, retaining 0.28.5 for rollback; the application version was already bumped during development.
