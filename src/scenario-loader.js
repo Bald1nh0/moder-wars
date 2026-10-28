@@ -6,12 +6,24 @@ import mapRuntime from "./map-runtime.ts";
 import { normalizeSavedCells } from "./saved-cells.js";
 import { loadScenario } from "./scenario-codec.js";
 import { generateScenarioSnapshot } from "./scenario-export.js";
+import {
+	applyScenarioSovereigntyOverrides,
+	scenarioContextWithHistoricalSource,
+} from "./scenario-territory.js";
+import {
+	applyScenarioTheater,
+	isInsideScenarioTheater,
+} from "./scenario-theater.js";
 
 /** Read live state only when a loader runs; module construction is cycle-safe. */
 export function createScenarioLoader(context, loadSession) {
 	function generatePresetData(name) {
 		return generateScenarioSnapshot(name, {
 			worldControlMap: context.worldControlMap,
+			deJureMap: context.deJureMap,
+			historicalSource: context.currentScenarioContext?.historicalSource,
+			theater: context.currentScenarioContext?.theater,
+			useScenarioLand: context.currentScenarioContext?.useScenarioLand,
 			landMask: context.landMask,
 			biomeMask: context.biomeMask,
 			isCustomTerrain: context.isCustomTerrain,
@@ -175,6 +187,12 @@ export function createScenarioLoader(context, loadSession) {
 
 			// Always clear previous conflict setup / selection so old picks don't bleed into new scenarios
 			context.resetConflictSetupState();
+			context.setCurrentScenarioContext(
+				scenarioContextWithHistoricalSource(
+					context.currentScenarioContext,
+					data,
+				),
+			);
 
 			// Older imagery fields remain readable; all scenarios now use Atlas.
 			if (data.disableCountryGradient !== undefined) {
@@ -295,7 +313,7 @@ export function createScenarioLoader(context, loadSession) {
 				context.primaryOccupierMap.fill(0);
 				context.provinceMap.fill(0);
 				context.biomeMask.fill(0);
-				if (prederivedEarth && !data.isCustomTerrain) {
+				if (prederivedEarth && !data.isCustomTerrain && !data.useScenarioLand) {
 					if (
 						prederivedEarth.landMask.length !== context.landMask.length ||
 						prederivedEarth.deJureMap.length !== context.deJureMap.length
@@ -328,7 +346,11 @@ export function createScenarioLoader(context, loadSession) {
 			loadTrace.mark("geography-ready");
 
 			// Check for empty metadata and prompt for procedural generation
-			const metaList = data.metadata || [];
+			const metaList = data.theater
+				? (data.metadata || []).filter((meta) =>
+						data.theater.countryIds.includes(meta.id),
+					)
+				: data.metadata || [];
 			if (metaList.length === 0 && targetMode !== "EDITOR") {
 				context.loadingOverlay.style.display = "none";
 				context.noNationsModal.style.display = "flex";
@@ -421,7 +443,7 @@ export function createScenarioLoader(context, loadSession) {
 
 			// Ensure custom terrain state is preserved
 			context.setIsCustomTerrain(!!data.isCustomTerrain);
-			if (context.isCustomTerrain) {
+			if (context.isCustomTerrain || data.useScenarioLand) {
 				context.landMask.fill(0);
 			}
 
@@ -448,7 +470,7 @@ export function createScenarioLoader(context, loadSession) {
 					}
 					target.set(source);
 				}
-				if (data.isCustomTerrain || !prederivedEarth) {
+				if (data.isCustomTerrain || data.useScenarioLand || !prederivedEarth) {
 					if (compiledMaps.land.length !== context.landMask.length) {
 						throw new Error(
 							"Compiled land grid dimensions do not match engine",
@@ -512,6 +534,18 @@ export function createScenarioLoader(context, loadSession) {
 				}
 			}
 			loadTrace.mark("control-map-ready", { entries: totalEntries });
+			const sovereigntyWrites = applyScenarioSovereigntyOverrides(
+				data.sovereigntyOverrides,
+				{
+					sourceGridRes: sourceRes,
+					targetGridRes: targetRes,
+					deJureMap: context.deJureMap,
+					landMask: context.landMask,
+					countryMetadata: context.countryMetadata,
+					sovereigntyBase: data.sovereigntyBase,
+					worldControlMap: context.worldControlMap,
+				},
+			);
 
 			// Restore mountain data
 			context.terrainMask.fill(0);
@@ -531,6 +565,16 @@ export function createScenarioLoader(context, loadSession) {
 					"110m";
 				await context.loadTerrain(resToUse);
 			}
+			applyScenarioTheater(data.theater, {
+				worldControlMap: context.worldControlMap,
+				deJureMap: context.deJureMap,
+				landMask: context.landMask,
+				biomeMask: context.biomeMask,
+				provinceMap: context.provinceMap,
+				terrainMask: context.terrainMask,
+				gridWidth: context.gridWidth,
+				gridRes: targetRes,
+			});
 			loadTrace.mark("terrain-ready");
 
 			// Compiled loads already received an exact province grid from the worker.
@@ -558,6 +602,33 @@ export function createScenarioLoader(context, loadSession) {
 				);
 			} else {
 				await context.loadCities();
+			}
+			if (data.theater) {
+				const ids = new Set(data.theater.countryIds);
+				context.setCities(
+					context.cities.filter((city) => {
+						if (!isInsideScenarioTheater(data.theater, city.lat, city.lng))
+							return false;
+						if (city.ownerId) return ids.has(city.ownerId);
+						// Global city datasets may omit owners; resolve them from retained nearby land.
+						const x = Math.floor((city.lng + 180) / targetRes);
+						const y = Math.floor((city.lat + 90) / targetRes);
+						for (let dy = -1; dy <= 1; dy++) {
+							for (let dx = -1; dx <= 1; dx++) {
+								if (x + dx < 0 || x + dx >= context.gridWidth) continue;
+								const owner =
+									context.worldControlMap[
+										(y + dy) * context.gridWidth + x + dx
+									];
+								if (ids.has(owner)) {
+									city.ownerId = owner;
+									return true;
+								}
+							}
+						}
+						return false;
+					}),
+				);
 			}
 			loadTrace.mark("cities-ready", { cities: context.cities.length });
 
@@ -594,20 +665,29 @@ export function createScenarioLoader(context, loadSession) {
 
 			// Capture Instant Quick Restart Snapshots immediately upon scenario load
 			context.setInitialWorldControlMapSnapshot(
-				compiledMaps?.worldControl || new Uint16Array(context.worldControlMap),
+				data.theater
+					? new Uint16Array(context.worldControlMap)
+					: compiledMaps?.worldControl ||
+							new Uint16Array(context.worldControlMap),
 			);
 			context.setInitialDeJureMapSnapshot(
-				prederivedEarth?.deJureMap ||
-					compiledMaps?.deJure ||
-					new Uint16Array(context.deJureMap),
+				sovereigntyWrites > 0 || data.theater || data.useScenarioLand
+					? new Uint16Array(context.deJureMap)
+					: prederivedEarth?.deJureMap ||
+							compiledMaps?.deJure ||
+							new Uint16Array(context.deJureMap),
 			);
 			context.setInitialProvinceMapSnapshot(
-				compiledMaps?.province || new Int32Array(context.provinceMap),
+				data.theater
+					? new Int32Array(context.provinceMap)
+					: compiledMaps?.province || new Int32Array(context.provinceMap),
 			);
 			context.setInitialLandMaskSnapshot(
-				prederivedEarth?.landMask ||
-					compiledMaps?.land ||
-					new Uint8Array(context.landMask),
+				data.theater || data.useScenarioLand
+					? new Uint8Array(context.landMask)
+					: prederivedEarth?.landMask ||
+							compiledMaps?.land ||
+							new Uint8Array(context.landMask),
 			);
 			context.setInitialCountryMetadataSnapshot(
 				context.deepClone(context.countryMetadata),

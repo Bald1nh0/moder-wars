@@ -21,20 +21,73 @@ npm run dev
 
 `npm run check` runs strict TypeScript checks for the new engine modules, lint, Node regressions, a production build, and offline asset checks. `npm run build` outputs the static site to `dist/`; `npm run preview` serves that output. See [the migration and deployment notes](docs/MODERNIZATION.md) before merging or deploying.
 
+## Frozen Docker playtest
+
+Stable playtest: **https://modern-wars.bald1nh0.net/**. The existing HTTPS reverse
+proxy forwards to the frozen container on LAN port 4174; TLS terminates at the
+proxy. Development and experimental scenario builds are not deployed there
+automatically.
+
+Docker packages the **existing `dist/` directory** into an image. It does not run
+Node or rebuild the game. There are no workspace mounts, so subsequent source
+edits and local builds cannot change the running container. Docker Engine with
+Compose v2 and a completed `dist/` build are required.
+
+Current published image: `moder-wars:0.28.6-playtest`. To publish a later tested
+build, replace `<NEW_VERSION>` below with a new version and start it:
+
+```sh
+export MW_IMAGE="moder-wars:<NEW_VERSION>-playtest"
+docker compose build
+docker compose up -d --no-build --pull never
+docker compose ps
+```
+
+The default URL is `http://127.0.0.1:4174/`. For another device on the same LAN,
+set `MW_BIND_ADDRESS` to this machine's LAN address before `docker compose up`;
+`MW_PORT` overrides port 4174. For example:
+
+```sh
+export MW_BIND_ADDRESS=192.168.31.224
+export MW_PORT=4174
+docker compose up -d --no-build --pull never
+```
+
+Use the same variables for later Compose commands. `docker compose logs --tail
+100 game` shows access/error logs; `docker compose stop game` stops this playtest.
+The container runs Nginx as an unprivileged user with a read-only filesystem,
+temporary runtime storage and an HTTP health check. No server-side game state
+is stored: each browser still owns its simulation and preferences.
+
+For an update, build a reviewed `dist/`, package it under a **new image tag**,
+then deliberately recreate the service. Keep old tags for rollback; select an
+old `MW_IMAGE` and run `docker compose up -d --no-build --pull never`. Do not
+rebuild a published playtest tag. To test source changes without touching an
+existing Vite preview's `dist/`, use a separate output directory, for example
+`npm run build -- --outDir /tmp/moder-wars-preview`.
+
 ## Current Era
 
-The current **Choose Era** menu exposes one playable era:
+The **Choose scenario** menu exposes:
 
-- **2022 Modern Day** - current borders and geopolitics from `assets/maps/world map 2022.json`
+- **2026 Modern Day** - political geography rebuilt from the Overture Maps 2026-10-21 release, with a separate administrative-region overlay. No live frontlines; forces and economic values are game parameters. See [source and reproduction](assets/scenarios/modern-2026/README.md).
+- **Ukraine 2023 · Eurasia** - a regional theater with approximate control on 2023-01-01 based on attributed DeepState visual contours, with fictional game armies. See [source, reproduction and limitations](assets/scenarios/ukraine-2023/README.md).
+
+The frozen 0.28.6 Docker release includes these scenarios. The previous 0.28.5 image remains available for rollback. Backend and performance proposals are tracked in [the backlog](docs/BACKLOG.md); no backend or database has been added.
+
+Current measurements: [0.28.6 CPU baseline](docs/PERFORMANCE-0.28.6.md) and
+[released-build browser observations](docs/PERFORMANCE-BROWSER-0.28.6.md).
+The headless browser uses software graphics; its FPS is not a real-device result.
 
 ## What You Can Do
 
-- **PLAY** opens the 2022 Modern Day era and starts the conflict setup. The Basic panel covers AI posture and war rules, with + Side and FFA above the side cards. Optional manpower totals, date, and capture rules remain under Advanced. The simulation uses ground formations, naval planning, and optional missiles.
+- **PLAY** opens the scenario chooser, including Modern Day 2026 and Ukraine 2023 · Eurasia. The Basic panel covers AI posture and war rules, with + Side and FFA above the side cards. Optional manpower totals, date, and capture rules remain under Advanced. The simulation uses ground formations, naval planning, and optional missiles.
 - **War Overview** shows manpower, casualties, and the percentage of original territory retained for each side and its countries. Country manpower shows deployed personnel; side manpower includes pooled reserves. Country rows are indented beneath their side totals.
 - **EDITOR** redraws borders, creates countries, manages cities, and saves or loads scenarios.
 - **COMMUNITY** browses, uploads, remixes, and downloads shared scenarios or countries.
 - **SETTINGS** groups preferences into Gameplay, Display, Audio, Interface, and Advanced. Benchmark and performance tuning live under Advanced.
 - Country cards keep identity and manpower visible, with buffs, allies, role, and doctrine under **Configure**.
+- **Menu → Main menu** asks before ending the current session without saving. The battle pauses while the question is open; cancelling restores its previous pause state. Confirming reloads the title screen, preserving language and saved preferences but discarding the current battle.
 - The live toolbar has a five-bar speed selector: click 1×, 2×, 3×, 5× or 10× directly. Filled bars show the selected level; pausing retains your chosen speed. Restart, sandbox, sound, help, fullscreen, and navigation actions live under **Menu**.
 - **God Mode** and editor tools can stage custom wars, alter borders, and test scenarios.
 - Major rivers and mountain ranges act as defensive lines: formations holding them on friendly ground take less damage, and crossing a river into enemy land is slow. A country whose capital falls suffers a short morale shock on top of the lasting penalty.
@@ -51,9 +104,24 @@ Coastlines follow the selected 110m, 50m or 10m geography resolution. The small 
 
 During a war, soldier totals appear separately for each home country on each disconnected front. The numbers curve along the front on the troops' side, with a national flag and space between coalition members. Totals use surviving deployed land personnel across the whole front, so panning does not change them. Formations are counted once against their nearest front within six latitude-equivalent degrees; distant reserves and overseas garrisons receive local labels, with water gaps keeping islands separate.
 
+## Administrative regions
+
+Earth scenarios show modern region and oblast borders when zoomed in, with region names at closer scales. Toggle **Settings → Display → Show regions / oblasts**; this preference persists. These reference borders do not change military control, occupation, or gameplay provinces, and do not appear on custom terrain or in the map editor. The source covers most countries; see [data provenance](assets/geodata/admin1/README.md) and [geographic data / regional scenarios](docs/GEOGRAPHIC-DATA.md).
+
+## Leaderboard
+
+Territory counts controlled map grid cells, including occupied land. It is not an area in square kilometres; cell area varies with latitude.
+
+The leaderboard shows living units and deployed soldiers in separate columns,
+using the same formation personnel data as the map and war overview. Shared
+side reserves are excluded because they have no per-country allocation.
+Countries without deployed forces show zero, including before a war starts.
+Open rankings refresh once per second during simulation, including while paused.
+These are simulation values; scenario recruitment remains game-generated.
+
 ## Custom Scenarios
 
-Modern Wars can load custom scenario files and community scenarios. This is separate from the built-in era picker: the main era menu currently exposes only 2022 Modern Day, but the editor and community tools can still create, import, remix, and share other setups.
+Modern Wars can load custom scenario files and community scenarios. This is separate from the built-in era picker: the editor and community tools can create, import, remix, and share additional setups.
 
 ## Controls
 

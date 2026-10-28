@@ -605,6 +605,41 @@ export function createMenuControls(runtime) {
 		});
 	}
 
+	function bindMainMenuBtnClick() {
+		let pending = false;
+		document
+			.getElementById("main-menu-btn")
+			?.addEventListener("click", async () => {
+				if (pending) return;
+				pending = true;
+				const resume = runtime.gameState === "SIMULATING" && !runtime.isPaused;
+				if (resume) runtime.togglePause();
+				let leaving = false;
+				try {
+					leaving = await showConfirm(gameText("UI_EXIT_MENU_MESSAGE"), {
+						title: gameText("UI_EXIT_MENU_TITLE"),
+						okLabel: gameText("UI_EXIT_MENU_CONFIRM"),
+						cancelLabel: gameText("UI_EXIT_MENU_CANCEL"),
+						danger: true,
+					});
+					if (leaving) {
+						runtime.simulationClient?.stop();
+						// Boot into the menu with a clean session; persisted preferences survive.
+						location.reload();
+					}
+				} finally {
+					if (
+						!leaving &&
+						resume &&
+						runtime.gameState === "SIMULATING" &&
+						runtime.isPaused
+					)
+						runtime.togglePause();
+					pending = false;
+				}
+			});
+	}
+
 	function bindIngameSettingsBtnClick() {
 		runtime.ingameSettingsBtn.addEventListener("click", () => {
 			runtime.settingsOverlay.style.display = "flex";
@@ -668,6 +703,19 @@ export function createMenuControls(runtime) {
 		document.getElementById("scroller-choice-modern").onclick = () =>
 			runtime.selectScenario("scroller-choice-modern", () =>
 				runtime.choiceModernDay.click(),
+			);
+	}
+
+	function bindScrollerChoiceUkraine2023Click() {
+		const cardId = "scroller-choice-ukraine2023";
+		document.getElementById(cardId).onclick = () =>
+			runtime.selectScenario(
+				cardId,
+				runtime.createScenarioHandler("ukraine2023", {
+					...runtime.scenarioMenuDependencies,
+					focusScenario: (bounds) =>
+						runtime.map.fitBounds(bounds, { animate: false }),
+				}),
 			);
 	}
 
@@ -911,12 +959,14 @@ export function createMenuControls(runtime) {
 		bindHelpBtnClick,
 		bindFullscreenBtnClick,
 		bindHudMenuClick,
+		bindMainMenuBtnClick,
 		bindIngameSettingsBtnClick,
 		bindCloseSettingsBtnClick,
 		bindPlayModeBtnClick,
 		bindBackToNavBtnClick,
 		bindEnterScenarioBtnClick,
 		bindScrollerChoiceModernClick,
+		bindScrollerChoiceUkraine2023Click,
 		bindScrollerChoice1936Click,
 		bindScrollerChoice1914Click,
 		bindChoiceModernDayClick,

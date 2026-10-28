@@ -1,6 +1,34 @@
 // Static interface labels, help text and accessibility strings.
 export const UI_TRANSLATIONS = {
 	en: {
+		UI_MODERN_2026: "2026 MODERN DAY",
+		UI_MODERN_2026_DESC:
+			"Political world map from the October 2026 Overture release, with regions. Game-balanced forces; no live frontlines.",
+		UI_MODERN_2026_CREDITS:
+			"Geography: OpenStreetMap contributors · Overture Maps",
+		UI_MODERN_2026_SOURCE: "Modern 2026 geographic data:",
+		UI_SHOW_ADMIN_REGIONS: "Show regions / oblasts",
+		UI_ADMIN_REGIONS_HELP:
+			"Modern administrative borders and names appear when zoomed in on Earth maps. Separate from military control.",
+		UI_LEADERBOARD_TERRITORY: "Territory (cells)",
+		UI_LEADERBOARD_TERRITORY_HELP:
+			"Territory is the number of map grid cells controlled by a country, including occupied land. It is not an area in km²: cell area varies with latitude.",
+		UI_EXIT_MENU_TITLE: "Leave for the main menu?",
+		UI_EXIT_MENU_MESSAGE:
+			"Leaving ends the current session. Battle progress and unsaved map changes will be lost; there is no automatic save. Your language and saved settings will remain.",
+		UI_EXIT_MENU_CONFIRM: "Leave without saving",
+		UI_EXIT_MENU_CANCEL: "Stay in game",
+		UI_LEADERBOARD_DEPLOYED: "Deployed soldiers",
+		UI_LEADERBOARD_NOTE:
+			"Current units and deployed soldiers in the simulation. Shared reserves are excluded.",
+		UI_LEADERBOARD_EMPTY: "No units are currently deployed.",
+
+		UI_SCENARIO_SELECTED: "Selected",
+		UI_UKRAINE_2023: "UKRAINE · 2023 · EURASIA",
+		UI_UKRAINE_2023_DESC:
+			"Eurasian theater. Approximate control on 2023-01-01; fictional armies. Choose Ukraine and Russia to begin.",
+		UI_UKRAINE_2023_CREDITS: "Independent visual reconstruction",
+		UI_UKRAINE_2023_SOURCE: "Ukraine 2023 visual reference:",
 		UI_SETTINGS: "SETTINGS",
 		UI_MAKE_IT_YOURS: "Make it yours",
 		UI_BACK: "BACK",
@@ -293,7 +321,7 @@ export const UI_TRANSLATIONS = {
 		UI_DEVELOPMENT: "Development",
 		UI_DISMISS: "Dismiss",
 		UI_RANKINGS: "RANKINGS",
-		UI_GLOBAL_POWER_PROJECTION: "Global Power Projection",
+		UI_GLOBAL_POWER_PROJECTION: "Forces deployed in the simulation",
 		UI_LEADERBOARD_2: "LEADERBOARD",
 		UI_COUNTRY: "Country",
 		UI_TILES: "Tiles",
@@ -395,6 +423,34 @@ export const UI_TRANSLATIONS = {
 			"Map Design (1914 & 1974) & Second Thumbnail Editing",
 	},
 	ru: {
+		UI_MODERN_2026: "2026 СОВРЕМЕННОСТЬ",
+		UI_MODERN_2026_DESC:
+			"Политическая карта мира из выпуска Overture за октябрь 2026, с регионами. Игровые армии; без текущих фронтов.",
+		UI_MODERN_2026_CREDITS:
+			"География: участники OpenStreetMap · Overture Maps",
+		UI_MODERN_2026_SOURCE: "Географические данные «Современности 2026»:",
+		UI_SHOW_ADMIN_REGIONS: "Показывать регионы / области",
+		UI_ADMIN_REGIONS_HELP:
+			"Современные административные границы и названия видны при приближении карт Земли. Они не обозначают военный контроль.",
+		UI_LEADERBOARD_TERRITORY: "Территория (клетки)",
+		UI_LEADERBOARD_TERRITORY_HELP:
+			"Территория — число клеток карты под контролем страны, включая оккупированные земли. Это не площадь в км²: размер клеток зависит от широты.",
+		UI_EXIT_MENU_TITLE: "Выйти в главное меню?",
+		UI_EXIT_MENU_MESSAGE:
+			"Выход завершит текущую сессию. Ход боя и несохранённые изменения карты будут потеряны; автоматического сохранения нет. Язык и сохранённые настройки останутся.",
+		UI_EXIT_MENU_CONFIRM: "Выйти без сохранения",
+		UI_EXIT_MENU_CANCEL: "Остаться в игре",
+		UI_LEADERBOARD_DEPLOYED: "Военных в строю",
+		UI_LEADERBOARD_NOTE:
+			"Текущие юниты и военные в строю в симуляции. Общие резервы не учтены.",
+		UI_LEADERBOARD_EMPTY: "Сейчас нет развёрнутых юнитов.",
+
+		UI_SCENARIO_SELECTED: "Выбрано",
+		UI_UKRAINE_2023: "УКРАИНА · 2023 · ЕВРАЗИЯ",
+		UI_UKRAINE_2023_DESC:
+			"Евразийский театр. Приблизительный контроль на 01.01.2023; вымышленные армии. Выберите Украину и Россию.",
+		UI_UKRAINE_2023_CREDITS: "Независимое воспроизведение по карте",
+		UI_UKRAINE_2023_SOURCE: "Визуальный источник для Украины 2023:",
 		UI_SETTINGS: "НАСТРОЙКИ",
 		UI_MAKE_IT_YOURS: "Настройте под себя",
 		UI_BACK: "НАЗАД",
@@ -686,7 +742,7 @@ export const UI_TRANSLATIONS = {
 		UI_DEVELOPMENT: "Разработка",
 		UI_DISMISS: "Закрыть",
 		UI_RANKINGS: "РЕЙТИНГ",
-		UI_GLOBAL_POWER_PROJECTION: "Мировой баланс сил",
+		UI_GLOBAL_POWER_PROJECTION: "Войска, развёрнутые в симуляции",
 		UI_LEADERBOARD_2: "ТАБЛИЦА ЛИДЕРОВ",
 		UI_COUNTRY: "Страна",
 		UI_TILES: "Клетки",
@@ -787,6 +843,33 @@ export const UI_TRANSLATIONS = {
 			"Дизайн карт (1914 и 1974) и обработка миниатюр",
 	},
 	uk: {
+		UI_MODERN_2026: "2026 СУЧАСНІСТЬ",
+		UI_MODERN_2026_DESC:
+			"Політична мапа світу з випуску Overture за жовтень 2026, з областями. Ігрові армії; без поточних фронтів.",
+		UI_MODERN_2026_CREDITS: "Географія: учасники OpenStreetMap · Overture Maps",
+		UI_MODERN_2026_SOURCE: "Географічні дані «Сучасності 2026»:",
+		UI_SHOW_ADMIN_REGIONS: "Показувати регіони / області",
+		UI_ADMIN_REGIONS_HELP:
+			"Сучасні адміністративні межі й назви видно при наближенні мап Землі. Вони не позначають військовий контроль.",
+		UI_LEADERBOARD_TERRITORY: "Територія (клітин)",
+		UI_LEADERBOARD_TERRITORY_HELP:
+			"Територія — кількість клітин мапи під контролем країни, включно з окупованими землями. Це не площа в км²: розмір клітин залежить від широти.",
+		UI_EXIT_MENU_TITLE: "Вийти до головного меню?",
+		UI_EXIT_MENU_MESSAGE:
+			"Вихід завершить поточну сесію. Перебіг бою та незбережені зміни мапи буде втрачено; автоматичного збереження немає. Мова й збережені налаштування залишаться.",
+		UI_EXIT_MENU_CONFIRM: "Вийти без збереження",
+		UI_EXIT_MENU_CANCEL: "Залишитися у грі",
+		UI_LEADERBOARD_DEPLOYED: "Військових у строю",
+		UI_LEADERBOARD_NOTE:
+			"Поточні юніти та військові у строю в симуляції. Спільні резерви не враховано.",
+		UI_LEADERBOARD_EMPTY: "Зараз немає розгорнутих юнітів.",
+
+		UI_SCENARIO_SELECTED: "Вибрано",
+		UI_UKRAINE_2023: "УКРАЇНА · 2023 · ЄВРАЗІЯ",
+		UI_UKRAINE_2023_DESC:
+			"Приблизний контроль на 01.01.2023. Вигадані армії; для початку виберіть Україну та Росію.",
+		UI_UKRAINE_2023_CREDITS: "Незалежне відтворення за мапою",
+		UI_UKRAINE_2023_SOURCE: "Візуальне джерело для України 2023:",
 		UI_SETTINGS: "НАЛАШТУВАННЯ",
 		UI_MAKE_IT_YOURS: "Налаштуйте під себе",
 		UI_BACK: "НАЗАД",
@@ -1078,7 +1161,7 @@ export const UI_TRANSLATIONS = {
 		UI_DEVELOPMENT: "Розробка",
 		UI_DISMISS: "Закрити",
 		UI_RANKINGS: "РЕЙТИНГ",
-		UI_GLOBAL_POWER_PROJECTION: "Світовий баланс сил",
+		UI_GLOBAL_POWER_PROJECTION: "Війська, розгорнуті в симуляції",
 		UI_LEADERBOARD_2: "ТАБЛИЦЯ ЛІДЕРІВ",
 		UI_COUNTRY: "Країна",
 		UI_TILES: "Клітини",

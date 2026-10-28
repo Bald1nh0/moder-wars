@@ -488,7 +488,7 @@ export function drawUnits(frame) {
 				(b.pop || 0) - (a.pop || 0),
 		);
 	const citySlots = new Set(),
-		cityLabelBoxes = [];
+		cityLabelBoxes = [...(this._adminRegionLabelBoxes || [])];
 	citiesToDraw.forEach((city) => {
 		let p;
 		try {

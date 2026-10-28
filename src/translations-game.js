@@ -1,5 +1,6 @@
 export const GAME_TRANSLATIONS = {
 	en: {
+		GAME_LOADING_UKRAINE2023: "Loading Ukraine 2023...",
 		GAME_QUICK_RESTART: "QUICK RESTART",
 		GAME_RESET: "RESET",
 		GAME_SAVE_SETTINGS: "Save settings",
@@ -210,6 +211,7 @@ export const GAME_TRANSLATIONS = {
 		GAME_PHASE_COLLAPSING: "COLLAPSING",
 	},
 	ru: {
+		GAME_LOADING_UKRAINE2023: "Загрузка Украины 2023…",
 		GAME_QUICK_RESTART: "БЫСТРЫЙ ПЕРЕЗАПУСК",
 		GAME_RESET: "СБРОС",
 		GAME_SAVE_SETTINGS: "Сохранить настройки",
@@ -420,6 +422,7 @@ export const GAME_TRANSLATIONS = {
 		GAME_PHASE_COLLAPSING: "РАЗГРОМ",
 	},
 	uk: {
+		GAME_LOADING_UKRAINE2023: "Завантаження України 2023…",
 		GAME_QUICK_RESTART: "ШВИДКИЙ ПЕРЕЗАПУСК",
 		GAME_RESET: "СКИНУТИ",
 		GAME_SAVE_SETTINGS: "Зберегти налаштування",

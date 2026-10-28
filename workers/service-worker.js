@@ -1,6 +1,6 @@
 // Service Worker — versioned offline shell plus persistent runtime data cache
 
-const CACHE_VERSION = "mw-v0.28.3";
+const CACHE_VERSION = "mw-v0.28.6";
 const APP_SHELL_PREFIX = "mw-app-shell-";
 const RUNTIME_PREFIX = "mw-runtime-";
 const LEGACY_CACHE_PREFIX = "mw-cache-";
@@ -10,6 +10,11 @@ const APP_SHELL_CACHE = `${APP_SHELL_PREFIX}${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${RUNTIME_PREFIX}v1`;
 
 const APP_SHELL_PATHS = [
+	"src/leaderboard.js",
+	"src/occupation-regions.js",
+	"src/render-occupation.js",
+	"src/render-admin-regions.js",
+	"src/admin-regions.js",
 	"index.html",
 	"src/ai-plan-execution.js",
 	"src/ai-planning.js",
@@ -97,6 +102,8 @@ const APP_SHELL_PATHS = [
 	"src/scenario-codec.js",
 	"src/scenario-export.js",
 	"src/scenario-loader.js",
+	"src/scenario-territory.js",
+	"src/scenario-theater.js",
 	"src/scenario-menu.js",
 	"src/settings.js",
 	"src/simulation-calendar.js",

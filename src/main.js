@@ -1,5 +1,6 @@
 import { createConflictPresentation } from "./conflict-presentation.js";
 import { showConfirm } from "./dialogs.js";
+import { buildLeaderboardRows, renderLeaderboard } from "./leaderboard.js";
 import {
 	createPresentationScheduler,
 	createUnitSpatialMirror,
@@ -2157,6 +2158,7 @@ export const gameTimeDayDurationMs = 500;
 export let viewMode = "POLITICAL"; // 'POLITICAL' or 'FLAG'
 export let allianceViewEnabled = false; // when true, alliances override colors/flags in political/flag views
 export let showCountryLabels = true;
+export let showAdminRegions = true;
 export let showNonCapitalCities = true;
 // Cache for screen-space label curves so they don't move with the camera
 export const countryLabelAnchors = new Map(); // key: `${countryId}:${regionIndex}` -> { name, points, fontSize }
@@ -2540,6 +2542,9 @@ export let currentUsername = null;
 export let flagCodes = null;
 
 export let currentScenarioContext = null; // { id, name, ownerUsername }
+export function setCurrentScenarioContext(value) {
+	currentScenarioContext = value;
+}
 
 export let hubReturnState = null;
 export let hubWasInEditor = false;
@@ -4156,11 +4161,12 @@ export function applyWorldBounds(widthDeg, heightDeg) {
 
 	const halfW = w / 2;
 	const halfH = h / 2;
+	const theater = currentScenarioContext?.theater?.bounds;
 	const bounds = mapRuntime.latLngBounds(
-		mapRuntime.latLng(-halfH, -halfW),
-		mapRuntime.latLng(halfH, halfW),
+		mapRuntime.latLng(theater?.[1] ?? -halfH, theater?.[0] ?? -halfW),
+		mapRuntime.latLng(theater?.[3] ?? halfH, theater?.[2] ?? halfW),
 	);
-	map.setMaxBounds(bounds);
+	map.setMaxBounds(bounds, Boolean(theater));
 
 	// If current center is outside new bounds, fit map into the new box
 	if (!bounds.contains(map.getCenter())) {
@@ -4179,6 +4185,14 @@ export function applyWorldBounds(widthDeg, heightDeg) {
 }
 
 export function isInsideWorldBoxLatLng(lat, lng) {
+	const theater = currentScenarioContext?.theater?.bounds;
+	if (theater)
+		return (
+			lat >= theater[1] &&
+			lat <= theater[3] &&
+			lng >= theater[0] &&
+			lng <= theater[2]
+		);
 	if (!worldWidthDeg || !worldHeightDeg) return true;
 	const halfW = worldWidthDeg / 2;
 	const halfH = worldHeightDeg / 2;
@@ -5854,6 +5868,7 @@ export function updateLoop() {
 
 	// --- Performance measurement ---
 	const realNow = performance.now();
+	refreshLeaderboard();
 	const _frameDt = _perfLastTime > 0 ? realNow - _perfLastTime : 16.67;
 	if (_perfLastTime > 0) finalizePendingPerfFrame(_frameDt);
 	let framePerfEntry = null;
@@ -6161,87 +6176,44 @@ export function updateCombatantsUI() {
 	// Users can click nations directly on the map to buff them via the inspector.
 }
 
-/**
- * Build and show global leaderboard of all countries with current size and estimated unit strength.
- */
-export function openLeaderboard() {
+let lastLeaderboardRefresh = -Infinity;
+
+/** Refresh only an open leaderboard, including paused simulation snapshots. */
+function refreshLeaderboard(force = false) {
 	if (
 		!leaderboardOverlay ||
+		leaderboardOverlay.style.display !== "flex" ||
 		!leaderboardList ||
-		!countryMetadata ||
 		!worldControlMap
 	)
 		return;
-
-	// Count tiles per country id
-	const maxId = countryMetadata.reduce(
-		(max, m) => (m ? Math.max(max, m.id) : max),
-		0,
-	);
-	const tileCounts = new Int32Array(maxId + 1);
-	for (let i = 0; i < worldControlMap.length; i++) {
-		const id = worldControlMap[i];
-		if (id > 0 && id <= maxId) tileCounts[id]++;
-	}
-
+	const now = performance.now();
+	if (!force && now - lastLeaderboardRefresh < 1000) return;
+	lastLeaderboardRefresh = now;
 	const lang = getCookie("mw_lang") || "en";
-
-	const rows = [];
-	for (let i = 0; i < countryMetadata.length; i++) {
-		const meta = countryMetadata[i];
-		if (!meta) continue;
-		const id = meta.id;
-		const tiles = tileCounts[id] || 0;
-
-		// Exclude Antarctica from the leaderboard to avoid it dominating due to map area
-		const rawName = meta.name || "Unknown";
-		if (rawName === "Antarctica") continue;
-
-		// Size zero: still show (releasables / dead states), but mark as 0 tiles
-		const estUnits = estimateUnitsForCountry ? estimateUnitsForCountry(id) : 0;
-
-		const displayName = getTranslation(rawName, lang, "NATIONS");
-		const flagUrl = meta.tempFlag?.src
-			? meta.tempFlag.src
-			: meta.flagUrl || getFlagUrl(findCodeByName(meta.name), meta.name);
-		rows.push({
-			id,
-			name: displayName,
-			rawName,
-			tiles,
-			estUnits,
-			flagUrl,
-		});
-	}
-
-	// Primary sort: estimated units desc, secondary: tiles desc, tertiary: name
-	rows.sort((a, b) => {
-		if (b.estUnits !== a.estUnits) return b.estUnits - a.estUnits;
-		if (b.tiles !== a.tiles) return b.tiles - a.tiles;
-		return a.name.localeCompare(b.name);
+	const rows = buildLeaderboardRows({
+		countryMetadata,
+		worldControlMap,
+		units,
+		getPersonnel: getLiveFormationPersonnel,
+		countryName: (meta) =>
+			getTranslation(meta.name || "Unknown", lang, "NATIONS"),
+		countryFlag: (meta) =>
+			meta.tempFlag?.src ||
+			meta.flagUrl ||
+			getFlagUrl(findCodeByName(meta.name), meta.name),
 	});
+	renderLeaderboard(rows, {
+		container: leaderboardList,
+		note: document.getElementById("leaderboard-note"),
+	});
+}
 
-	leaderboardList.innerHTML = rows
-		.map((row, idx) => {
-			const unitsLabel =
-				row.estUnits > 0 ? influenceLayer.formatSoldiers(row.estUnits) : "—";
-			const tilesLabel = row.tiles.toLocaleString();
-			const rank = idx + 1;
-			const flagSrc = row.flagUrl ? escapeHtml(row.flagUrl) : "";
-			const safeName = escapeHtml(row.name);
-			return `
-            <div class="scroller-card" style="padding: 10px; display: flex; align-items: center; gap: 10px;">
-                <div class="leaderboard-rank" style="width: 30px; font-family: 'Playfair Display'; font-size: 18px;">${rank}</div>
-                ${flagSrc ? `<img src="${flagSrc}" class="leaderboard-flag" style="width: 35px; height: 22px;">` : `<div class="leaderboard-flag" style="width: 35px; height: 22px; background:#111;"></div>`}
-                <div class="scroller-card-name" style="flex: 2; font-size: 16px; margin: 0;">${safeName}</div>
-                <div class="leaderboard-tiles" style="flex: 1; text-align: right; color: #888; font-size: 12px;">${tilesLabel}</div>
-                <div class="leaderboard-units" style="flex: 1; text-align: right; font-weight: bold; font-size: 13px;">${unitsLabel}</div>
-            </div>
-        `;
-		})
-		.join("");
-
+/** Show current deployed units and personnel; pooled reserves remain in War Overview. */
+export function openLeaderboard() {
+	if (!leaderboardOverlay || !leaderboardList || !worldControlMap) return;
 	leaderboardOverlay.style.display = "flex";
+	refreshLeaderboard(true);
 }
 
 // The simulation stops proposing peace while it believes a notice is on screen,
@@ -6365,6 +6337,19 @@ const showLabelsCheckbox = document.getElementById("show-labels-checkbox");
 const showCitiesCheckbox = document.getElementById("show-cities-checkbox");
 const showBattlesCheckbox = document.getElementById("show-battles-checkbox");
 const showAllianceCheckbox = document.getElementById("show-alliance-checkbox");
+
+const showAdminRegionsCheckbox = document.getElementById(
+	"show-admin-regions-checkbox",
+);
+showAdminRegions = getCookie("mw_show_admin_regions") !== "false";
+if (showAdminRegionsCheckbox) {
+	showAdminRegionsCheckbox.checked = showAdminRegions;
+	showAdminRegionsCheckbox.addEventListener("change", (event) => {
+		showAdminRegions = event.target.checked;
+		setCookie("mw_show_admin_regions", String(showAdminRegions));
+		influenceLayer?.requestRender(RENDER_LAYERS.DYNAMIC);
+	});
+}
 
 const armyDiagnosticsCheckbox = document.getElementById(
 	"show-army-diagnostics-checkbox",
@@ -6774,6 +6759,7 @@ configureLanguageUi({
 		if (cityInspector.style.display === "block")
 			refreshCityOwnerSelect(Number(cityOwnerSelect.value) || null);
 		updateWarOverview(true);
+		refreshLeaderboard(true);
 		influenceLayer?.invalidate(RENDER_LAYERS.ALL);
 		influenceLayer?.render();
 	},
@@ -6818,6 +6804,7 @@ menu_controls.bindEnterScenarioBtnClick();
 
 // Wire Scroller Cards
 menu_controls.bindScrollerChoiceModernClick();
+menu_controls.bindScrollerChoiceUkraine2023Click();
 menu_controls.bindScrollerChoice1936Click();
 menu_controls.bindScrollerChoice1914Click();
 
@@ -7043,6 +7030,8 @@ inspector_controls.bindEditorCityNewBtnClick();
 inspector_controls.bindEditorCityClearBtnClick();
 
 menu_controls.bindLeaderboardBtnClick();
+
+menu_controls.bindMainMenuBtnClick();
 
 menu_controls.bindCloseLeaderboardBtnClick();
 

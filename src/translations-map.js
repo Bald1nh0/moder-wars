@@ -1,5 +1,7 @@
 export const MAP_TRANSLATIONS = {
 	en: {
+		MAP_OCCUPIED_TERRITORY: "Occupied territory",
+		MAP_OCCUPATION_CONTROL: "{sovereign} · Control: {controller}",
 		MAP_ENCIRCLED: "ENCIRCLED",
 		MAP_DEFEND: "DEFEND",
 		MAP_PUSH: "PUSH",
@@ -59,6 +61,8 @@ export const MAP_TRANSLATIONS = {
 		MAP_NEAREST_FRONTLINE: "Nearest Frontline",
 	},
 	ru: {
+		MAP_OCCUPIED_TERRITORY: "Оккупированная территория",
+		MAP_OCCUPATION_CONTROL: "{sovereign} · Контроль: {controller}",
 		MAP_ENCIRCLED: "ОКРУЖЕНЫ",
 		MAP_DEFEND: "ОБОРОНА",
 		MAP_PUSH: "НАСТУПЛЕНИЕ",
@@ -118,6 +122,8 @@ export const MAP_TRANSLATIONS = {
 		MAP_NEAREST_FRONTLINE: "Ближайшая линия фронта",
 	},
 	uk: {
+		MAP_OCCUPIED_TERRITORY: "Окупована територія",
+		MAP_OCCUPATION_CONTROL: "{sovereign} · Контроль: {controller}",
 		MAP_ENCIRCLED: "ОТОЧЕНІ",
 		MAP_DEFEND: "ОБОРОНА",
 		MAP_PUSH: "НАСТУП",

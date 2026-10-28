@@ -1,6 +1,9 @@
 import { spawnSync } from "node:child_process";
 
 const checks = [
+	"admin-regions",
+	"leaderboard",
+	"occupation-regions",
 	"native-camera",
 	"native-reference",
 	"atlas-scene",
@@ -17,8 +20,13 @@ const checks = [
 	"political-redraw",
 	"editor-loaders",
 	"editor-startup",
+	"conflict-reset",
 	"geography-demand",
 	"scenario-codec",
+	"scenario-territory",
+	"ukraine-scenario",
+	"modern-2026",
+	"scenario-menu",
 	"saved-territory",
 	"peace-deal",
 	"war-features",
@@ -38,6 +46,7 @@ const checks = [
 	"speed-selector",
 	"war-desk",
 	"ui-modules",
+	"ui-modernization",
 	"i18n",
 ];
 // Keep the focused integration suite explicit. No browser or game entry is evaluated.

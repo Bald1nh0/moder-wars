@@ -24,6 +24,8 @@ import {
 	clearAllianceCacheDirty,
 	countryCasualties,
 	countryMetadata,
+	currentScenarioContext,
+	deJureMap,
 	disableCountryGradient,
 	dominantSideMap,
 	editingCountryId,
@@ -53,6 +55,7 @@ import {
 	referenceOverlay,
 	refOpacity,
 	rgbaRe,
+	showAdminRegions,
 	showArmyDiagnostics,
 	showBattleIndicators,
 	showCountryLabels,
@@ -75,6 +78,10 @@ import {
 	worldWidthDeg,
 } from "./main.js";
 import mapRuntime from "./map-runtime.ts";
+import {
+	clearAdminRegionDrawing,
+	drawAdminRegions,
+} from "./render-admin-regions.js";
 import { drawAtlasOcean, requestAtlasCoast } from "./render-atlas.js";
 import { getRenderBudget } from "./render-budget.ts";
 import {
@@ -83,6 +90,7 @@ import {
 	resolveRenderFlag,
 } from "./render-flags.js";
 import { drawLabels } from "./render-labels.js";
+import { drawOccupationOverlay } from "./render-occupation.js";
 import { drawOverlays } from "./render-overlays.js";
 import { drawEncirclementPockets } from "./render-pockets.js";
 import { createPoliticalStyleTracker } from "./render-political-cache.js";
@@ -603,6 +611,12 @@ const ControlMapLayer = mapRuntime.Layer.extend({
 		invalidateUnitFlagSprites(this);
 		this._politicalChunkCache?.clear();
 		this._regionChunkCache?.clear();
+		this._occupationRegions?.clear();
+		this._occupationDrawing = null;
+		this._occupationPattern = null;
+		this._occupationPatternContext = null;
+		this._theaterLandClip = null;
+		clearAdminRegionDrawing(this);
 		map.off("referencechange", this._onReferenceChange, this);
 		map.off("movestart", this._onMoveStart, this);
 		map.off("move", this._onMove, this);
@@ -693,8 +707,10 @@ const ControlMapLayer = mapRuntime.Layer.extend({
 		if (layerMask & RENDER_LAYERS.STATIC) {
 			this._staticCacheKey = "";
 			if (!preserveWorldCache) {
+				this._theaterLandClip = null;
 				this._politicalChunkCache?.clear();
 				this._regionChunkCache?.clear();
+				this._occupationRegions?.clear();
 				invalidateUnitFlagSprites(this);
 				this._gpu?.invalidateWorld();
 				this._gpu?.invalidateFlagTextures();
@@ -1466,6 +1482,7 @@ const ControlMapLayer = mapRuntime.Layer.extend({
 			}
 		}
 		drawTerrain.call(this, {
+			theater: currentScenarioContext?.theater,
 			backgroundCtx,
 			padding,
 			createSurface: () => document.createElement("canvas"),
@@ -1579,6 +1596,52 @@ const ControlMapLayer = mapRuntime.Layer.extend({
 			);
 		}
 		ctx = mainCtx;
+
+		drawAdminRegions.call(this, {
+			allowedCountryCodes: currentScenarioContext?.theater?.countryCodes,
+			ctx,
+			project,
+			viewBounds,
+			currentZoom,
+			viewportKey,
+			mapSize,
+			enabled:
+				showAdminRegions &&
+				!cinematicMode &&
+				gameMode !== "EDITOR" &&
+				gameMode !== "EDITOR_TEST" &&
+				worldWidthDeg === 360 &&
+				worldHeightDeg === 180,
+			isCustomTerrain,
+			onReady: () => {
+				if (!this._disposed) this.requestRender(RENDER_LAYERS.DYNAMIC);
+			},
+		});
+
+		drawOccupationOverlay.call(this, {
+			ctx,
+			source: currentScenarioContext?.historicalSource,
+			worldControlMap,
+			deJureMap,
+			landMask,
+			gridWidth,
+			gridHeight,
+			isWar,
+			dominantSideMap,
+			primaryOccupierMap,
+			sovereignSideMap,
+			res,
+			project,
+			viewportKey,
+			xMin,
+			xMax,
+			yMin,
+			yMax,
+			mapSize,
+			countryMetadata,
+			showCountryLabels,
+			now: performance.now(),
+		});
 
 		if (isWar && borderFadeEnabled)
 			drawControlFades({

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://esm.sh; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.websim.ai https://*.websim.com wss:; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self';">
-    <title>MW-V0.28.3</title>
+    <title>MW-V0.28.6</title>
     <link rel="stylesheet" href="styles/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 </head>
@@ -99,6 +99,9 @@
 <input checked="" id="show-labels-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
 <span data-i18n="UI_SHOW_COUNTRY_LABELS">Show Country Labels</span>
 </label></div><div class="setting-group"><label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+<input checked="" id="show-admin-regions-checkbox" style="width: 18px; height: 18px;" type="checkbox" aria-describedby="admin-regions-help"/>
+<span data-i18n="UI_SHOW_ADMIN_REGIONS">Show regions / oblasts</span>
+</label><small id="admin-regions-help" data-i18n="UI_ADMIN_REGIONS_HELP">Modern administrative borders and names appear when zoomed in on Earth maps. Separate from military control.</small></div><div class="setting-group"><label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
 <input checked="" id="show-cities-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
 <span data-i18n="UI_SHOW_CITIES">Show Cities</span>
 </label></div><div class="setting-group"><label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
@@ -201,10 +204,17 @@
 <div class="scenario-scroller-v2">
 <div class="scroller-section">
 <div class="scroller-grid">
-<button class="scroller-card primary" id="scroller-choice-modern" type="button">
-<div class="scroller-card-name" data-i18n="UI_2022_MODERN_DAY">2022 MODERN DAY</div>
-<div class="scroller-card-desc" data-i18n="UI_CURRENT_GLOBAL_GEOPOLITICS_AND_REAL_WORLD_ALLIANCES">Current global geopolitics and real-world alliances.</div>
-<div class="scroller-card-credits" data-i18n="UI_MAP_UNIONOFBRITAIN">Map: UnionOfBritain</div>
+<button class="scroller-card" id="scroller-choice-modern" type="button" aria-pressed="false">
+<span class="scroller-card-selection"><span aria-hidden="true">✓</span><span data-i18n="UI_SCENARIO_SELECTED">Selected</span></span>
+<div class="scroller-card-name" data-i18n="UI_MODERN_2026">2026 MODERN DAY</div>
+<div class="scroller-card-desc" data-i18n="UI_MODERN_2026_DESC">Political world map from the October 2026 Overture release, with regions. Game-balanced forces; no live frontlines.</div>
+<div class="scroller-card-credits" data-i18n="UI_MODERN_2026_CREDITS">Geography: OpenStreetMap contributors · Overture Maps</div>
+</button>
+<button class="scroller-card" id="scroller-choice-ukraine2023" type="button" aria-pressed="false">
+<span class="scroller-card-selection"><span aria-hidden="true">✓</span><span data-i18n="UI_SCENARIO_SELECTED">Selected</span></span>
+<div class="scroller-card-name" data-i18n="UI_UKRAINE_2023">UKRAINE · 2023 · EURASIA</div>
+<div class="scroller-card-desc" data-i18n="UI_UKRAINE_2023_DESC">Eurasian theater. Approximate control on 2023-01-01; fictional armies. Choose Ukraine and Russia to begin.</div>
+<div class="scroller-card-credits" data-i18n="UI_UKRAINE_2023_CREDITS">Independent visual reconstruction</div>
 </button>
 <div class="scroller-card" id="scroller-choice-1936" style="display:none">
 <div class="scroller-card-name" data-i18n="UI_1936_INTERWAR">1936 INTERWAR</div>
@@ -219,6 +229,8 @@
 </div>
 </div>
 </div>
+<p class="scroller-card-desc"><span data-i18n="UI_MODERN_2026_SOURCE">Modern 2026 geographic data:</span> <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a> · <a href="https://docs.overturemaps.org/guides/divisions/" target="_blank" rel="noopener noreferrer">Overture Maps</a></p>
+<p class="scroller-card-desc"><span data-i18n="UI_UKRAINE_2023_SOURCE">Ukraine 2023 visual reference:</span> <a href="https://deepstatemap.live/" target="_blank" rel="noopener noreferrer">DeepStateMap.live</a></p>
 <p class="title-screen-scenario-hint" data-i18n="UI_SELECT_A_SCENARIO_THEN_START">Select a scenario, then start.</p>
 <button class="start-btn" id="enter-scenario-btn" style="display:none; margin-top: 20px; animation: fadeIn 0.3s ease-out;" data-i18n="UI_START_SCENARIO">Start scenario</button>
 </div>
@@ -397,7 +409,7 @@
 
 </div>
 
-<details class="hud-menu" id="hud-menu"><summary data-i18n="UI_MENU">Menu</summary><div class="hud-menu-content"><strong class="hud-menu-heading" data-i18n="UI_RESTART">Restart</strong><button class="start-btn hud-action hud-action--warning hud-action--wide hud-start-hidden" id="quick-restart-btn" title="QUICK RESTART: Instantly reset borders and war state to scenario start (no loading screen)" data-i18n-title="UI_QUICK_RESTART_INSTANTLY_RESET_BORDERS_AND_WAR_STATE_TO_SCENARIO_START_NO_LOADING">QUICK RESTART</button><button class="mini-btn hud-action hud-action--danger hud-reload-action hud-start-hidden" id="restart-scenario-btn" title="FULL RELOAD: Reload the entire scenario from disk (shows loading screen)" data-i18n-title="UI_FULL_RELOAD_RELOAD_THE_ENTIRE_SCENARIO_FROM_DISK_SHOWS_LOADING_SCREEN" data-i18n="UI_RELOAD_SCENARIO">Reload scenario</button><button class="mini-btn hud-action hud-start-hidden" id="reset-btn" title="Reset Simulation" data-i18n-title="UI_RESET_SIMULATION">RESET</button><strong class="hud-menu-heading" data-i18n="UI_SANDBOX">Sandbox</strong><button class="mini-btn hud-action hud-action--god hud-start-hidden" id="god-mode-btn">God mode</button><button class="mini-btn hud-action hud-action--danger hud-start-hidden" id="god-bomb-btn">GOD BOMB: OFF</button><button class="mini-btn hud-action hud-action--success hud-start-hidden" data-i18n="DIPLOMACY" id="force-peace-btn">DIPLOMACY</button><strong class="hud-menu-heading" data-i18n="UI_PREFERENCES_NAVIGATION">Preferences &amp; navigation</strong><button class="mini-btn hud-action hud-action--icon" id="ingame-settings-btn" title="Open Settings" data-i18n-title="UI_OPEN_SETTINGS" data-i18n="UI_SETTINGS_2">Settings</button><button class="mini-btn hud-action hud-action--icon" id="mute-btn" title="Toggle Mute" data-i18n-title="UI_TOGGLE_MUTE" data-i18n="UI_SOUND_ON">Sound: on</button><button class="mini-btn hud-action hud-action--neutral-alt" id="leaderboard-btn" title="Open Global Leaderboard" data-i18n-title="UI_OPEN_GLOBAL_LEADERBOARD" data-i18n="UI_LEADERBOARD">Leaderboard</button><button class="mini-btn hud-action hud-action--neutral" id="main-menu-btn" title="Return to Main Menu" data-i18n-title="UI_RETURN_TO_MAIN_MENU" data-i18n="UI_MAIN_MENU">Main menu</button><button class="mini-btn hud-action" id="help-btn" type="button" data-i18n="UI_HOW_TO_PLAY">How to play</button><button class="mini-btn hud-action" id="fullscreen-btn" type="button" data-i18n="UI_FULLSCREEN">Fullscreen</button></div></details></div>
+<details class="hud-menu" id="hud-menu"><summary data-i18n="UI_MENU">Menu</summary><div class="hud-menu-content"><strong class="hud-menu-heading" data-i18n="UI_RESTART">Restart</strong><button class="start-btn hud-action hud-action--warning hud-action--wide hud-start-hidden" id="quick-restart-btn" title="QUICK RESTART: Instantly reset borders and war state to scenario start (no loading screen)" data-i18n-title="UI_QUICK_RESTART_INSTANTLY_RESET_BORDERS_AND_WAR_STATE_TO_SCENARIO_START_NO_LOADING">QUICK RESTART</button><button class="mini-btn hud-action hud-action--danger hud-reload-action hud-start-hidden" id="restart-scenario-btn" title="FULL RELOAD: Reload the entire scenario from disk (shows loading screen)" data-i18n-title="UI_FULL_RELOAD_RELOAD_THE_ENTIRE_SCENARIO_FROM_DISK_SHOWS_LOADING_SCREEN" data-i18n="UI_RELOAD_SCENARIO">Reload scenario</button><button class="mini-btn hud-action hud-start-hidden" id="reset-btn" title="Reset Simulation" data-i18n-title="UI_RESET_SIMULATION">RESET</button><strong class="hud-menu-heading" data-i18n="UI_SANDBOX">Sandbox</strong><button class="mini-btn hud-action hud-action--god hud-start-hidden" id="god-mode-btn">God mode</button><button class="mini-btn hud-action hud-action--danger hud-start-hidden" id="god-bomb-btn">GOD BOMB: OFF</button><button class="mini-btn hud-action hud-action--success hud-start-hidden" data-i18n="DIPLOMACY" id="force-peace-btn">DIPLOMACY</button><strong class="hud-menu-heading" data-i18n="UI_PREFERENCES_NAVIGATION">Preferences &amp; navigation</strong><button class="mini-btn hud-action hud-action--icon" id="ingame-settings-btn" title="Open Settings" data-i18n-title="UI_OPEN_SETTINGS" data-i18n="UI_SETTINGS_2">Settings</button><button class="mini-btn hud-action hud-action--icon" id="mute-btn" title="Toggle Mute" data-i18n-title="UI_TOGGLE_MUTE" data-i18n="UI_SOUND_ON">Sound: on</button><button class="mini-btn hud-action hud-action--neutral-alt" id="leaderboard-btn" title="Open Global Leaderboard" data-i18n-title="UI_OPEN_GLOBAL_LEADERBOARD" data-i18n="UI_LEADERBOARD">Leaderboard</button><button class="mini-btn hud-action hud-action--neutral" id="main-menu-btn" title="Leave the current session without saving" data-i18n-title="UI_EXIT_MENU_MESSAGE" data-i18n="UI_MAIN_MENU">Main menu</button><button class="mini-btn hud-action" id="help-btn" type="button" data-i18n="UI_HOW_TO_PLAY">How to play</button><button class="mini-btn hud-action" id="fullscreen-btn" type="button" data-i18n="UI_FULLSCREEN">Fullscreen</button></div></details></div>
 </div>
 
         <section
@@ -841,10 +853,10 @@
                                         </span>
                                     </div>
                                     <div class="era-card-body">
-                                        <div class="era-name" data-i18n="MODERN_DAY">2022</div>
-                                        <div class="era-desc" data-i18n="MODERN_DAY_SUB">Present geopolitics and alliances</div>
+                                        <div class="era-name" data-i18n="UI_MODERN_2026">2026 MODERN DAY</div>
+                                        <div class="era-desc" data-i18n="UI_MODERN_2026_DESC">Political geography with regions; no live frontlines.</div>
                                         <div class="era-meta" data-i18n="UI_REAL_BORDERS_21ST_CENTURY">Real borders • 21st century</div>
-                                        <div class="era-meta" data-i18n="UI_MAP_UNIONOFBRITAIN">Map: UnionOfBritain</div>
+                                        <div class="era-meta" data-i18n="UI_MODERN_2026_CREDITS">Geography: OpenStreetMap contributors · Overture Maps</div>
                                     </div>
                                 </button>
 
@@ -1067,11 +1079,15 @@
                         </button>
                         <h2 class="selection-title" data-i18n="UI_LEADERBOARD_2">LEADERBOARD</h2>
                     </div>
-                    <div class="leaderboard-header" style="margin-top: 10px;">
-                        <span style="flex: 2;" data-i18n="UI_COUNTRY">Country</span>
-                        <span style="flex: 1; text-align:right;" data-i18n="UI_TILES">Tiles</span>
-                        <span style="flex: 1; text-align:right;" data-i18n="UI_UNITS">Units</span>
-                        <span style="width: 40px; text-align:right;">#</span>
+                    <p id="leaderboard-note" class="leaderboard-note" data-i18n="UI_LEADERBOARD_NOTE">Current units and deployed soldiers in the simulation. Shared reserves are excluded.</p>
+                    <p class="leaderboard-note" data-i18n="UI_LEADERBOARD_TERRITORY_HELP">Territory is the number of map grid cells controlled by a country, including occupied land. It is not an area in km²: cell area varies with latitude.</p>
+                    <div class="leaderboard-header">
+                        <span class="leaderboard-rank">#</span>
+                        <span class="leaderboard-flag" aria-hidden="true"></span>
+                        <span class="leaderboard-country" data-i18n="UI_COUNTRY">Country</span>
+                        <span class="leaderboard-tiles" data-i18n="UI_LEADERBOARD_TERRITORY" data-i18n-title="UI_LEADERBOARD_TERRITORY_HELP">Territory (cells)</span>
+                        <span class="leaderboard-units" data-i18n="UI_UNITS">Units</span>
+                        <span class="leaderboard-personnel" data-i18n="UI_LEADERBOARD_DEPLOYED">Deployed soldiers</span>
                     </div>
                     <div id="leaderboard-list" class="scenario-scroller-v2 leaderboard-list" style="gap: 6px; padding-right: 5px;">
                         <!-- rows injected by JS -->
