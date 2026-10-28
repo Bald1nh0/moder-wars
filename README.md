@@ -74,6 +74,10 @@ Atlas coast assets contain compressed packed coordinates derived from the bundle
 
 Camera movement transforms buffered canvas layers during gestures and repaints near the buffer edge or when movement ends. Zoom detail levels retain their country geometry. Captures and recordings use a viewport-sized canvas.
 
+Map rendering uses a shared memory budget for Canvas, WebGL and coastline masks: at most 2× device pixel ratio, approximately two million pixels per surface, and a 4096-pixel edge limit. Small viewports use 96 CSS pixels of camera overscan instead of 192. Large or high-density screens may render the map below native resolution; HTML controls keep their normal resolution. These limits reduce backing-store allocations, not the memory used by simulation grids or browser/driver copies. They also apply when capturing the viewport.
+
+GPU country chunks release their owned graphics contexts immediately. Repeated political-style changes reuse a bounded gradient texture palette, and unused flag textures are evicted. These changes address known memory pressure; they do not prove that every browser tab crash is fixed. If a device still runs out of memory, lower Grid Density and Map Resolution in Settings and test a smaller conflict at 1× speed.
+
 `src/camera-input.ts` owns pointer, wheel, touch, and keyboard camera input. It publishes camera changes at most once per display frame, anchors wheel zoom at the cursor, and cancels momentum on resets. Reduced-motion preferences skip easing and inertia. Buffered Canvas overlays replenish near their edges, while GPU country meshes follow the camera matrix.
 
 Run `node scripts/native-camera-smoke.mjs` for projection round trips, cursor anchoring, coalesced dragging, pinch transitions, inertia, cancellation, editor ownership, and camera bounds. `atlas-scene-smoke.mjs` checks retained geometry and neighboring chunk invalidation; `atlas-gpu-smoke.mjs` checks real Pixi drawing instructions and fallback control flow in Node. These do not launch a browser or execute GPU rendering.
@@ -102,6 +106,8 @@ Compiled scenarios use MWSC v3 with compact saved-territory runs and deduplicate
 ## Offline Verification
 
 Run `npm run check` for the integration suite and production output checks. Individual checks use `node scripts/<name>-smoke.mjs`; the module-graph check requires `node --experimental-vm-modules scripts/module-graph-smoke.mjs`. Worker/core/client checks use actual simulation code and Node worker threads without a browser.
+
+The suite includes retreat-target stability, army formation defaults, core AI operations, and rendering-budget regressions. Coastline and river loaders are tested with both raw gzip payloads and HTTP responses already decompressed by the browser. `node scripts/render-budget-smoke.mjs` reports calculated Canvas backing-store sizes; it does not measure browser RSS or GPU memory.
 
 Run `node scripts/soldier-labels-smoke.mjs` for separate fronts, country ownership, surviving personnel, worker snapshots, isolated garrisons, longitude wrapping, curved canvas commands and camera-independent totals. It also reports grouping CPU time for 2,400 formations across 24 fronts; this is a synthetic Node measurement.
 
@@ -150,3 +156,11 @@ Reports default to the ignored `performance-results/` directory. Each output dir
 These are controlled deployments using real map data, not exact menu-start reproductions. Loading and warmup are excluded from tick statistics. Worker transport exercises the production core, packed snapshots, changed map tiles, and mirror application through Node worker threads at two logical ticks per snapshot; it excludes the browser worker's real-time timer and rendering. CPU and heap sampling are separate from the reported timing runs. Heap sampling estimates allocation churn, including collected objects; ArrayBuffer memory is reported separately. This measures CPU costs, not browser FPS or GPU rendering.
 
 See [the measured bottleneck audit](docs/PERFORMANCE-AUDIT.md) for results and priorities. The harness uses [Node's V8 inspector](https://nodejs.org/api/inspector.html#cpu-profiler) and keeps all profiling machinery out of the game's runtime.
+
+## Interface languages
+
+Select a language under **Settings → Interface → Language**. The selection is saved immediately in the `mw_lang` cookie for one year and restored on reload in the same browser profile. Clearing site cookies removes the preference. Tabs on the same hostname share the stored preference, while their simulations remain independent.
+
+English, Ukrainian and Russian cover the interface dictionaries, menus, settings, tooltips, editor controls and gameplay messages. Built-in country names are localized; user-authored scenario names, descriptions, comments and custom names remain unchanged. Other listed languages retain their existing partial translations and fall back to English. Technical diagnostic codes and developer profiling output remain in English.
+
+Run `node scripts/i18n-smoke.mjs` to check dictionary coverage, placeholders, HTML references, translated attributes and language restoration. This check is also included in `npm run check`.

@@ -1,6 +1,6 @@
 // Service Worker — versioned offline shell plus persistent runtime data cache
 
-const CACHE_VERSION = "mw-v0.28.0";
+const CACHE_VERSION = "mw-v0.28.3";
 const APP_SHELL_PREFIX = "mw-app-shell-";
 const RUNTIME_PREFIX = "mw-runtime-";
 const LEGACY_CACHE_PREFIX = "mw-cache-";
@@ -82,6 +82,7 @@ const APP_SHELL_PATHS = [
 	"src/reference-controls.js",
 	"src/reference-overlay.js",
 	"src/render-atlas.js",
+	"src/render-budget.ts",
 	"src/render-flags.js",
 	"src/render-labels.js",
 	"src/render-soldier-labels.js",
@@ -108,6 +109,14 @@ const APP_SHELL_PATHS = [
 	"src/territory-ledger.js",
 	"src/territory-runtime.js",
 	"src/translations.js",
+	"src/translations-app.js",
+	"src/translations-map.js",
+	"src/translations-community.js",
+	"src/translations-ui.js",
+	"src/translations-game.js",
+	"src/translations-editor.js",
+	"src/translations-nations.js",
+
 	"src/war-overview.js",
 	"src/war-start.js",
 	"styles/style.css",

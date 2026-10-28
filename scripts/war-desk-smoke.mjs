@@ -1,12 +1,14 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { gameText, getTranslation } from "../src/i18n.js";
 import {initWarOverview, renderWarOverview} from "../src/war-overview.js";
 const main = readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
 const start = main.indexOf("function warDeskOverviewRows(");
 const end = main.indexOf("function updateWarOverview(", start);
 assert.ok(start >= 0 && end > start, "overview accounting function exists");
 const context = vm.createContext({
+ gameText, getTranslation,
  _warOverviewSides: [{uid:"allies", name:"Allies", color:"#e9d58d", countries:[{id:1,name:"A",color:"#c83232"},{id:2,name:"B",color:"#3498db"}]}],
  units: [{sovereignId:1,health:100,personnel:80},{sovereignId:2,health:0,personnel:50}],
  sideUids:["allies"], sideSoldiers:[120],
@@ -17,7 +19,7 @@ const context = vm.createContext({
 vm.runInContext(main.slice(start,end),context);
 const rows=context.warDeskOverviewRows();
 assert.equal(rows.length,3);
-assert.equal(rows[0].label,"Allies");
+assert.equal(rows[0].label,"A + B");
 assert.equal(rows[0].value,120,"side manpower includes pooled reserves");
 assert.equal(rows[0].secondaryValue,90);
 assert.equal(rows[0].detail,"62.5% original territory retained","original territory is weighted by area");

@@ -6,6 +6,7 @@ const checks = [
 	"atlas-scene",
 	"atlas-gpu",
 	"atlas",
+	"render-budget",
 	"camera-performance",
 	"camera-gesture",
 	"presentation-runtime",
@@ -21,6 +22,13 @@ const checks = [
 	"saved-territory",
 	"peace-deal",
 	"war-features",
+	"army-formation",
+	"ai-retreat",
+	"ai-operations",
+	"army-overhaul",
+	"ai-stall-budget",
+	"ground-simulation",
+	"formation-strength",
 	"simulation-client",
 	"simulation-core",
 	"simulation-engine",
@@ -30,6 +38,7 @@ const checks = [
 	"speed-selector",
 	"war-desk",
 	"ui-modules",
+	"i18n",
 ];
 // Keep the focused integration suite explicit. No browser or game entry is evaluated.
 for (const name of checks) {

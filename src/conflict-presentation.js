@@ -1,10 +1,15 @@
+import { gameText, getTranslation } from "./i18n.js";
 /** Browser presentation for domain events; the simulation never reads the DOM. */
 export function createConflictPresentation(runtime) {
 	function presentCapitulation(country) {
-		runtime.statusText.innerText = `${country.name} HAS CAPITULATED`;
-		runtime.treatyMsg.innerText = "NATION ANNEXED";
-		document.getElementById("treaty-status").innerText =
-			`${country.name} territory has been seized.`;
+		runtime.statusText.innerText = gameText("GAME_CAPITULATED", {
+			name: getTranslation(country.name, undefined, "NATIONS"),
+		});
+		runtime.treatyMsg.innerText = gameText("GAME_NATION_ANNEXED");
+		document.getElementById("treaty-status").innerText = gameText(
+			"GAME_TERRITORY_SEIZED",
+			{ name: getTranslation(country.name, undefined, "NATIONS") },
+		);
 		runtime.treatyAlert.style.display = "block";
 		runtime.simulationClient?.syncControls();
 		runtime.scheduleWarLifecycleCallback(() => {
@@ -61,19 +66,26 @@ export function createConflictPresentation(runtime) {
 	}) {
 		runtime.casualtyPanel.style.display = "none";
 		if (isTotalCapitulation) {
-			runtime.statusText.innerText = `Victory! ${winnerName} prevails${loserNames ? ` — ${loserNames} defeated` : ""}`;
-			runtime.treatyMsg.innerText = "TOTAL ANNEXATION";
-			document.getElementById("treaty-status").innerText =
-				"The conflict has concluded";
+			runtime.statusText.innerText = gameText("GAME_VICTORY", {
+				winner: winnerName,
+				losers: loserNames
+					? gameText("GAME_DEFEATED", { names: loserNames })
+					: "",
+			});
+			runtime.treatyMsg.innerText = gameText("GAME_TOTAL_ANNEXATION");
+			document.getElementById("treaty-status").innerText = gameText(
+				"GAME_CONFLICT_ENDED",
+			);
 			runtime.treatyAlert.style.display = "block";
 		} else if (isNegotiatedPeace) {
-			runtime.statusText.innerText = "Peace Treaty Signed";
-			runtime.treatyMsg.innerText = "BORDERS REDRAWN";
-			document.getElementById("treaty-status").innerText =
-				"Territorial adjustments finalized";
+			runtime.statusText.innerText = gameText("GAME_TREATY_SIGNED");
+			runtime.treatyMsg.innerText = gameText("GAME_BORDERS_REDRAWN");
+			document.getElementById("treaty-status").innerText = gameText(
+				"GAME_TERRITORY_FINAL",
+			);
 			runtime.treatyAlert.style.display = "block";
 		} else {
-			runtime.statusText.innerText = "White Peace Signed";
+			runtime.statusText.innerText = gameText("GAME_WHITE_PEACE_SIGNED");
 		}
 	}
 	function onConflictMapChanged() {

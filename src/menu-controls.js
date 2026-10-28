@@ -1,4 +1,5 @@
 import { showAlert, showConfirm } from "./dialogs.js";
+import { gameText } from "./i18n.js";
 // Controls receive live state and commands; they do not import the application.
 export function createMenuControls(runtime) {
 	function bindImportCountrySearchInput() {
@@ -27,7 +28,7 @@ export function createMenuControls(runtime) {
 	function bindAddSideBtnClick() {
 		runtime.addSideBtn.onclick = () => {
 			if (runtime.sides.length >= runtime.MAX_SIDES) {
-				showAlert(`Maximum ${runtime.MAX_SIDES} sides supported.`);
+				showAlert(gameText("GAME_MAX_SIDES", { count: runtime.MAX_SIDES }));
 				return;
 			}
 			runtime.sides.push([]);
@@ -64,11 +65,11 @@ export function createMenuControls(runtime) {
 			// Cycle between POLITICAL <-> FLAG; alliance overlay is controlled separately by its own toggle
 			if (runtime.viewMode === "POLITICAL") {
 				runtime.viewMode = "FLAG";
-				runtime.viewModeBtn.innerText = "FLAG VIEW";
+				runtime.viewModeBtn.innerText = gameText("GAME_FLAG_VIEW");
 				runtime.viewModeBtn.style.background = "#8e44ad";
 			} else {
 				runtime.viewMode = "POLITICAL";
-				runtime.viewModeBtn.innerText = "POLITICAL";
+				runtime.viewModeBtn.innerText = gameText("GAME_POLITICAL");
 				runtime.viewModeBtn.style.background = "#3498db";
 			}
 
@@ -366,18 +367,17 @@ export function createMenuControls(runtime) {
 			if (runtime.gameState === "SIMULATING") {
 				runtime.gameState = "PEACE_SELECT_1";
 				runtime.simulationClient.syncControls();
-				runtime.statusText.innerText =
-					"DIPLOMACY: Click nation to withdraw from war";
+				runtime.statusText.innerText = gameText("GAME_DIPLOMACY_SELECT");
 				runtime.peaceSelection1 = null;
 			} else if (
 				runtime.gameState === "PEACE_SELECT_1" ||
 				runtime.gameState === "PEACE_SELECT_2"
 			) {
 				// Double click/cancel to just do a global peace
-				showConfirm("Sign global white peace for all remaining combatants?", {
-					title: "Diplomacy",
-					okLabel: "Sign peace",
-					cancelLabel: "Keep fighting",
+				showConfirm(gameText("GAME_WHITE_PEACE_CONFIRM"), {
+					title: gameText("GAME_DIPLOMACY"),
+					okLabel: gameText("GAME_SIGN_PEACE"),
+					cancelLabel: gameText("GAME_KEEP_FIGHTING"),
 				}).then((accepted) => {
 					// Escape may already have resumed the war, or the war may have ended.
 					if (!runtime.gameState.startsWith("PEACE_SELECT_")) return;
@@ -385,7 +385,7 @@ export function createMenuControls(runtime) {
 						runtime.applyTreaty("PEACE_TREATY");
 					} else {
 						runtime.gameState = "SIMULATING";
-						runtime.statusText.innerText = "Conflict Continued";
+						runtime.statusText.innerText = gameText("GAME_CONFLICT_CONTINUED");
 						requestAnimationFrame(runtime.updateLoop);
 					}
 				});
@@ -410,7 +410,7 @@ export function createMenuControls(runtime) {
 				const file = e.target.files[0];
 				if (!file) return;
 
-				runtime.loadingStatus.innerText = "Uploading Soundtrack...";
+				runtime.loadingStatus.innerText = gameText("GAME_UPLOAD_SOUND");
 				runtime.loadingOverlay.style.display = "flex";
 
 				try {
@@ -422,10 +422,10 @@ export function createMenuControls(runtime) {
 					runtime.stopBackgroundMusic();
 					runtime.initAudio();
 					runtime.loadingOverlay.style.display = "none";
-					showAlert("Custom soundtrack applied and saved!");
+					showAlert(gameText("GAME_SOUND_SAVED"));
 				} catch (err) {
 					console.error(err);
-					showAlert("Failed to upload soundtrack.");
+					showAlert(gameText("GAME_SOUND_FAILED"));
 					runtime.loadingOverlay.style.display = "none";
 				}
 			});
@@ -441,7 +441,7 @@ export function createMenuControls(runtime) {
 
 				runtime.stopBackgroundMusic();
 				runtime.initAudio();
-				showAlert("Soundtrack reset to original.");
+				showAlert(gameText("GAME_SOUND_RESET"));
 			});
 		}
 	}
@@ -502,15 +502,19 @@ export function createMenuControls(runtime) {
 			} else {
 				runtime.mapUi.style.display = "flex";
 				if (runtime.currentScenarioContext && runtime.gameMode === "EDITOR") {
-					runtime.statusText.innerText = `REMIXING: ${runtime.currentScenarioContext.name}`;
+					runtime.statusText.innerText = gameText("GAME_REMIXING", {
+						name: runtime.currentScenarioContext.name,
+					});
 				} else if (
 					runtime.currentScenarioContext &&
 					runtime.gameMode === "CONQUEST"
 				) {
-					runtime.statusText.innerText = `PLAYING: ${runtime.currentScenarioContext.name}`;
+					runtime.statusText.innerText = gameText("GAME_PLAYING", {
+						name: runtime.currentScenarioContext.name,
+					});
 				}
 			}
-			runtime.launchBtn.innerText = "Save settings"; // Change for subsequent opens
+			runtime.launchBtn.innerText = gameText("GAME_SAVE_SETTINGS"); // Change for subsequent opens
 		});
 	}
 
@@ -555,7 +559,9 @@ export function createMenuControls(runtime) {
 				runtime.settingsOverlay.style.display = "none";
 				runtime.startBenchmark().catch((error) => {
 					console.error("[MW PERF] Benchmark failed:", error);
-					showAlert(`Benchmark failed: ${error.message}`);
+					showAlert(
+						gameText("GAME_BENCHMARK_FAILED", { error: error.message }),
+					);
 				});
 			});
 		}
@@ -730,7 +736,7 @@ export function createMenuControls(runtime) {
 			if (runtime.editingCountryId <= 0) return;
 			runtime.selectingOverlordForId = runtime.editingCountryId;
 			runtime.gameState = "EDITOR_SELECTING_OVERLORD";
-			runtime.statusText.innerText = "Select Overlord Country (Click map)";
+			runtime.statusText.innerText = gameText("GAME_SELECT_OVERLORD");
 			runtime.countryInspector.style.display = "none";
 			runtime.map.getContainer().classList.add("painting-cursor");
 		};
@@ -741,7 +747,7 @@ export function createMenuControls(runtime) {
 			if (runtime.editingCountryId <= 0) return;
 			runtime.selectingOverlordForId = runtime.editingCountryId;
 			runtime.gameState = "EDITOR_SELECTING_RELEASER";
-			runtime.statusText.innerText = "Select Host Nation (Releaser) on map";
+			runtime.statusText.innerText = gameText("GAME_SELECT_HOST");
 			runtime.countryInspector.style.display = "none";
 			runtime.map.getContainer().classList.add("painting-cursor");
 		};
@@ -781,7 +787,9 @@ export function createMenuControls(runtime) {
 					runtime.disableBombsCheckbox?.checked || !runtime.missilesEnabled;
 
 				runtime.mapSettingsModal.style.display = "none";
-				runtime.statusText.innerText = `MAP SETTINGS UPDATED: ${runtime.mapName}`;
+				runtime.statusText.innerText = gameText("GAME_MAP_UPDATED", {
+					name: runtime.mapName,
+				});
 				runtime.influenceLayer.render();
 			});
 		}

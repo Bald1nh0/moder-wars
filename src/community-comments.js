@@ -1,10 +1,11 @@
 import { showAlert, showConfirm } from "./dialogs.js";
+import { gameText } from "./i18n.js";
 // Dependencies are supplied by the application; this module does not import it.
 export function createCommunityComments(runtime) {
 	function renderCommentsList(comments) {
 		if (!runtime.itemCommentsList) return;
 		if (!comments || comments.length === 0) {
-			runtime.itemCommentsList.innerHTML = `<div style="padding:10px; font-size: 12px; color:#777; text-align:center;">No comments yet. Be the first to brief this item.</div>`;
+			runtime.itemCommentsList.innerHTML = `<div style="padding:10px; font-size: 12px; color:#777; text-align:center;" data-i18n="COMMUNITY_EMPTY_COMMENTS">${gameText("COMMUNITY_EMPTY_COMMENTS")}</div>`;
 			return;
 		}
 
@@ -35,12 +36,12 @@ export function createCommunityComments(runtime) {
                     </div>
                     <div class="item-comment-text" style="font-size:12px; color:#ccc; white-space:pre-wrap;">${safeText}</div>
                     <div style="margin-top:4px; display:flex; gap:4px;">
-                        <button class="mini-btn item-reply-btn" style="padding:2px 6px; font-size: 12px;">Reply</button>
+                        <button class="mini-btn item-reply-btn" style="padding:2px 6px; font-size: 12px;" data-i18n="COMMUNITY_REPLY">${gameText("COMMUNITY_REPLY")}</button>
                         ${
 													isMine
 														? `
-                            <button class="mini-btn item-edit-btn" style="padding:2px 6px; font-size: 12px;">Edit</button>
-                            <button class="mini-btn item-delete-btn" style="padding:2px 6px; font-size: 12px; background:#c0392b;">Delete</button>
+                            <button class="mini-btn item-edit-btn" style="padding:2px 6px; font-size: 12px;" data-i18n="COMMUNITY_EDIT">${gameText("COMMUNITY_EDIT")}</button>
+                            <button class="mini-btn item-delete-btn" style="padding:2px 6px; font-size: 12px; background:#c0392b;" data-i18n="COMMUNITY_DELETE">${gameText("COMMUNITY_DELETE")}</button>
                         `
 														: ""
 												}
@@ -65,9 +66,15 @@ export function createCommunityComments(runtime) {
 						commentEl.getAttribute("data-comment-id");
 					runtime.currentEditingCommentId = null;
 					runtime.itemReplyIndicator.style.display = "inline-block";
-					runtime.itemReplyIndicator.textContent = "Replying...";
+					runtime.itemReplyIndicator.setAttribute(
+						"data-i18n",
+						"COMMUNITY_REPLYING",
+					);
+					runtime.itemReplyIndicator.textContent =
+						gameText("COMMUNITY_REPLYING");
 					runtime.itemCancelReplyBtn.style.display = "inline-block";
-					runtime.itemCommentSubmit.textContent = "Post";
+					runtime.itemCommentSubmit.setAttribute("data-i18n", "APP_63");
+					runtime.itemCommentSubmit.textContent = gameText("APP_63");
 					runtime.itemCommentInput.focus();
 				});
 			});
@@ -88,9 +95,15 @@ export function createCommunityComments(runtime) {
 					const currentText = textEl ? textEl.textContent : comment.text || "";
 					runtime.itemCommentInput.value = currentText;
 					runtime.itemReplyIndicator.style.display = "inline-block";
-					runtime.itemReplyIndicator.textContent = "Editing...";
+					runtime.itemReplyIndicator.setAttribute(
+						"data-i18n",
+						"COMMUNITY_EDITING",
+					);
+					runtime.itemReplyIndicator.textContent =
+						gameText("COMMUNITY_EDITING");
 					runtime.itemCancelReplyBtn.style.display = "inline-block";
-					runtime.itemCommentSubmit.textContent = "Save";
+					runtime.itemCommentSubmit.setAttribute("data-i18n", "COMMUNITY_SAVE");
+					runtime.itemCommentSubmit.textContent = gameText("COMMUNITY_SAVE");
 					runtime.itemCommentInput.focus();
 				});
 			});
@@ -106,8 +119,8 @@ export function createCommunityComments(runtime) {
 					const comment = comments.find((c) => c.id === id);
 					if (!comment || comment.username !== runtime.currentUsername) return;
 					if (
-						!(await showConfirm("Delete this comment?", {
-							okLabel: "Delete",
+						!(await showConfirm(gameText("APP_70"), {
+							okLabel: gameText("APP_43"),
 							danger: true,
 						}))
 					)
@@ -117,7 +130,7 @@ export function createCommunityComments(runtime) {
 							await runtime.room.collection("hub_comment_v1").delete(id);
 						} catch (e) {
 							console.error("Failed to delete comment", e);
-							showAlert("Failed to delete comment.");
+							showAlert(gameText("APP_71"));
 						}
 					})();
 				});
@@ -136,14 +149,14 @@ export function createCommunityComments(runtime) {
 
 		// Title / desc / preview
 		runtime.itemModalTitle.textContent = (
-			item.name || "Item Details"
+			item.name || gameText("APP_72")
 		).toUpperCase();
 		const desc = item.description || item.desc || "";
 		runtime.itemModalDesc.textContent = desc;
 
 		const authorEl = document.getElementById("item-modal-author-name");
 		if (authorEl) {
-			authorEl.textContent = item.username || "Intel Report";
+			authorEl.textContent = item.username || gameText("APP_73");
 		}
 
 		if (item.previewUrl || item.flagUrl) {
@@ -175,7 +188,8 @@ export function createCommunityComments(runtime) {
 				runtime.itemModalActions.style.display = "flex";
 				if (runtime.itemModalPlayBtn) {
 					runtime.itemModalPlayBtn.style.display = "inline-flex";
-					runtime.itemModalPlayBtn.textContent = "Play";
+					runtime.itemModalPlayBtn.setAttribute("data-i18n", "COMMUNITY_PLAY");
+					runtime.itemModalPlayBtn.textContent = gameText("COMMUNITY_PLAY");
 					runtime.itemModalPlayBtn.onclick = () => {
 						if (window.playFromHub) {
 							window.playFromHub(
@@ -191,7 +205,11 @@ export function createCommunityComments(runtime) {
 				}
 				if (runtime.itemModalRemixBtn) {
 					runtime.itemModalRemixBtn.style.display = "inline-flex";
-					runtime.itemModalRemixBtn.textContent = "Remix";
+					runtime.itemModalRemixBtn.setAttribute(
+						"data-i18n",
+						"COMMUNITY_REMIX",
+					);
+					runtime.itemModalRemixBtn.textContent = gameText("COMMUNITY_REMIX");
 					runtime.itemModalRemixBtn.onclick = () => {
 						if (window.remixFromHub) {
 							window.remixFromHub(
@@ -213,7 +231,11 @@ export function createCommunityComments(runtime) {
 					runtime.itemModalPlayBtn.style.display = canImport
 						? "inline-flex"
 						: "none";
-					runtime.itemModalPlayBtn.textContent = "Import";
+					runtime.itemModalPlayBtn.setAttribute(
+						"data-i18n",
+						"COMMUNITY_IMPORT",
+					);
+					runtime.itemModalPlayBtn.textContent = gameText("COMMUNITY_IMPORT");
 					runtime.itemModalPlayBtn.onclick = () => {
 						if (window.importFromLibrary) {
 							window.importFromLibrary(item.id);
@@ -233,7 +255,8 @@ export function createCommunityComments(runtime) {
 					runtime.itemModalPlayBtn.style.display = canImport
 						? "inline-flex"
 						: "none";
-					runtime.itemModalPlayBtn.textContent = "Use Flag";
+					runtime.itemModalPlayBtn.setAttribute("data-i18n", "APP_74");
+					runtime.itemModalPlayBtn.textContent = gameText("APP_74");
 					runtime.itemModalPlayBtn.onclick = () => {
 						if (window.importFlagFromLibrary) {
 							window.importFlagFromLibrary(item.id);
@@ -258,7 +281,8 @@ export function createCommunityComments(runtime) {
 		runtime.itemCommentInput.value = "";
 		runtime.itemReplyIndicator.style.display = "none";
 		runtime.itemCancelReplyBtn.style.display = "none";
-		runtime.itemCommentSubmit.textContent = "Post";
+		runtime.itemCommentSubmit.setAttribute("data-i18n", "APP_63");
+		runtime.itemCommentSubmit.textContent = gameText("APP_63");
 
 		// Subscribe to comments for this item (using records)
 		try {

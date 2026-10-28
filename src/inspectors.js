@@ -1,3 +1,4 @@
+import { gameText } from "./i18n.js";
 // Dependencies are supplied by the application; this module does not import it.
 export function createInspectors(runtime) {
 	function openInspector(id) {
@@ -28,8 +29,8 @@ export function createInspectors(runtime) {
 				vassalStatusDisplay.style.display = "block";
 				const oMeta = runtime.countryMetadata[meta.overlordId - 1];
 				document.getElementById("overlord-name-disp").innerText = oMeta
-					? oMeta.name
-					: "Unknown";
+					? oMeta.displayName || oMeta.name
+					: gameText("EDITOR_MSG_UNKNOWN");
 			} else {
 				vassalStatusDisplay.style.display = "none";
 			}
@@ -70,8 +71,8 @@ export function createInspectors(runtime) {
 					btn.className = "mini-btn";
 					const sideLabel = String.fromCharCode(65 + idx);
 					btn.innerText = isCurrentSide
-						? `ON SIDE ${sideLabel}`
-						: `JOIN SIDE ${sideLabel}`;
+						? gameText("EDITOR_MSG_ON_SIDE", { side: sideLabel })
+						: gameText("EDITOR_MSG_JOIN_SIDE", { side: sideLabel });
 					btn.style.background = runtime.sideColors[idx].replace(
 						runtime.rgbaRe,
 						"1)",
@@ -99,15 +100,14 @@ export function createInspectors(runtime) {
 				) {
 					const newSideBtn = document.createElement("button");
 					newSideBtn.className = "mini-btn";
-					newSideBtn.innerText = "JOIN NEW SIDE";
+					newSideBtn.innerText = gameText("EDITOR_MSG_JOIN_NEW_SIDE");
 					newSideBtn.style.background = "#ff4500";
 					newSideBtn.style.padding = "8px 12px";
 					newSideBtn.style.fontSize = "10px";
 					newSideBtn.style.fontWeight = "900";
 					newSideBtn.style.width = "100%";
 					newSideBtn.style.marginTop = "4px";
-					newSideBtn.title =
-						"Declare war on ALL existing sides as an independent faction";
+					newSideBtn.title = gameText("EDITOR_MSG_JOIN_NEW_SIDE_HELP");
 					newSideBtn.onclick = () => {
 						runtime.recruitNewSideMidWar(id);
 						runtime.countryInspector.style.display = "none";
@@ -166,14 +166,14 @@ export function createInspectors(runtime) {
 		if (runtime.allyList) {
 			const allies = Array.isArray(meta.allies) ? meta.allies : [];
 			if (!allies.length) {
-				runtime.allyList.innerHTML = `<span style="font-size: 12px; color: #666;">No allies set.</span>`;
+				runtime.allyList.innerHTML = `<span style="font-size: 12px; color: #666;">${gameText("EDITOR_MSG_NO_ALLIES")}</span>`;
 			} else {
 				const items = allies
 					.map((aid) => runtime.countryMetadata[aid - 1])
 					.filter(Boolean)
 					.map(
 						(m) =>
-							`<div style="font-size: 12px; color:#ccc; margin-bottom:2px;">• ${m.name}</div>`,
+							`<div style="font-size: 12px; color:#ccc; margin-bottom:2px;">• ${m.displayName || m.name}</div>`,
 					)
 					.join("");
 				runtime.allyList.innerHTML = items;
@@ -202,7 +202,9 @@ export function createInspectors(runtime) {
 		}
 
 		const inspectorDisplayName = runtime.getTranslation(
-			meta.name || meta.feature?.properties?.NAME || "Unnamed Land",
+			meta.name ||
+				meta.feature?.properties?.NAME ||
+				gameText("EDITOR_MSG_UNNAMED_LAND"),
 			runtime.getCookie("mw_lang") || "en",
 			"NATIONS",
 		);
@@ -220,11 +222,11 @@ export function createInspectors(runtime) {
 				runtime.BUFF_METADATA[currentHidden] || runtime.BUFF_METADATA.none;
 			const hiddenLabel =
 				currentHidden !== "none"
-					? `<div style="margin-top:4px; font-size: 12px; color:#f1c40f; text-transform:uppercase; letter-spacing:0.5px;">INVISIBLE BUFF: ${hMeta.label}</div>`
+					? `<div style="margin-top:4px; font-size: 12px; color:#f1c40f; text-transform:uppercase; letter-spacing:0.5px;">${gameText("EDITOR_MSG_INVISIBLE_BUFF", { buff: hMeta.label })}</div>`
 					: "";
 			runtime.inspectBuffBtn.innerHTML = `
             <span class="buff-arrow" data-dir="-1" style="font-size: 12px; margin-right:4px;">◀</span>
-            <span class="buff-label">BUFF: ${bMeta.label}</span>
+            <span class="buff-label">${gameText("EDITOR_MSG_BUFF", { buff: bMeta.label })}</span>
             <span class="buff-arrow" data-dir="1" style="font-size: 12px; margin-left:4px;">▶</span>
             ${hiddenLabel}
         `;
@@ -253,12 +255,12 @@ export function createInspectors(runtime) {
 
 	function refreshCityOwnerSelect(selectedOwnerId) {
 		if (!runtime.cityOwnerSelect) return;
-		runtime.cityOwnerSelect.innerHTML = '<option value="">(None)</option>';
+		runtime.cityOwnerSelect.innerHTML = `<option value="">${gameText("EDITOR_MSG_NONE")}</option>`;
 		runtime.countryMetadata.forEach((m) => {
 			if (!m) return;
 			const opt = document.createElement("option");
 			opt.value = m.id;
-			opt.textContent = m.name;
+			opt.textContent = m.displayName || m.name;
 			if (selectedOwnerId && selectedOwnerId === m.id) opt.selected = true;
 			runtime.cityOwnerSelect.appendChild(opt);
 		});

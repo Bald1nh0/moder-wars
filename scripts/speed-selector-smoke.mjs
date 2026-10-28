@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { gameText } from "../src/i18n.js";
 import { createMenuControls } from "../src/menu-controls.js";
 import { createSimulationControls } from "../src/simulation-controls.js";
 
@@ -33,7 +34,7 @@ assert.equal(inputs.length, 5);
 assert.doesNotMatch(html, /id="(?:ff-btn|speed-down-btn|speed-up-btn)"/);
 assert.match(
 	html,
-	/<legend class="visually-hidden">Simulation speed<\/legend>/,
+	/<legend class="visually-hidden"[^>]*>Simulation speed<\/legend>/,
 );
 const pause = {
 	attrs: {},
@@ -58,6 +59,7 @@ const context = vm.createContext({
 	ffaMode: false,
 	statusText: {},
 	getTranslation: (key) => key,
+	gameText,
 	simulationClient: {
 		syncControls() {
 			synchronized.push({ speed: context.simSpeed, paused: context.isPaused });
@@ -267,6 +269,89 @@ try {
 } finally {
 	globalThis.document = originalDocument;
 }
+
+// Visibility restores presentation in every mode supported by updateLoop,
+// without changing whether the simulation itself is paused.
+const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
+const originalCancelAnimationFrame = globalThis.cancelAnimationFrame;
+const frames = new Map();
+const visibilityControls = [];
+let visibilityChange;
+let nextFrameId = 0;
+const visibilityDocument = {
+	hidden: false,
+	addEventListener(type, handler) {
+		assert.equal(type, "visibilitychange");
+		visibilityChange = handler;
+	},
+};
+const visibilityRuntime = {
+	animationFrameId: null,
+	gameState: "SIMULATING",
+	godModeActive: false,
+	preGodModeState: "SELECTING_P1",
+	isPaused: false,
+	updateLoop() {},
+	simulationClient: {
+		syncControls() {
+			visibilityControls.push(visibilityRuntime.isPaused);
+		},
+	},
+};
+try {
+	globalThis.document = visibilityDocument;
+	globalThis.requestAnimationFrame = (callback) => {
+		const id = ++nextFrameId;
+		frames.set(id, callback);
+		return id;
+	};
+	globalThis.cancelAnimationFrame = (id) => frames.delete(id);
+	createSimulationControls(visibilityRuntime).bindDocumentVisibilityChange();
+	for (const isPaused of [false, true]) {
+		for (const [gameState, godModeActive, preGodModeState, paints] of [
+			["SIMULATING", false, "SELECTING_P1", true],
+			["SELECTING_P1", true, "SIMULATING", true],
+			["SELECTING_P1", true, "WAR_OVER", true],
+			["SELECTING_P1", true, "SELECTING_P1", false],
+			["SELECTING_P1", false, "SIMULATING", false],
+			["WAR_OVER", false, "WAR_OVER", false],
+		]) {
+			Object.assign(visibilityRuntime, {
+				gameState, godModeActive, preGodModeState, isPaused,
+			});
+			visibilityRuntime.animationFrameId = requestAnimationFrame(
+				visibilityRuntime.updateLoop,
+			);
+			visibilityDocument.hidden = true;
+			visibilityChange();
+			assert.equal(frames.size, 0, "hidden pages cancel pending painting");
+			assert.equal(visibilityRuntime.animationFrameId, null);
+			visibilityDocument.hidden = false;
+			visibilityChange();
+			assert.equal(
+				frames.size,
+				Number(paints),
+				`restore ${gameState}, God mode ${godModeActive}, previous ${preGodModeState}`,
+			);
+			if (paints) {
+				assert.equal(
+					frames.get(visibilityRuntime.animationFrameId),
+					visibilityRuntime.updateLoop,
+				);
+				visibilityChange();
+				assert.equal(frames.size, 1, "repeated events never stack loops");
+			}
+			assert.equal(visibilityRuntime.isPaused, isPaused);
+			assert.equal(visibilityControls.at(-1), isPaused);
+			visibilityDocument.hidden = true;
+			visibilityChange();
+		}
+	}
+} finally {
+	globalThis.document = originalDocument;
+	globalThis.requestAnimationFrame = originalRequestAnimationFrame;
+	globalThis.cancelAnimationFrame = originalCancelAnimationFrame;
+}
 console.log(
-	"Speed selector: direct selection, filled levels, pause/resume retention, live pause mirrors, clock controls, native keyboard ownership, clamping and Leaflet shortcut isolation passed",
+	"Speed selector: direct selection, filled levels, pause/resume retention, live pause mirrors, clock controls, native keyboard ownership, clamping, Leaflet shortcut isolation and visibility recovery passed",
 );

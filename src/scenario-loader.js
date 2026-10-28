@@ -1,5 +1,6 @@
 import { CONFIG } from "./config.js";
 import { showAlert } from "./dialogs.js";
+import { gameText } from "./i18n.js";
 import { beginLoadTrace } from "./load-profiler.js";
 import mapRuntime from "./map-runtime.ts";
 import { normalizeSavedCells } from "./saved-cells.js";
@@ -47,7 +48,7 @@ export function createScenarioLoader(context, loadSession) {
 
 		const MAX_PRESET_SIZE = 200 * 1024 * 1024;
 		if (fileOrBlob.size && fileOrBlob.size > MAX_PRESET_SIZE) {
-			showAlert("Scenario file is too large (max 200MB).");
+			showAlert(gameText("APP_22"));
 			context.loadingOverlay.style.display = "none";
 			return;
 		}
@@ -75,7 +76,7 @@ export function createScenarioLoader(context, loadSession) {
 			}
 
 			context.loadingOverlay.style.display = "flex";
-			context.loadingStatus.innerText = "Processing Archives...";
+			context.loadingStatus.innerText = gameText("APP_23");
 
 			// Ensure engine is initialized with the CURRENT grid density before we use worldControlMap.
 			// This fixes cases where a preset was saved at a low grid density, but your settings are now higher.
@@ -103,14 +104,16 @@ export function createScenarioLoader(context, loadSession) {
 							if (Number.isFinite(ratio)) {
 								const downloadPercent = Math.round(Math.min(1, ratio) * 100);
 								context.loadingBar.style.width = `${5 + Math.round(downloadPercent * 0.4)}%`;
-								context.loadingStatus.innerText = `Downloading Scenario: ${downloadPercent}%`;
+								context.loadingStatus.innerText = gameText("APP_24", {
+									p0: downloadPercent,
+								});
 							}
 						} else if (progress.phase === "decompress") {
 							context.loadingBar.style.width = "48%";
-							context.loadingStatus.innerText = "Unpacking World Data...";
+							context.loadingStatus.innerText = gameText("APP_25");
 						} else if (progress.phase === "decode") {
 							context.loadingBar.style.width = "55%";
-							context.loadingStatus.innerText = "Building Strategic Grid...";
+							context.loadingStatus.innerText = gameText("APP_26");
 						}
 					},
 				});
@@ -123,7 +126,9 @@ export function createScenarioLoader(context, loadSession) {
 							onProgress(progress) {
 								const ratio = progress.completed / Math.max(1, progress.total);
 								context.loadingBar.style.width = `${55 + Math.round(ratio * 20)}%`;
-								context.loadingStatus.innerText = `Scanning Landmasses: ${Math.round(ratio * 100)}%`;
+								context.loadingStatus.innerText = gameText("APP_27", {
+									p0: Math.round(ratio * 100),
+								});
 							},
 						})
 					: Promise.resolve(null);
@@ -356,9 +361,7 @@ export function createScenarioLoader(context, loadSession) {
 					currentLang,
 					"NATIONS",
 				);
-				if (translatedName !== m.name) {
-					m.displayName = translatedName;
-				}
+				m.displayName = translatedName;
 
 				const normalizedTerritory = normalizeSavedCells(
 					m,
@@ -565,7 +568,7 @@ export function createScenarioLoader(context, loadSession) {
 			if (targetMode === "CONQUEST") {
 				context.setGameState("SELECTING_P1");
 				context.statusText.innerText = context.currentScenarioContext
-					? `PLAYING: ${context.currentScenarioContext.name}`
+					? gameText("APP_28", { p0: context.currentScenarioContext.name })
 					: context.getTranslation("SELECT_P1");
 				context.setupPanel.style.display = "block";
 				context.editorToolbox.style.display = "none";
@@ -575,8 +578,8 @@ export function createScenarioLoader(context, loadSession) {
 			} else {
 				context.setGameState("EDITOR_ACTIVE");
 				context.statusText.innerText = context.currentScenarioContext
-					? `REMIXING: ${context.currentScenarioContext.name}`
-					: "Map Editor (Alpha)";
+					? gameText("APP_29", { p0: context.currentScenarioContext.name })
+					: gameText("APP_5");
 				context.setupPanel.style.display = "none";
 				context.editorToolbox.style.display = "flex";
 				context.statsPanel.style.display = "none";
@@ -642,7 +645,7 @@ export function createScenarioLoader(context, loadSession) {
 			context.loadingOverlay.style.display = "none";
 			if (isCompiledSource) throw err;
 			showAlert(
-				`Error loading preset: ${err.message || "File may be corrupted"}`,
+				gameText("APP_30", { p0: err.message || "File may be corrupted" }),
 			);
 		}
 	}
@@ -666,9 +669,7 @@ export function createScenarioLoader(context, loadSession) {
 			}
 		} catch (e) {
 			console.error("Import scenario load failed:", e);
-			showAlert(
-				"Could not read that scenario file. Make sure it is a preset exported from this engine.",
-			);
+			showAlert(gameText("APP_32"));
 			context.setImportScenarioBuffer(null);
 			context.setSelectedImportCountryId(null);
 			if (context.importCountrySearch) {
@@ -693,7 +694,7 @@ export function createScenarioLoader(context, loadSession) {
 			await loadScenarioForCountryImportFromBlob(blob);
 		} catch (e) {
 			console.error("Import built‑in scenario load failed:", e);
-			showAlert("Failed to load built‑in scenario for import.");
+			showAlert(gameText("APP_33"));
 		}
 	}
 
@@ -703,7 +704,7 @@ export function createScenarioLoader(context, loadSession) {
 		const metaList = source.metadata || [];
 		const sourceMeta = metaList.find((m) => m && m.id === sourceCountryId);
 		if (!sourceMeta) {
-			showAlert("Country not found in source scenario.");
+			showAlert(gameText("APP_34"));
 			return;
 		}
 
@@ -807,15 +808,13 @@ export function createScenarioLoader(context, loadSession) {
 		}
 
 		if (!paintedAny) {
-			showAlert(
-				"No territory for that country was found in the source scenario at this resolution.",
-			);
+			showAlert(gameText("APP_35"));
 			return;
 		}
 
 		context.recalculateAllBounds();
 		context.influenceLayer.render();
-		context.statusText.innerText = `Imported ${newMeta.name} from scenario into this map.`;
+		context.statusText.innerText = gameText("APP_36", { p0: newMeta.name });
 	}
 	return {
 		generatePresetData,

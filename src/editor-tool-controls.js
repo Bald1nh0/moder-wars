@@ -1,4 +1,5 @@
 import { showAlert } from "./dialogs.js";
+import { gameText } from "./i18n.js";
 // Controls receive live state and commands; they do not import the application.
 export function createEditorToolControls(runtime) {
 	function bindEditorCreateBtnClick() {
@@ -11,7 +12,7 @@ export function createEditorToolControls(runtime) {
 		runtime.editorPaintBtn.addEventListener("click", () => {
 			if (runtime.gameState === "EDITOR_PAINTING") {
 				runtime.gameState = "EDITOR_ACTIVE";
-				runtime.statusText.innerText = "Map Editor (Alpha)";
+				runtime.statusText.innerText = gameText("EDITOR_MSG_MAP_EDITOR");
 				runtime.editorPaintBtn.classList.remove("active");
 				runtime.map.getContainer().classList.remove("painting-cursor");
 				runtime.brushControls.style.display = "none";
@@ -20,7 +21,7 @@ export function createEditorToolControls(runtime) {
 				runtime.gameState === "EDITOR_UNCLAIMING"
 			) {
 				runtime.gameState = "EDITOR_PAINTING";
-				runtime.statusText.innerText = "PAINTING BORDERS (Drag to draw)";
+				runtime.statusText.innerText = gameText("EDITOR_MSG_PAINT_BORDERS");
 				runtime.editorPaintBtn.classList.add("active");
 				runtime.editorFillBtn.classList.remove("active");
 				runtime.editorUnclaimBtn.classList.remove("active");
@@ -38,22 +39,21 @@ export function createEditorToolControls(runtime) {
 			) {
 				const wasTerrain = runtime.gameState === "EDITOR_FILLING_TERRAIN";
 				runtime.gameState = "EDITOR_ACTIVE";
-				runtime.statusText.innerText = "Map Editor (Alpha)";
+				runtime.statusText.innerText = gameText("EDITOR_MSG_MAP_EDITOR");
 				runtime.editorFillBtn.classList.remove("active");
 				runtime.map.getContainer().classList.remove("painting-cursor");
 				// If we were filling terrain, return to the terrain menu state
 				if (wasTerrain) {
 					runtime.gameState = "EDITOR_PAINTING_TERRAIN";
 					runtime.editorTerrainBtn.classList.add("active");
-					runtime.statusText.innerText =
-						"TERRAIN BRUSH (Paint land or carve oceans)";
+					runtime.statusText.innerText = gameText("EDITOR_MSG_TERRAIN_BRUSH");
 					runtime.map.getContainer().classList.add("painting-cursor");
 					runtime.brushControls.style.display = "flex";
 					runtime.terrainControls.style.display = "flex";
 				}
 			} else if (runtime.gameState === "EDITOR_PAINTING_TERRAIN") {
 				runtime.gameState = "EDITOR_FILLING_TERRAIN";
-				runtime.statusText.innerText = "FILL TERRAIN (Click a region)";
+				runtime.statusText.innerText = gameText("EDITOR_MSG_FILL_TERRAIN");
 				runtime.editorFillBtn.classList.add("active");
 				runtime.editorTerrainBtn.classList.remove("active");
 				runtime.brushControls.style.display = "none";
@@ -63,7 +63,7 @@ export function createEditorToolControls(runtime) {
 				runtime.gameState === "EDITOR_UNCLAIMING"
 			) {
 				runtime.gameState = "EDITOR_FILLING";
-				runtime.statusText.innerText = "FILL TOOL (Click a region)";
+				runtime.statusText.innerText = gameText("EDITOR_MSG_FILL_TOOL");
 				runtime.editorFillBtn.classList.add("active");
 				runtime.editorPaintBtn.classList.remove("active");
 				runtime.editorUnclaimBtn.classList.remove("active");
@@ -77,14 +77,13 @@ export function createEditorToolControls(runtime) {
 		runtime.editorUnclaimBtn.addEventListener("click", () => {
 			if (runtime.gameState === "EDITOR_UNCLAIMING") {
 				runtime.gameState = "EDITOR_ACTIVE";
-				runtime.statusText.innerText = "Map Editor (Alpha)";
+				runtime.statusText.innerText = gameText("EDITOR_MSG_MAP_EDITOR");
 				runtime.editorUnclaimBtn.classList.remove("active");
 				runtime.map.getContainer().classList.remove("painting-cursor");
 				runtime.brushControls.style.display = "none";
 			} else {
 				runtime.gameState = "EDITOR_UNCLAIMING";
-				runtime.statusText.innerText =
-					"UNCLAIM TOOL (Remove country ownership)";
+				runtime.statusText.innerText = gameText("EDITOR_MSG_UNCLAIM_TOOL");
 				runtime.editorUnclaimBtn.classList.add("active");
 				runtime.editorPaintBtn.classList.remove("active");
 				runtime.editorFillBtn.classList.remove("active");
@@ -101,15 +100,14 @@ export function createEditorToolControls(runtime) {
 		runtime.editorTerrainBtn.addEventListener("click", () => {
 			if (runtime.gameState === "EDITOR_PAINTING_TERRAIN") {
 				runtime.gameState = "EDITOR_ACTIVE";
-				runtime.statusText.innerText = "Map Editor (Alpha)";
+				runtime.statusText.innerText = gameText("EDITOR_MSG_MAP_EDITOR");
 				runtime.editorTerrainBtn.classList.remove("active");
 				runtime.map.getContainer().classList.remove("painting-cursor");
 				runtime.brushControls.style.display = "none";
 				runtime.terrainControls.style.display = "none";
 			} else {
 				runtime.gameState = "EDITOR_PAINTING_TERRAIN";
-				runtime.statusText.innerText =
-					"TERRAIN BRUSH (Paint land or carve oceans)";
+				runtime.statusText.innerText = gameText("EDITOR_MSG_TERRAIN_BRUSH");
 				runtime.editorTerrainBtn.classList.add("active");
 				runtime.editorPaintBtn.classList.remove("active");
 				runtime.editorFillBtn.classList.remove("active");
@@ -127,15 +125,14 @@ export function createEditorToolControls(runtime) {
 			if (runtime.gameState === "EDITOR_PLACING_DIVISION") {
 				runtime.gameState = "EDITOR_ACTIVE";
 				runtime.statusText.innerText = runtime.godModeActive
-					? "GOD MODE: Map Editing Active"
-					: "Map Editor (Alpha)";
+					? gameText("EDITOR_MSG_GOD_EDIT")
+					: gameText("EDITOR_MSG_MAP_EDITOR");
 				runtime.editorPlaceDivisionBtn.classList.remove("active");
 				runtime.map.getContainer().classList.remove("painting-cursor");
 			} else {
 				runtime.gameState = "EDITOR_PLACING_DIVISION";
 				runtime.editingCountryId = -1; // Reset to force selecting a new country source
-				runtime.statusText.innerText =
-					"SELECT SOURCE: Click a nation to deploy its divisions";
+				runtime.statusText.innerText = gameText("EDITOR_MSG_DIVISION_SOURCE");
 				runtime.editorPlaceDivisionBtn.classList.add("active");
 				runtime.editorPaintBtn.classList.remove("active");
 				runtime.editorFillBtn.classList.remove("active");
@@ -178,12 +175,12 @@ export function createEditorToolControls(runtime) {
 	function bindEditorTestBtnClick() {
 		runtime.editorTestBtn.addEventListener("click", () => {
 			if (runtime.countryMetadata.length < 2) {
-				showAlert("You need at least 2 nations to test a conflict.");
+				showAlert(gameText("EDITOR_MSG_TEST_NEEDS_COUNTRIES"));
 				return;
 			}
 			runtime.gameMode = "EDITOR_TEST";
 			runtime.gameState = "SELECTING_P1";
-			runtime.statusText.innerText = "Test: Select First Country";
+			runtime.statusText.innerText = gameText("EDITOR_MSG_TEST_SELECT");
 			runtime.editorToolbox.style.display = "none";
 			runtime.setupPanel.style.display = "block";
 			runtime.setupOptions.style.display = "none";
@@ -288,7 +285,7 @@ export function createEditorToolControls(runtime) {
 			// Allocate every grid buffer through the canonical engine path. This also
 			// keeps biome and influence buffers synchronized after resolution changes.
 			runtime.initializeEngine(false);
-			runtime.statusText.innerText = "Map Editor (Alpha)";
+			runtime.statusText.innerText = gameText("EDITOR_MSG_MAP_EDITOR");
 			runtime.setupPanel.style.display = "none";
 			runtime.resetBtn.style.display = "block";
 			runtime.editorUnclaimBtn.style.display = "block";
@@ -382,7 +379,7 @@ export function createEditorToolControls(runtime) {
 				runtime.disableCountryGradient = true;
 			}
 
-			runtime.statusText.innerText = "Blank Canvas: Draw Terrain";
+			runtime.statusText.innerText = gameText("EDITOR_MSG_BLANK_CANVAS");
 			runtime.setupPanel.style.display = "none";
 			runtime.resetBtn.style.display = "block";
 

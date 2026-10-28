@@ -1,3 +1,4 @@
+import { gameText } from "../src/i18n.js";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
@@ -8,7 +9,7 @@ function loadFactory(file, name, dependencies = {}) {
  const source = fs.readFileSync(new URL(`../src/${file}`, import.meta.url), "utf8")
   .replace(/import\s[\s\S]*?from\s"[^"]+";/g, "")
   .replace(`export function ${name}`, `function ${name}`);
- return vm.runInNewContext(`${source}\n${name}`, {CONFIG, console, setTimeout, ...dependencies});
+ return vm.runInNewContext(`${source}\n${name}`, {CONFIG, console, setTimeout, gameText, ...dependencies});
 }
 const blockedContext = new Proxy({}, {get(){throw new Error("Construction must not read runtime bindings");}});
 const session = {generation: 0};

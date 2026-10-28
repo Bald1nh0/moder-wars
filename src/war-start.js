@@ -1,11 +1,12 @@
 import { showAlert } from "./dialogs.js";
+import { gameText } from "./i18n.js";
 import { loadRiverLines, rasterizeRiverMask } from "./river-lines.js";
 // Explicit live context keeps replacements of arrays/state visible across awaits and callbacks.
 export function createWarStart(runtime) {
 	async function startWar() {
 		const activeSides = runtime.sides.filter((s) => s.length > 0);
 		if (activeSides.length < 2) {
-			showAlert("Please assign countries to at least two sides.");
+			showAlert(gameText("APP_1"));
 			return;
 		}
 
@@ -21,7 +22,7 @@ export function createWarStart(runtime) {
 		} catch (err) {
 			console.error("[MW] startWar FAILED:", err);
 			runtime.loadingOverlay.style.display = "none";
-			showAlert(`War failed to start: ${err.message}`);
+			showAlert(gameText("APP_2", { p0: err.message }));
 		}
 	}
 
@@ -225,8 +226,8 @@ export function createWarStart(runtime) {
 			isHistoricalGateActive;
 
 		runtime.statusText.innerText = runtime.ffaMode
-			? "Free For All Active"
-			: "Global Conflict Active";
+			? gameText("APP_3")
+			: gameText("APP_4");
 		runtime.recalculateAllBounds();
 		runtime.setupPanel.style.display = "none";
 		runtime.statsPanel.style.display = "block";
@@ -397,7 +398,7 @@ export function createWarStart(runtime) {
 		// Automatically switch to POLITICAL view at the start of every war for consistent visibility.
 		runtime.viewMode = "POLITICAL";
 		if (runtime.viewModeBtn) {
-			runtime.viewModeBtn.innerText = "POLITICAL";
+			runtime.viewModeBtn.innerText = gameText("GAME_POLITICAL");
 			runtime.viewModeBtn.style.background = "#3498db";
 		}
 		if (

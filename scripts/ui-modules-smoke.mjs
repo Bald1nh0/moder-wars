@@ -39,7 +39,7 @@ globalThis.document = {
  get cookie() {return [...cookieValues].map(([k,v]) => `${k}=${v}`).join("; ");},
  set cookie(value) {let [k,v] = value.split(";")[0].split("="); cookieValues.set(k,v);},
  getElementById: id => controls.get(id),
- querySelectorAll: () => domLabels,
+ querySelectorAll: (selector) => selector === "[data-i18n]" ? domLabels : [],
  addEventListener() {},
  body: {classList: {toggle(name, enabled) {if(enabled) classValues.add(name); else classValues.delete(name);}}},
 };

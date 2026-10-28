@@ -1,3 +1,4 @@
+import { gameText } from "./i18n.js";
 /** Minimal live HUD; no history, recording, or storage. */
 export function initWarOverview(documentRef = document) {
 	const button = documentRef.getElementById("war-desk-toggle-btn");
@@ -9,8 +10,8 @@ export function initWarOverview(documentRef = document) {
 			.getElementById("war-desk")
 			?.classList.toggle("collapsed", body.hidden);
 		button.title = body.hidden
-			? "Expand War Overview"
-			: "Collapse War Overview";
+			? gameText("GAME_EXPAND_OVERVIEW")
+			: gameText("GAME_COLLAPSE_OVERVIEW");
 		button.setAttribute("aria-label", button.title);
 		button.textContent = body.hidden ? "+" : "−";
 		button.setAttribute("aria-expanded", String(!body.hidden));
@@ -40,8 +41,8 @@ export function renderWarOverview(rows, documentRef = document) {
 		card.append(create("span", "", row.label));
 		const values = create("div", "war-desk-metric-values");
 		for (const [label, number] of [
-			[row.primaryLabel || "Manpower", row.value],
-			["Casualties", row.secondaryValue],
+			[row.primaryLabel || gameText("GAME_MANPOWER"), row.value],
+			[gameText("GAME_CASUALTIES"), row.secondaryValue],
 		]) {
 			const value = create("span", "war-desk-metric-value");
 			value.append(

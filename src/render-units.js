@@ -1,3 +1,4 @@
+import { gameText } from "./i18n.js";
 import { atlasCityVisible } from "./render-atlas.js";
 import {
 	collectSelectionQuads,
@@ -560,6 +561,7 @@ export function drawUnits(frame) {
 	this._gpu?.beginMarkers();
 	// Draw units - Small flags for land, ships for water
 	if (showUnitsVisually) {
+		const encircledLabel = gameText("MAP_ENCIRCLED");
 		const currentZoom = map.getZoom();
 		const zoomScale = 1.3 ** (currentZoom - 3);
 		const w = 7 * zoomScale;
@@ -772,7 +774,7 @@ export function drawUnits(frame) {
 					ctx.font = `bold ${Math.max(6, 7 * zoomScale)}px monospace`;
 					ctx.textAlign = "center";
 					ctx.textBaseline = "bottom";
-					ctx.fillText("ENCIRCLED", p.x, p.y - sh / 2 - 3);
+					ctx.fillText(encircledLabel, p.x, p.y - sh / 2 - 3);
 					ctx.restore();
 				}
 

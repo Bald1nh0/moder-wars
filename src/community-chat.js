@@ -1,9 +1,10 @@
+import { gameText } from "./i18n.js";
 // Dependencies are supplied by the application; this module does not import it.
 export function createCommunityChat(runtime) {
 	function renderGlobalChatList(messages) {
 		if (!runtime.globalChatList) return;
 		if (!messages || messages.length === 0) {
-			runtime.globalChatList.innerHTML = `<div style="text-align:center; font-size: 12px; color:#666; padding:16px;">No messages yet. Say hello!</div>`;
+			runtime.globalChatList.innerHTML = `<div style="text-align:center; font-size: 12px; color:#666; padding:16px;" data-i18n="COMMUNITY_EMPTY_CHAT">${gameText("COMMUNITY_EMPTY_CHAT")}</div>`;
 			return;
 		}
 		// oldest at top

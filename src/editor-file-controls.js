@@ -1,19 +1,21 @@
 import { showAlert, showConfirm, showPrompt } from "./dialogs.js";
+import { gameText } from "./i18n.js";
 // Controls receive live state and commands; they do not import the application.
 export function createEditorFileControls(runtime) {
 	function bindEditorUpdateBtnClick() {
 		runtime.editorUpdateBtn.addEventListener("click", async () => {
 			if (!runtime.activeScenarioId) return;
 			if (
-				!(await showConfirm(
-					"Update existing scenario? This will overwrite the map file and thumbnail on the Hub.",
-					{ title: "Update scenario", okLabel: "Overwrite", danger: true },
-				))
+				!(await showConfirm(gameText("EDITOR_MSG_UPDATE_CONFIRM"), {
+					title: gameText("EDITOR_MSG_UPDATE_TITLE"),
+					okLabel: gameText("EDITOR_MSG_OVERWRITE"),
+					danger: true,
+				}))
 			)
 				return;
 
 			runtime.setLoadingThematic(false);
-			runtime.loadingStatus.innerText = "Updating Scenario...";
+			runtime.loadingStatus.innerText = gameText("EDITOR_MSG_UPDATING");
 			runtime.loadingOverlay.style.display = "flex";
 
 			try {
@@ -37,9 +39,10 @@ export function createEditorFileControls(runtime) {
 				}
 
 				// 2. Generate updated preset data
-				const currentName = runtime.statusText.innerText
-					.replace("REMIXING: ", "")
-					.replace("Map Editor (Alpha)", "Updated Scenario");
+				const currentName =
+					runtime.currentScenarioContext?.name ||
+					runtime.mapName ||
+					gameText("EDITOR_MSG_CUSTOM_SCENARIO");
 				const saveData = runtime.generatePresetData(currentName);
 				const blob = new Blob([JSON.stringify(saveData)], {
 					type: "application/json",
@@ -58,10 +61,10 @@ export function createEditorFileControls(runtime) {
 					});
 
 				runtime.loadingOverlay.style.display = "none";
-				showAlert("Scenario updated successfully!");
+				showAlert(gameText("EDITOR_MSG_UPDATED"));
 			} catch (e) {
 				console.error(e);
-				showAlert("Update failed. You can only update scenarios you created.");
+				showAlert(gameText("EDITOR_MSG_UPDATE_FAILED"));
 				runtime.loadingOverlay.style.display = "none";
 			}
 		});
@@ -73,7 +76,8 @@ export function createEditorFileControls(runtime) {
 			const meta = runtime.countryMetadata[runtime.editingCountryId - 1];
 			if (!meta) return;
 
-			runtime.shareCountryNameInput.value = meta.name || "Custom Nation";
+			runtime.shareCountryNameInput.value =
+				meta.name || gameText("EDITOR_MSG_CUSTOM_NATION");
 			runtime.shareCountryDescInput.value = "";
 			runtime.shareCountryModal.style.display = "flex";
 		});
@@ -84,13 +88,13 @@ export function createEditorFileControls(runtime) {
 			if (runtime.editingCountryId <= 0) return;
 			const meta = runtime.countryMetadata[runtime.editingCountryId - 1];
 			if (!meta?.flagUrl) {
-				showAlert(
-					"This nation does not have a flag to share. Upload or fetch one first.",
-				);
+				showAlert(gameText("EDITOR_MSG_NO_FLAG"));
 				return;
 			}
 
-			runtime.shareFlagNameInput.value = `${meta.name || "Custom"} Flag`;
+			runtime.shareFlagNameInput.value = gameText("EDITOR_MSG_FLAG_NAME", {
+				name: meta.name || gameText("EDITOR_MSG_CUSTOM_NATION"),
+			});
 			runtime.shareFlagDescInput.value = "";
 			runtime.shareFlagModal.style.display = "flex";
 		});
@@ -109,11 +113,12 @@ export function createEditorFileControls(runtime) {
 			if (!meta?.flagUrl) return;
 
 			const publicName =
-				runtime.shareFlagNameInput.value.trim() || "Custom Flag";
+				runtime.shareFlagNameInput.value.trim() ||
+				gameText("EDITOR_MSG_CUSTOM_FLAG");
 			const description = runtime.shareFlagDescInput.value.trim();
 
 			runtime.shareFlagModal.style.display = "none";
-			runtime.loadingStatus.innerText = "Sharing Flag to Library...";
+			runtime.loadingStatus.innerText = gameText("EDITOR_MSG_SHARING_FLAG");
 			runtime.loadingOverlay.style.display = "flex";
 
 			try {
@@ -123,10 +128,10 @@ export function createEditorFileControls(runtime) {
 					flagUrl: meta.flagUrl,
 				});
 				runtime.loadingOverlay.style.display = "none";
-				showAlert("Flag successfully shared!");
+				showAlert(gameText("EDITOR_MSG_FLAG_SHARED"));
 			} catch (e) {
 				console.error(e);
-				showAlert("Failed to share flag.");
+				showAlert(gameText("EDITOR_MSG_FLAG_SHARE_FAILED"));
 				runtime.loadingOverlay.style.display = "none";
 			}
 		};
@@ -147,11 +152,13 @@ export function createEditorFileControls(runtime) {
 			const publicName =
 				runtime.shareCountryNameInput.value.trim() ||
 				meta.name ||
-				"Custom Nation";
+				gameText("EDITOR_MSG_CUSTOM_NATION");
 			const description = runtime.shareCountryDescInput.value.trim();
 
 			runtime.shareCountryModal.style.display = "none";
-			runtime.loadingStatus.innerText = `Saving ${publicName} to Library...`;
+			runtime.loadingStatus.innerText = gameText("EDITOR_MSG_SAVE_LIBRARY", {
+				name: publicName,
+			});
 			runtime.loadingOverlay.style.display = "flex";
 
 			try {
@@ -185,7 +192,7 @@ export function createEditorFileControls(runtime) {
 				}
 
 				if (cells.length === 0) {
-					showAlert("Country has no territory to share!");
+					showAlert(gameText("EDITOR_MSG_NO_TERRITORY"));
 					runtime.loadingOverlay.style.display = "none";
 					return;
 				}
@@ -211,10 +218,10 @@ export function createEditorFileControls(runtime) {
 				});
 
 				runtime.loadingOverlay.style.display = "none";
-				showAlert("Country added to Global Library!");
+				showAlert(gameText("EDITOR_MSG_COUNTRY_SHARED"));
 			} catch (e) {
 				console.error(e);
-				showAlert("Failed to share country.");
+				showAlert(gameText("EDITOR_MSG_COUNTRY_SHARE_FAILED"));
 				runtime.loadingOverlay.style.display = "none";
 			}
 		};
@@ -223,9 +230,12 @@ export function createEditorFileControls(runtime) {
 	function bindEditorSaveBtnClick() {
 		runtime.editorSaveBtn.addEventListener("click", async () => {
 			const presetName = await showPrompt(
-				"Enter a name for this preset:",
-				"My Custom Scenario",
-				{ title: "Save preset", okLabel: "Save" },
+				gameText("EDITOR_MSG_PRESET_NAME"),
+				gameText("EDITOR_MSG_CUSTOM_SCENARIO"),
+				{
+					title: gameText("EDITOR_MSG_SAVE_PRESET"),
+					okLabel: gameText("EDITOR_MSG_SAVE"),
+				},
 			);
 			if (!presetName) return;
 
@@ -261,9 +271,7 @@ export function createEditorFileControls(runtime) {
 		if (runtime.editorSaveMultiBtn)
 			runtime.editorSaveMultiBtn.addEventListener("click", async () => {
 				if (runtime.selectedCountryIds.size === 0) {
-					showAlert(
-						"Ctrl+click countries on the map to select them, then use this button to export a ZIP.",
-					);
+					showAlert(gameText("EDITOR_MSG_SELECT_EXPORT"));
 					return;
 				}
 				const ids = Array.from(runtime.selectedCountryIds);
@@ -282,15 +290,13 @@ export function createEditorFileControls(runtime) {
 						runtime.getJSZip,
 						"selected_countries.zip",
 					);
-					runtime.statusText.innerText =
-						"Exported " +
-						ids.length +
-						" countr" +
-						(ids.length === 1 ? "y" : "ies") +
-						" to selected_countries.zip";
+					runtime.statusText.innerText = gameText(
+						"EDITOR_MSG_EXPORTED_COUNTRIES",
+						{ count: ids.length, file: "selected_countries.zip" },
+					);
 				} catch (error) {
 					console.error("ZIP export failed:", error);
-					showAlert("Failed to generate ZIP. Check console for details.");
+					showAlert(gameText("EDITOR_MSG_ZIP_FAILED"));
 				}
 			});
 	}
@@ -299,7 +305,7 @@ export function createEditorFileControls(runtime) {
 		if (runtime.editorSaveAllZipBtn)
 			runtime.editorSaveAllZipBtn.addEventListener("click", async () => {
 				if (!runtime.countryMetadata || !runtime.worldControlMap) {
-					showAlert("No map is loaded yet.");
+					showAlert(gameText("EDITOR_MSG_NO_MAP"));
 					return;
 				}
 				const cellMap = runtime.collectCountryCells(
@@ -311,7 +317,7 @@ export function createEditorFileControls(runtime) {
 					(meta) => meta?.id && cellMap.get(meta.id)?.length,
 				);
 				if (!countries.length) {
-					showAlert("No countries with territory to export.");
+					showAlert(gameText("EDITOR_MSG_NO_COUNTRIES_EXPORT"));
 					return;
 				}
 				try {
@@ -322,12 +328,13 @@ export function createEditorFileControls(runtime) {
 						runtime.getJSZip,
 						"all_countries.zip",
 					);
-					runtime.statusText.innerText = `Exported ${countries.length} countries to all_countries.zip`;
+					runtime.statusText.innerText = gameText(
+						"EDITOR_MSG_EXPORTED_COUNTRIES",
+						{ count: countries.length, file: "all_countries.zip" },
+					);
 				} catch (error) {
 					console.error("ZIP export (all countries) failed:", error);
-					showAlert(
-						"Failed to generate ZIP for all countries. Check console for details.",
-					);
+					showAlert(gameText("EDITOR_MSG_ZIP_ALL_FAILED"));
 				}
 			});
 	}
@@ -338,7 +345,7 @@ export function createEditorFileControls(runtime) {
 			?.addEventListener("click", () => {
 				if (!runtime.worldControlMap || !runtime.landMask) return;
 
-				runtime.statusText.innerText = "GENERATING GLOBAL MAP EXPORT...";
+				runtime.statusText.innerText = gameText("EDITOR_MSG_MAP_EXPORTING");
 
 				// GLOBAL EXPORT SYSTEM: Produces a 1:1 Plate Carree projection of the world grid.
 				// This allows the resulting PNG to be re-imported as a Custom Satellite background
@@ -388,10 +395,10 @@ export function createEditorFileControls(runtime) {
 					link.download = `modern_wars_world_layout_${timestamp}.png`;
 					link.href = canvas.toDataURL("image/png");
 					link.click();
-					runtime.statusText.innerText = "GLOBAL MAP EXPORTED";
+					runtime.statusText.innerText = gameText("EDITOR_MSG_MAP_EXPORTED");
 				} catch (e) {
 					console.error("Export failed:", e);
-					showAlert("SATELLITE ERROR: Could not generate export file.");
+					showAlert(gameText("EDITOR_MSG_MAP_EXPORT_FAILED"));
 				}
 			});
 	}
@@ -410,7 +417,7 @@ export function createEditorFileControls(runtime) {
 				if (runtime.importCountryCardList) {
 					runtime.importCountryCardList.innerHTML = `
                 <div style="font-size: 12px; color:#777; text-align:center; padding:10px;">
-                    Loading…
+                    ${gameText("EDITOR_MSG_LOADING")}
                 </div>
             `;
 				}
@@ -439,8 +446,7 @@ export function createEditorFileControls(runtime) {
 				};
 				const url = keyToUrl[val];
 				if (!url) {
-					runtime.importScenarioSelect.innerHTML =
-						'<option value="">Unknown source selection</option>';
+					runtime.importScenarioSelect.innerHTML = `<option value="">${gameText("EDITOR_MSG_UNKNOWN_SOURCE")}</option>`;
 					runtime.importScenarioSelect.disabled = true;
 					return;
 				}
@@ -465,12 +471,12 @@ export function createEditorFileControls(runtime) {
 		if (runtime.importCountryConfirmBtn) {
 			runtime.importCountryConfirmBtn.addEventListener("click", () => {
 				if (!runtime.importScenarioBuffer) {
-					showAlert("Choose a source scenario first.");
+					showAlert(gameText("EDITOR_MSG_SOURCE_REQUIRED"));
 					return;
 				}
 				const cid = runtime.selectedImportCountryId || 0;
 				if (!cid) {
-					showAlert("Choose a country to import.");
+					showAlert(gameText("EDITOR_MSG_COUNTRY_REQUIRED"));
 					return;
 				}
 				runtime.importSingleCountryFromScenario(
@@ -492,7 +498,9 @@ export function createEditorFileControls(runtime) {
 					const file = e.target.files[0];
 					if (!file) return;
 
-					runtime.loadingStatus.innerText = "Importing countries from ZIP...";
+					runtime.loadingStatus.innerText = gameText(
+						"EDITOR_MSG_IMPORTING_ZIP",
+					);
 					runtime.loadingOverlay.style.display = "flex";
 
 					try {
@@ -502,7 +510,7 @@ export function createEditorFileControls(runtime) {
 							(f) => !f.dir && f.name.toLowerCase().endsWith(".json"),
 						);
 						if (files.length === 0) {
-							showAlert("ZIP file does not contain any .json country files.");
+							showAlert(gameText("EDITOR_MSG_EMPTY_ZIP"));
 							runtime.loadingOverlay.style.display = "none";
 							return;
 						}
@@ -526,7 +534,9 @@ export function createEditorFileControls(runtime) {
 								const sourceRes = data.gridRes || runtime.CONFIG.GRID_RES;
 								const meta = {
 									id: newId,
-									name: data.metadata.name || "Imported Nation",
+									name:
+										data.metadata.name ||
+										gameText("EDITOR_MSG_IMPORTED_NATION"),
 									color: data.metadata.color || "rgba(150,150,150,0.5)",
 									rgba: runtime.parseColorToRGBA(
 										data.metadata.color || "rgba(150,150,150,0.5)",
@@ -599,10 +609,10 @@ export function createEditorFileControls(runtime) {
 						runtime.recalculateAllBounds();
 						runtime.loadingOverlay.style.display = "none";
 						runtime.influenceLayer.render();
-						runtime.statusText.innerText = "Imported countries from ZIP.";
+						runtime.statusText.innerText = gameText("EDITOR_MSG_ZIP_IMPORTED");
 					} catch (err) {
 						console.error("ZIP import failed:", err);
-						showAlert("Failed to import ZIP of countries.");
+						showAlert(gameText("EDITOR_MSG_ZIP_IMPORT_FAILED"));
 						runtime.loadingOverlay.style.display = "none";
 					}
 				};
@@ -614,7 +624,7 @@ export function createEditorFileControls(runtime) {
 	function bindEditorShareBtnClick() {
 		runtime.editorShareBtn.addEventListener("click", () => {
 			if (runtime.countryMetadata.length < 2) {
-				showAlert("Your map must have at least 2 nations to be playable.");
+				showAlert(gameText("EDITOR_MSG_MAP_NEEDS_COUNTRIES"));
 				return;
 			}
 			runtime.uploadNameInput.value = "";

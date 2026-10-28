@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://esm.sh; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.websim.ai https://*.websim.com wss:; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self';">
-    <title>MW-V0.28.0</title>
+    <title>MW-V0.28.3</title>
     <link rel="stylesheet" href="styles/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 </head>
@@ -17,17 +17,17 @@
 <div class="menu-v2-overlay"></div>
 <div class="menu-v2-container">
 <div class="menu-v2-header">
-<h1 class="menu-v2-title">SETTINGS</h1>
-<div class="menu-v2-author">Make it yours</div>
+<h1 class="menu-v2-title" data-i18n="UI_SETTINGS">SETTINGS</h1>
+<div class="menu-v2-author" data-i18n="UI_MAKE_IT_YOURS">Make it yours</div>
 </div>
 <div class="menu-v2-nav">
 <div class="scenario-selection-container">
 <div class="selection-header">
 <button class="selection-back-btn" id="close-settings-btn">
 <svg fill="currentColor" style="width:20px;height:20px;" viewbox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
-<span>BACK</span>
+<span data-i18n="UI_BACK">BACK</span>
 </button>
-<div class="settings-tab-container" style="margin-bottom:0;"><button class="settings-tab-btn active" data-tab="sys">Gameplay</button><button class="settings-tab-btn" data-tab="vis">Display</button><button class="settings-tab-btn" data-tab="aud">Audio</button><button class="settings-tab-btn" data-tab="ui">Interface</button><button class="settings-tab-btn" data-tab="eng">Advanced</button></div>
+<div class="settings-tab-container" style="margin-bottom:0;"><button class="settings-tab-btn active" data-tab="sys" data-i18n="UI_GAMEPLAY">Gameplay</button><button class="settings-tab-btn" data-tab="vis" data-i18n="UI_DISPLAY">Display</button><button class="settings-tab-btn" data-tab="aud" data-i18n="UI_AUDIO">Audio</button><button class="settings-tab-btn" data-tab="ui" data-i18n="UI_INTERFACE">Interface</button><button class="settings-tab-btn" data-tab="eng" data-i18n="UI_ADVANCED">Advanced</button></div>
 </div>
 <div class="scenario-scroller-v2" style="padding-top: 10px;">
 <!-- System Tab -->
@@ -40,20 +40,20 @@
 <option data-i18n="UNIT_STRESS" value="1000">1000 (Maximum Stress)</option>
 </select>
 </div><div class="setting-group">
-<label>Recruitment Model</label>
+<label data-i18n="UI_RECRUITMENT_MODEL">Recruitment Model</label>
 <select id="recruit-model-select">
-<option selected="" value="balanced">Balanced (Pop + GDP)</option>
-<option value="area">Land Area (Classic)</option>
-<option value="pop">Population (Modern)</option>
-<option value="gdp">GDP (Economic Power)</option>
+<option selected="" value="balanced" data-i18n="UI_BALANCED_POP_GDP">Balanced (Pop + GDP)</option>
+<option value="area" data-i18n="UI_LAND_AREA_CLASSIC">Land Area (Classic)</option>
+<option value="pop" data-i18n="UI_POPULATION_MODERN">Population (Modern)</option>
+<option value="gdp" data-i18n="UI_GDP_ECONOMIC_POWER">GDP (Economic Power)</option>
 </select>
-<small>How army size is calculated. Balanced uses 50% population + 50% GDP.</small>
+<small data-i18n="UI_HOW_ARMY_SIZE_IS_CALCULATED_BALANCED_USES_50_POPULATION_50_GDP">How army size is calculated. Balanced uses 50% population + 50% GDP.</small>
 </div><div class="setting-group">
 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
 <input id="disable-invisible-buffs-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
-<span>Disable Invisible Buffs Globally</span>
+<span data-i18n="UI_DISABLE_INVISIBLE_BUFFS_GLOBALLY">Disable Invisible Buffs Globally</span>
 </label>
-<small>When enabled, hidden buffs are ignored and only visible buffs affect combat.</small>
+<small data-i18n="UI_WHEN_ENABLED_HIDDEN_BUFFS_ARE_IGNORED_AND_ONLY_VISIBLE_BUFFS_AFFECT_COMBAT">When enabled, hidden buffs are ignored and only visible buffs affect combat.</small>
 </div><div class="setting-group"><label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
 <input id="disable-mountains-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
 <span data-i18n="DISABLE_MT">Disable Mountains</span>
@@ -77,18 +77,18 @@
 </select>
 <small data-i18n="GRID_SUB">Density affects the smoothness of frontlines.</small>
 </div><div class="setting-group">
-<label>Performance Presets</label>
+<label data-i18n="UI_PERFORMANCE_PRESETS">Performance Presets</label>
 <div style="display: flex; gap: 10px;">
-<button class="mini-btn" id="preset-low-btn" style="flex: 1; padding: 10px; ">LOW PERFORMANCE</button>
-<button class="mini-btn" id="preset-default-btn" style="flex: 1; padding: 10px; ">DEFAULT</button>
+<button class="mini-btn" id="preset-low-btn" style="flex: 1; padding: 10px; " data-i18n="UI_LOW_PERFORMANCE">LOW PERFORMANCE</button>
+<button class="mini-btn" id="preset-default-btn" style="flex: 1; padding: 10px; " data-i18n="UI_DEFAULT">DEFAULT</button>
 </div>
-<small style="margin-top: 8px;">Instantly adjust all resolution, visual, and unit settings.</small>
-</div><button class="mini-btn" id="benchmark-btn">BENCHMARK</button></div>
+<small style="margin-top: 8px;" data-i18n="UI_INSTANTLY_ADJUST_ALL_RESOLUTION_VISUAL_AND_UNIT_SETTINGS">Instantly adjust all resolution, visual, and unit settings.</small>
+</div><button class="mini-btn" id="benchmark-btn" data-i18n="UI_BENCHMARK">BENCHMARK</button></div>
 <!-- Presets Tab -->
 <!-- Visuals Tab -->
 <div class="settings-tab-pane" id="settings-tab-vis" style="display:none"><div class="setting-group"><label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
 <input id="disable-country-gradient-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
-<span>Disable Country Gradient</span>
+<span data-i18n="UI_DISABLE_COUNTRY_GRADIENT">Disable Country Gradient</span>
 </label></div><div class="setting-group"><label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
 <input checked="" id="show-warplans-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
 <span data-i18n="SHOW_AI_OPERATIONS">Show AI Operations</span>
@@ -97,25 +97,25 @@
 <span data-i18n="SHOW_ARMY_DIAGNOSTICS">Show Army Decisions</span>
 </label></div><div class="setting-group"><label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
 <input checked="" id="show-labels-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
-<span>Show Country Labels</span>
+<span data-i18n="UI_SHOW_COUNTRY_LABELS">Show Country Labels</span>
 </label></div><div class="setting-group"><label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
 <input checked="" id="show-cities-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
-<span>Show Cities</span>
+<span data-i18n="UI_SHOW_CITIES">Show Cities</span>
 </label></div><div class="setting-group"><label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
 <input id="show-battles-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
-<span>Show Battle Visuals</span>
+<span data-i18n="UI_SHOW_BATTLE_VISUALS">Show Battle Visuals</span>
 </label></div><div class="setting-group"><label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
 <input id="border-fade-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
-<span>Fade Captured Land</span>
+<span data-i18n="UI_FADE_CAPTURED_LAND">Fade Captured Land</span>
 </label></div><div class="setting-group"><label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
 <input id="show-alliance-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
-<span>Alliance View</span>
+<span data-i18n="UI_ALLIANCE_VIEW">Alliance View</span>
 </label></div><div class="setting-group"><label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
 <input id="disable-units-visually-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
 <span data-i18n="HIDE_UNITS">Hide Units Visually</span>
 </label></div><div class="setting-group"><label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
 <input id="hide-curved-labels-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
-<span>Hide Soldier Labels</span>
+<span data-i18n="UI_HIDE_SOLDIER_LABELS">Hide Soldier Labels</span>
 </label></div></div>
 <div class="settings-tab-pane" id="settings-tab-aud" style="display:none"><div class="setting-group">
 <label data-i18n="BG_VOLUME">Background Music Volume</label>
@@ -124,18 +124,18 @@
 <span id="music-vol-val" style="  min-width: 35px; font-family: monospace;">15%</span>
 </div>
 </div><div class="setting-group">
-<label>Custom Soundtrack</label>
+<label data-i18n="UI_CUSTOM_SOUNDTRACK">Custom Soundtrack</label>
 <div style="display: flex; flex-direction: column; gap: 8px;">
 <input accept="audio/*" id="custom-track-input" style=" " type="file"/>
 <div style="display: flex; gap: 6px;">
-<button class="mini-btn" id="clear-custom-track-btn" style="flex: 1;   padding: 4px;">Reset to Original</button>
+<button class="mini-btn" id="clear-custom-track-btn" style="flex: 1;   padding: 4px;" data-i18n="UI_RESET_TO_ORIGINAL">Reset to Original</button>
 </div>
-<small style=" ">Uploaded MP3s will replace the standard background loop.</small>
+<small style=" " data-i18n="UI_UPLOADED_MP3S_WILL_REPLACE_THE_STANDARD_BACKGROUND_LOOP">Uploaded MP3s will replace the standard background loop.</small>
 </div>
 </div><div class="setting-group" style="display: flex; flex-direction: column; gap: 10px;">
 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
 <input checked="" id="use-secret-sounds-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
-<span>Use Secret Sounds</span>
+<span data-i18n="UI_USE_SECRET_SOUNDS">Use Secret Sounds</span>
 </label>
 </div></div>
 <div class="settings-tab-pane" id="settings-tab-ui" style="display:none"><div class="setting-group">
@@ -158,13 +158,13 @@
 </div><div class="setting-group">
 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
 <input id="use-system-font-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
-<span>Use System Default Font</span>
+<span data-i18n="UI_USE_SYSTEM_DEFAULT_FONT">Use System Default Font</span>
 </label>
-<small>Replaces the Playfair Display title font with your browser's default system font.</small>
+<small data-i18n="UI_REPLACES_THE_PLAYFAIR_DISPLAY_TITLE_FONT_WITH_YOUR_BROWSER_S_DEFAULT_SYSTEM_FONT">Replaces the Playfair Display title font with your browser's default system font.</small>
 </div><div class="setting-group">
 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
 <input id="save-skip-checkbox" style="width: 18px; height: 18px; " type="checkbox"/>
-<span>Remember preferences</span>
+<span data-i18n="UI_REMEMBER_PREFERENCES">Remember preferences</span>
 </label>
 </div></div>
 <button class="start-btn" id="launch-btn" style="margin-top: 20px; width: 100%;">Save settings</button>
@@ -178,49 +178,49 @@
 <div class="menu-v2-overlay" aria-hidden="true"></div>
 <div class="menu-v2-container">
 <div class="menu-v2-header">
-<h1 class="menu-v2-title">MODERN WARS</h1>
+<h1 class="menu-v2-title" data-i18n="UI_MODERN_WARS">MODERN WARS</h1>
 </div>
 <div class="menu-v2-nav" id="menu-nav-main">
 <div class="nav-links-fade" id="nav-links-container">
 <button class="menu-v2-link primary" id="play-mode-btn">
-<span>PLAY</span>
+<span data-i18n="UI_PLAY">PLAY</span>
 <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
 </button>
 
-<button class="menu-v2-link" id="main-settings-btn"><span>SETTINGS</span><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="currentColor" stroke="none"/><circle cx="15" cy="17" r="3" fill="currentColor" stroke="none"/></svg></button>
+<button class="menu-v2-link" id="main-settings-btn"><span data-i18n="UI_SETTINGS">SETTINGS</span><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="currentColor" stroke="none"/><circle cx="15" cy="17" r="3" fill="currentColor" stroke="none"/></svg></button>
 </div>
 <!-- New Integrated Scenario Scroller -->
 <div class="scenario-selection-container" id="menu-scenario-selector" style="display: none;">
 <div class="selection-header">
 <button class="selection-back-btn" id="back-to-nav-btn">
 <svg fill="currentColor" style="width:20px;height:20px;" viewbox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
-<span>BACK</span>
+<span data-i18n="UI_BACK">BACK</span>
 </button>
-<h2 class="selection-title">Choose scenario</h2>
+<h2 class="selection-title" data-i18n="UI_CHOOSE_SCENARIO">Choose scenario</h2>
 </div>
 <div class="scenario-scroller-v2">
 <div class="scroller-section">
 <div class="scroller-grid">
 <button class="scroller-card primary" id="scroller-choice-modern" type="button">
-<div class="scroller-card-name">2022 MODERN DAY</div>
-<div class="scroller-card-desc">Current global geopolitics and real-world alliances.</div>
-<div class="scroller-card-credits">Map: UnionOfBritain</div>
+<div class="scroller-card-name" data-i18n="UI_2022_MODERN_DAY">2022 MODERN DAY</div>
+<div class="scroller-card-desc" data-i18n="UI_CURRENT_GLOBAL_GEOPOLITICS_AND_REAL_WORLD_ALLIANCES">Current global geopolitics and real-world alliances.</div>
+<div class="scroller-card-credits" data-i18n="UI_MAP_UNIONOFBRITAIN">Map: UnionOfBritain</div>
 </button>
 <div class="scroller-card" id="scroller-choice-1936" style="display:none">
-<div class="scroller-card-name">1936 INTERWAR</div>
-<div class="scroller-card-desc">The buildup to the most destructive war in history.</div>
-<div class="scroller-card-credits">Map: filip</div>
+<div class="scroller-card-name" data-i18n="UI_1936_INTERWAR">1936 INTERWAR</div>
+<div class="scroller-card-desc" data-i18n="UI_THE_BUILDUP_TO_THE_MOST_DESTRUCTIVE_WAR_IN_HISTORY">The buildup to the most destructive war in history.</div>
+<div class="scroller-card-credits" data-i18n="UI_MAP_FILIP">Map: filip</div>
 </div>
 <div class="scroller-card" id="scroller-choice-1914" style="display:none">
-<div class="scroller-card-name">1914 GREAT WAR</div>
-<div class="scroller-card-desc">Empires collide on the trenches of Europe.</div>
-<div class="scroller-card-credits">Map: orange</div>
+<div class="scroller-card-name" data-i18n="UI_1914_GREAT_WAR">1914 GREAT WAR</div>
+<div class="scroller-card-desc" data-i18n="UI_EMPIRES_COLLIDE_ON_THE_TRENCHES_OF_EUROPE">Empires collide on the trenches of Europe.</div>
+<div class="scroller-card-credits" data-i18n="UI_MAP_ORANGE">Map: orange</div>
 </div>
 </div>
 </div>
 </div>
-<p class="title-screen-scenario-hint">Select a scenario, then start.</p>
-<button class="start-btn" id="enter-scenario-btn" style="display:none; margin-top: 20px; animation: fadeIn 0.3s ease-out;">Start scenario</button>
+<p class="title-screen-scenario-hint" data-i18n="UI_SELECT_A_SCENARIO_THEN_START">Select a scenario, then start.</p>
+<button class="start-btn" id="enter-scenario-btn" style="display:none; margin-top: 20px; animation: fadeIn 0.3s ease-out;" data-i18n="UI_START_SCENARIO">Start scenario</button>
 </div>
 </div>
 </div>
@@ -235,32 +235,32 @@
         <!-- Standard Generic Loading (Old Look) -->
         <div id="loading-standard-content" class="settings-content" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 15px;">
             <div class="loader-spinner"></div>
-            <h2 class="loading-status-text settings-title" style="margin:0;">Loading...</h2>
+            <h2 class="loading-status-text settings-title" style="margin:0;" data-i18n="UI_LOADING">Loading...</h2>
             <div class="loading-bar-container" style="width: 100%;">
                 <div class="loading-bar-fill-el loading-bar-fill"></div>
             </div>
-            <div class="loading-tip-text loading-tip">Initializing satellite systems...</div>
+            <div class="loading-tip-text loading-tip" data-i18n="UI_INITIALIZING_SATELLITE_SYSTEMS">Initializing satellite systems...</div>
         </div>
 
         <!-- Thematic Scenario Loading (New Look) -->
         <div id="loading-thematic-content" class="menu-v2-container" style="display:none; pointer-events: none;">
             <div class="menu-v2-overlay"></div>
             <div class="menu-v2-header" style="pointer-events: none;">
-                <h1 class="menu-v2-title">MODERN WARS</h1>
-                <div class="menu-v2-author">System Loading...</div>
+                <h1 class="menu-v2-title" data-i18n="UI_MODERN_WARS">MODERN WARS</h1>
+                <div class="menu-v2-author" data-i18n="UI_SYSTEM_LOADING">System Loading...</div>
             </div>
             <div class="menu-v2-nav" style="pointer-events: auto;">
                 <div class="scenario-selection-container">
                     <div class="selection-header">
-                        <h2 class="selection-title">INITIALIZING</h2>
+                        <h2 class="selection-title" data-i18n="UI_INITIALIZING">INITIALIZING</h2>
                     </div>
                     <div class="thematic-loading-body">
                         <div class="loader-spinner"></div>
-                        <h2 class="loading-status-text" style="font-size: 32px; margin: 0; color: #fff; text-transform: uppercase; letter-spacing: 1px;">Acquiring Assets...</h2>
+                        <h2 class="loading-status-text" style="font-size: 32px; margin: 0; color: #fff; text-transform: uppercase; letter-spacing: 1px;" data-i18n="UI_ACQUIRING_ASSETS">Acquiring Assets...</h2>
                         <div class="loading-bar-container" style="height: 2px; width: 300px;">
                             <div class="loading-bar-fill-el loading-bar-fill"></div>
                         </div>
-                        <div class="loading-tip-text loading-tip">Syncing satellite telemetry for global operations...</div>
+                        <div class="loading-tip-text loading-tip" data-i18n="UI_SYNCING_SATELLITE_TELEMETRY_FOR_GLOBAL_OPERATIONS">Syncing satellite telemetry for global operations...</div>
                     </div>
                 </div>
             </div>
@@ -277,8 +277,8 @@
                         <button id="editor-tools-page-1-btn" class="mini-btn" style="padding:2px 6px; font-size: 12px; background:#2e86de;">P1</button>
                         <button id="editor-tools-page-2-btn" class="mini-btn" style="padding:2px 6px; font-size: 12px; background:#444;">P2</button>
                         <button id="editor-tools-page-3-btn" class="mini-btn" style="padding:2px 6px; font-size: 12px; background:#444;">P3</button>
-                        <button id="editor-tools-page-4-btn" class="mini-btn" style="padding:2px 6px; font-size: 12px; background:#444;">City</button>
-                        <button id="editor-tools-page-5-btn" class="mini-btn" style="padding:2px 6px; font-size: 12px; background:#444;">Images</button>
+                        <button id="editor-tools-page-4-btn" class="mini-btn" style="padding:2px 6px; font-size: 12px; background:#444;" data-i18n="UI_CITY">City</button>
+                        <button id="editor-tools-page-5-btn" class="mini-btn" style="padding:2px 6px; font-size: 12px; background:#444;" data-i18n="UI_IMAGES">Images</button>
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 5px; flex-wrap: wrap;">
@@ -293,77 +293,77 @@
                     <button id="editor-flag-library-btn" class="mini-btn" style="background: #2e86de;" data-i18n="FLAG_LIB">Flag Library</button>
                     <button id="editor-save-country-btn" class="mini-btn" style="background: #27ae60;" data-i18n="SAVE_COUNTRY">Save Country</button>
                     <button id="editor-load-country-btn" class="mini-btn" style="background: #8e44ad;" data-i18n="LOAD_COUNTRY">Load Country</button>
-                    <button id="editor-save-multi-btn" class="mini-btn" style="background: #e67e22;" title="Save all Ctrl-selected countries into one ZIP file.">Save Selected (ZIP)</button>
-                    <button id="editor-save-all-zip-btn" class="mini-btn" style="background: #d35400;" title="Save every country with territory in this scenario into a ZIP file.">Save All (ZIP)</button>
-                    <button id="editor-load-zip-btn" class="mini-btn" style="background: #16a085;" title="Load a ZIP of country files into this scenario.">Load ZIP</button>
-                    <button id="editor-import-country-from-scenario-btn" class="mini-btn" style="background: #2980b9;" title="Import a single country from a built-in era or a saved scenario into this map.">Import from Scenario</button>
+                    <button id="editor-save-multi-btn" class="mini-btn" style="background: #e67e22;" title="Save all Ctrl-selected countries into one ZIP file." data-i18n-title="UI_SAVE_ALL_CTRL_SELECTED_COUNTRIES_INTO_ONE_ZIP_FILE" data-i18n="UI_SAVE_SELECTED_ZIP">Save Selected (ZIP)</button>
+                    <button id="editor-save-all-zip-btn" class="mini-btn" style="background: #d35400;" title="Save every country with territory in this scenario into a ZIP file." data-i18n-title="UI_SAVE_EVERY_COUNTRY_WITH_TERRITORY_IN_THIS_SCENARIO_INTO_A_ZIP_FILE" data-i18n="UI_SAVE_ALL_ZIP">Save All (ZIP)</button>
+                    <button id="editor-load-zip-btn" class="mini-btn" style="background: #16a085;" title="Load a ZIP of country files into this scenario." data-i18n-title="UI_LOAD_A_ZIP_OF_COUNTRY_FILES_INTO_THIS_SCENARIO" data-i18n="UI_LOAD_ZIP">Load ZIP</button>
+                    <button id="editor-import-country-from-scenario-btn" class="mini-btn" style="background: #2980b9;" title="Import a single country from a built-in era or a saved scenario into this map." data-i18n-title="UI_IMPORT_A_SINGLE_COUNTRY_FROM_A_BUILT_IN_ERA_OR_A_SAVED_SCENARIO_INTO_THIS_MAP" data-i18n="UI_IMPORT_FROM_SCENARIO">Import from Scenario</button>
                     <button id="editor-paint-btn" class="mini-btn" style="display:none" data-i18n="PAINT">Paint Borders</button>
                     <button id="editor-fill-btn" class="mini-btn" style="display:none; background: #d35400;" data-i18n="FILL">Fill</button>
                     <button id="editor-unclaim-btn" class="mini-btn" style="display:none; background: #34495e;" data-i18n="UNCLAIM">Unclaim Tool</button>
-                    <button id="editor-terrain-btn" class="mini-btn" style="display:none; background: #e67e22;" title="Paint new land or carve oceans.">Terrain Brush</button>
-                    <button id="editor-place-division-btn" class="mini-btn" style="display:none; background:#27ae60;" title="Place a division for the selected nation by clicking on the map.">Place Division</button>
-                    <button id="editor-city-new-btn" class="mini-btn" style="display:none; background:#27ae60;" title="Create a new city by clicking on the map.">New City</button>
-                    <button id="editor-city-clear-btn" class="mini-btn" style="display:none; background:#c0392b;" title="Remove all cities from this scenario.">Clear Cities</button>
+                    <button id="editor-terrain-btn" class="mini-btn" style="display:none; background: #e67e22;" title="Paint new land or carve oceans." data-i18n-title="UI_PAINT_NEW_LAND_OR_CARVE_OCEANS" data-i18n="UI_TERRAIN_BRUSH">Terrain Brush</button>
+                    <button id="editor-place-division-btn" class="mini-btn" style="display:none; background:#27ae60;" title="Place a division for the selected nation by clicking on the map." data-i18n-title="UI_PLACE_A_DIVISION_FOR_THE_SELECTED_NATION_BY_CLICKING_ON_THE_MAP" data-i18n="UI_PLACE_DIVISION">Place Division</button>
+                    <button id="editor-city-new-btn" class="mini-btn" style="display:none; background:#27ae60;" title="Create a new city by clicking on the map." data-i18n-title="UI_CREATE_A_NEW_CITY_BY_CLICKING_ON_THE_MAP" data-i18n="UI_NEW_CITY">New City</button>
+                    <button id="editor-city-clear-btn" class="mini-btn" style="display:none; background:#c0392b;" title="Remove all cities from this scenario." data-i18n-title="UI_REMOVE_ALL_CITIES_FROM_THIS_SCENARIO" data-i18n="UI_CLEAR_CITIES">Clear Cities</button>
                     <div id="brush-controls" style="display:none; align-items: center; gap: 8px; margin-left: 5px; border-left: 1px solid #444; padding-left: 10px;">
-                        <label style="font-size: 12px; color: #888; text-transform: uppercase;">Brush</label>
+                        <label style="font-size: 12px; color: #888; text-transform: uppercase;" data-i18n="UI_BRUSH">Brush</label>
                         <input type="range" id="brush-size-slider" min="0.1" max="3.0" step="0.1" value="0.5" style="width: 60px; height: 4px; cursor: pointer;">
                         <span id="brush-size-val" style="font-size: 12px; color: #aaa; min-width: 20px;">0.5</span>
                     </div>
                     <div id="terrain-controls" style="display:none; align-items: center; gap: 8px; margin-left: 5px; border-left: 1px solid #444; padding-left: 10px;">
                         <select id="terrain-type-select" class="mini-select" style="width: 70px;">
-                            <option value="LAND">LAND</option>
-                            <option value="DESERT">DESERT</option>
-                            <option value="MOUNTAIN">MTN</option>
-                            <option value="OCEAN">OCEAN</option>
+                            <option value="LAND" data-i18n="UI_LAND">LAND</option>
+                            <option value="DESERT" data-i18n="UI_DESERT">DESERT</option>
+                            <option value="MOUNTAIN" data-i18n="UI_MTN">MTN</option>
+                            <option value="OCEAN" data-i18n="UI_OCEAN">OCEAN</option>
                         </select>
                     </div>
 
                     <!-- Page 5: Overlay Tools -->
                     <div id="overlay-tools" style="display:none; align-items: center; gap: 10px; flex-wrap: wrap;">
                         <div style="display: flex; flex-direction: column; gap: 4px; border-right: 1px solid #444; padding-right: 10px;">
-                            <label style="font-size: 12px; color: #888;">CUSTOM SATELLITE (BG)</label>
+                            <label style="font-size: 12px; color: #888;" data-i18n="UI_CUSTOM_SATELLITE_BG">CUSTOM SATELLITE (BG)</label>
                             <div style="display: flex; gap: 4px;">
                                 <input type="file" id="custom-sat-input" accept="image/*" style="display:none;">
-                                <button id="upload-sat-btn" class="mini-btn" style="background:#2e86de; padding:4px 8px;">Upload BG</button>
-                                <button id="clear-sat-btn" class="mini-btn" style="background:#c0392b; padding:4px 8px;">Clear</button>
+                                <button id="upload-sat-btn" class="mini-btn" style="background:#2e86de; padding:4px 8px;" data-i18n="UI_UPLOAD_BG">Upload BG</button>
+                                <button id="clear-sat-btn" class="mini-btn" style="background:#c0392b; padding:4px 8px;" data-i18n="UI_CLEAR">Clear</button>
                             </div>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 4px;">
-                            <label style="font-size: 12px; color: #888;">REFERENCE IMAGE (GUIDE)</label>
+                            <label style="font-size: 12px; color: #888;" data-i18n="UI_REFERENCE_IMAGE_GUIDE">REFERENCE IMAGE (GUIDE)</label>
                             <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                                 <input type="file" id="ref-image-input" accept="image/*" style="display:none;">
-                                <button id="upload-ref-btn" class="mini-btn" style="background:#27ae60; padding:4px 8px;">Upload Ref</button>
+                                <button id="upload-ref-btn" class="mini-btn" style="background:#27ae60; padding:4px 8px;" data-i18n="UI_UPLOAD_REF">Upload Ref</button>
                                 <div style="display:flex; align-items:center; gap:4px;">
-                                    <span style="font-size: 12px; color:#555;">Opacity</span>
+                                    <span style="font-size: 12px; color:#555;" data-i18n="UI_OPACITY">Opacity</span>
                                     <input type="range" id="ref-opacity-slider" min="0" max="1" step="0.05" value="0.5" style="width:50px; height:4px;">
                                 </div>
                                 <div style="display:flex; align-items:center; gap:4px;">
-                                    <span style="font-size: 12px; color:#555;">Scale</span>
+                                    <span style="font-size: 12px; color:#555;" data-i18n="UI_SCALE">Scale</span>
                                     <input type="range" id="ref-scale-slider" min="0.1" max="5" step="0.05" value="1" style="width:50px; height:4px;">
                                 </div>
                                 <label style="display:flex; align-items:center; gap:4px; font-size: 12px; color:#777; cursor:pointer;">
                                     <input type="checkbox" id="ref-above-checkbox" style="width:12px; height:12px;">
-                                    <span>Draw Above Terrain</span>
+                                    <span data-i18n="UI_DRAW_ABOVE_TERRAIN">Draw Above Terrain</span>
                                 </label>
-                                <button id="clear-ref-btn" class="mini-btn" style="background:#c0392b; padding:4px 8px;">Clear</button>
+                                <button id="clear-ref-btn" class="mini-btn" style="background:#c0392b; padding:4px 8px;" data-i18n="UI_CLEAR">Clear</button>
                             </div>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 4px; border-left: 1px solid #444; padding-left: 10px;">
-                            <label style="font-size: 12px; color: #888;">EXPORT TOOLS</label>
-                            <button id="editor-download-map-btn" class="mini-btn" style="background:#8e44ad; padding:4px 8px;" title="Download a high-res PNG of your map's layout and terrain.">Download PNG</button>
+                            <label style="font-size: 12px; color: #888;" data-i18n="UI_EXPORT_TOOLS">EXPORT TOOLS</label>
+                            <button id="editor-download-map-btn" class="mini-btn" style="background:#8e44ad; padding:4px 8px;" title="Download a high-res PNG of your map's layout and terrain." data-i18n-title="UI_DOWNLOAD_A_HIGH_RES_PNG_OF_YOUR_MAP_S_LAYOUT_AND_TERRAIN" data-i18n="UI_DOWNLOAD_PNG">Download PNG</button>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="status-right">
-                <button id="editor-map-settings-btn" class="mini-btn">Map Settings</button>
-                <button id="editor-exit-btn" class="mini-btn">Exit Editor</button>
+                <button id="editor-map-settings-btn" class="mini-btn" data-i18n="UI_MAP_SETTINGS">Map Settings</button>
+                <button id="editor-exit-btn" class="mini-btn" data-i18n="UI_EXIT_EDITOR">Exit Editor</button>
             </div>
         </div>
 
 <div class="status-panel hud-surface hud-surface--soft hud-surface--interactive" id="game-status">
 <div class="status-left">
-<span data-i18n="SELECT_P1" id="status-text">Select First Country</span>
+<span id="status-text">Select First Country</span>
 <div class="hud-status-meta hud-start-hidden" id="unit-counts">
 <span id="unit-counts-display"></span> <span data-i18n="UNITS">UNITS</span>
 </div>
@@ -371,10 +371,10 @@
 <div class="status-right">
 <button class="mini-btn hud-action hud-action--compact hud-action--neutral-alt hud-minimize-action" id="minimize-status-btn">−</button>
 <div class="control-group hud-control-group">
-<button class="mini-btn hud-action hud-action--info" data-i18n="POLITICAL" id="view-mode-btn" title="Toggle View Mode">POLITICAL</button>
+<button class="mini-btn hud-action hud-action--info" data-i18n="POLITICAL" id="view-mode-btn" title="Toggle View Mode" data-i18n-title="UI_TOGGLE_VIEW_MODE">POLITICAL</button>
 <label class="hud-toggle">
 <input class="hud-checkbox" id="alliance-view-checkbox" type="checkbox"/>
-<span>ALLIANCE</span>
+<span data-i18n="UI_ALLIANCE">ALLIANCE</span>
 </label>
 </div>
 <div class="control-group hud-control-group simulation-controls">
@@ -385,19 +385,19 @@
 <svg class="hud-pause-icon" aria-hidden="true" viewBox="0 0 16 16" width="16" height="16"><rect x="3" y="3" width="4" height="10"/><rect x="9" y="3" width="4" height="10"/></svg>
 <svg class="hud-resume-icon" aria-hidden="true" viewBox="0 0 16 16" width="16" height="16"><path d="M4 2 L14 8 L4 14 Z"/></svg>
 </button>
-<fieldset class="hud-speed-selector" id="speed-selector" title="Simulation speed (+ / −)">
-<legend class="visually-hidden">Simulation speed</legend>
-<label class="hud-speed-option is-filled" title="1× speed"><input class="hud-speed-input" type="radio" name="simulation-speed" value="1" data-speed-index="0" checked/><span class="hud-speed-face"><span class="hud-speed-bar" aria-hidden="true"></span><span>1×</span></span></label>
-<label class="hud-speed-option" title="2× speed"><input class="hud-speed-input" type="radio" name="simulation-speed" value="2" data-speed-index="1"/><span class="hud-speed-face"><span class="hud-speed-bar" aria-hidden="true"></span><span>2×</span></span></label>
-<label class="hud-speed-option" title="3× speed"><input class="hud-speed-input" type="radio" name="simulation-speed" value="3" data-speed-index="2"/><span class="hud-speed-face"><span class="hud-speed-bar" aria-hidden="true"></span><span>3×</span></span></label>
-<label class="hud-speed-option" title="5× speed"><input class="hud-speed-input" type="radio" name="simulation-speed" value="5" data-speed-index="3"/><span class="hud-speed-face"><span class="hud-speed-bar" aria-hidden="true"></span><span>5×</span></span></label>
-<label class="hud-speed-option" title="10× speed"><input class="hud-speed-input" type="radio" name="simulation-speed" value="10" data-speed-index="4"/><span class="hud-speed-face"><span class="hud-speed-bar" aria-hidden="true"></span><span>10×</span></span></label>
+<fieldset class="hud-speed-selector" id="speed-selector" title="Simulation speed (+ / −)" data-i18n-title="UI_SIMULATION_SPEED">
+<legend class="visually-hidden" data-i18n="UI_SIMULATION_SPEED_2">Simulation speed</legend>
+<label class="hud-speed-option is-filled" title="1× speed" data-i18n-title="UI_1_SPEED"><input class="hud-speed-input" type="radio" name="simulation-speed" value="1" data-speed-index="0" checked/><span class="hud-speed-face"><span class="hud-speed-bar" aria-hidden="true"></span><span>1×</span></span></label>
+<label class="hud-speed-option" title="2× speed" data-i18n-title="UI_2_SPEED"><input class="hud-speed-input" type="radio" name="simulation-speed" value="2" data-speed-index="1"/><span class="hud-speed-face"><span class="hud-speed-bar" aria-hidden="true"></span><span>2×</span></span></label>
+<label class="hud-speed-option" title="3× speed" data-i18n-title="UI_3_SPEED"><input class="hud-speed-input" type="radio" name="simulation-speed" value="3" data-speed-index="2"/><span class="hud-speed-face"><span class="hud-speed-bar" aria-hidden="true"></span><span>3×</span></span></label>
+<label class="hud-speed-option" title="5× speed" data-i18n-title="UI_5_SPEED"><input class="hud-speed-input" type="radio" name="simulation-speed" value="5" data-speed-index="3"/><span class="hud-speed-face"><span class="hud-speed-bar" aria-hidden="true"></span><span>5×</span></span></label>
+<label class="hud-speed-option" title="10× speed" data-i18n-title="UI_10_SPEED"><input class="hud-speed-input" type="radio" name="simulation-speed" value="10" data-speed-index="4"/><span class="hud-speed-face"><span class="hud-speed-bar" aria-hidden="true"></span><span>10×</span></span></label>
 </fieldset>
 </div>
 
 </div>
 
-<details class="hud-menu" id="hud-menu"><summary>Menu</summary><div class="hud-menu-content"><strong class="hud-menu-heading">Restart</strong><button class="start-btn hud-action hud-action--warning hud-action--wide hud-start-hidden" id="quick-restart-btn" title="QUICK RESTART: Instantly reset borders and war state to scenario start (no loading screen)">QUICK RESTART</button><button class="mini-btn hud-action hud-action--danger hud-reload-action hud-start-hidden" id="restart-scenario-btn" title="FULL RELOAD: Reload the entire scenario from disk (shows loading screen)">Reload scenario</button><button class="mini-btn hud-action hud-start-hidden" id="reset-btn" title="Reset Simulation">RESET</button><strong class="hud-menu-heading">Sandbox</strong><button class="mini-btn hud-action hud-action--god hud-start-hidden" id="god-mode-btn">God mode</button><button class="mini-btn hud-action hud-action--danger hud-start-hidden" id="god-bomb-btn">GOD BOMB: OFF</button><button class="mini-btn hud-action hud-action--success hud-start-hidden" data-i18n="DIPLOMACY" id="force-peace-btn">DIPLOMACY</button><strong class="hud-menu-heading">Preferences &amp; navigation</strong><button class="mini-btn hud-action hud-action--icon" id="ingame-settings-btn" title="Open Settings">Settings</button><button class="mini-btn hud-action hud-action--icon" id="mute-btn" title="Toggle Mute">Sound: on</button><button class="mini-btn hud-action hud-action--neutral-alt" id="leaderboard-btn" title="Open Global Leaderboard">Leaderboard</button><button class="mini-btn hud-action hud-action--neutral" id="main-menu-btn" title="Return to Main Menu">Main menu</button><button class="mini-btn hud-action" id="help-btn" type="button">How to play</button><button class="mini-btn hud-action" id="fullscreen-btn" type="button">Fullscreen</button></div></details></div>
+<details class="hud-menu" id="hud-menu"><summary data-i18n="UI_MENU">Menu</summary><div class="hud-menu-content"><strong class="hud-menu-heading" data-i18n="UI_RESTART">Restart</strong><button class="start-btn hud-action hud-action--warning hud-action--wide hud-start-hidden" id="quick-restart-btn" title="QUICK RESTART: Instantly reset borders and war state to scenario start (no loading screen)" data-i18n-title="UI_QUICK_RESTART_INSTANTLY_RESET_BORDERS_AND_WAR_STATE_TO_SCENARIO_START_NO_LOADING">QUICK RESTART</button><button class="mini-btn hud-action hud-action--danger hud-reload-action hud-start-hidden" id="restart-scenario-btn" title="FULL RELOAD: Reload the entire scenario from disk (shows loading screen)" data-i18n-title="UI_FULL_RELOAD_RELOAD_THE_ENTIRE_SCENARIO_FROM_DISK_SHOWS_LOADING_SCREEN" data-i18n="UI_RELOAD_SCENARIO">Reload scenario</button><button class="mini-btn hud-action hud-start-hidden" id="reset-btn" title="Reset Simulation" data-i18n-title="UI_RESET_SIMULATION">RESET</button><strong class="hud-menu-heading" data-i18n="UI_SANDBOX">Sandbox</strong><button class="mini-btn hud-action hud-action--god hud-start-hidden" id="god-mode-btn">God mode</button><button class="mini-btn hud-action hud-action--danger hud-start-hidden" id="god-bomb-btn">GOD BOMB: OFF</button><button class="mini-btn hud-action hud-action--success hud-start-hidden" data-i18n="DIPLOMACY" id="force-peace-btn">DIPLOMACY</button><strong class="hud-menu-heading" data-i18n="UI_PREFERENCES_NAVIGATION">Preferences &amp; navigation</strong><button class="mini-btn hud-action hud-action--icon" id="ingame-settings-btn" title="Open Settings" data-i18n-title="UI_OPEN_SETTINGS" data-i18n="UI_SETTINGS_2">Settings</button><button class="mini-btn hud-action hud-action--icon" id="mute-btn" title="Toggle Mute" data-i18n-title="UI_TOGGLE_MUTE" data-i18n="UI_SOUND_ON">Sound: on</button><button class="mini-btn hud-action hud-action--neutral-alt" id="leaderboard-btn" title="Open Global Leaderboard" data-i18n-title="UI_OPEN_GLOBAL_LEADERBOARD" data-i18n="UI_LEADERBOARD">Leaderboard</button><button class="mini-btn hud-action hud-action--neutral" id="main-menu-btn" title="Return to Main Menu" data-i18n-title="UI_RETURN_TO_MAIN_MENU" data-i18n="UI_MAIN_MENU">Main menu</button><button class="mini-btn hud-action" id="help-btn" type="button" data-i18n="UI_HOW_TO_PLAY">How to play</button><button class="mini-btn hud-action" id="fullscreen-btn" type="button" data-i18n="UI_FULLSCREEN">Fullscreen</button></div></details></div>
 </div>
 
         <section
@@ -408,7 +408,7 @@
             <div class="setup-resize-grip" aria-hidden="true"></div>
             <header class="experiment-setup-header">
                 <div>
-                    <span class="experiment-kicker" >PLAN YOUR CONFLICT</span>
+                    <span class="experiment-kicker"  data-i18n="UI_PLAN_YOUR_CONFLICT">PLAN YOUR CONFLICT</span>
                     <h3
                         id="experiment-setup-title"
                         class="setup-title"
@@ -423,19 +423,19 @@
                     type="button"
                     aria-label="Collapse conflict setup"
                     title="Collapse conflict setup"
-                >
+                 data-i18n-aria-label="UI_COLLAPSE_CONFLICT_SETUP" data-i18n-title="UI_COLLAPSE_CONFLICT_SETUP">
                     −
                 </button>
             </header>
 
-            <div id="setup-basic" class="experiment-basic" aria-label="Basic conflict setup">
+            <div id="setup-basic" class="experiment-basic" aria-label="Basic conflict setup" data-i18n-aria-label="UI_BASIC_CONFLICT_SETUP">
                 <div class="experiment-basic-grid">
                     <label class="experiment-field experiment-field--wide" for="setup-posture-select">
                         <span data-i18n="EXPERIMENT_AI_POSTURE">AI Posture</span>
                         <select id="setup-posture-select">
-                            <option value="ADAPTIVE" selected>Adaptive</option>
-                            <option value="AGGRESSIVE">Aggressive</option>
-                            <option value="CAUTIOUS">Cautious</option>
+                            <option value="ADAPTIVE" selected data-i18n="UI_ADAPTIVE">Adaptive</option>
+                            <option value="AGGRESSIVE" data-i18n="UI_AGGRESSIVE">Aggressive</option>
+                            <option value="CAUTIOUS" data-i18n="UI_CAUTIOUS">Cautious</option>
                         </select>
                     </label>
                 </div>
@@ -444,7 +444,7 @@
 					<label
 						class="experiment-check experiment-basic-rule"
 						title="Disable peace deals. The war ends only when one side is defeated."
-					>
+					 data-i18n-title="UI_DISABLE_PEACE_DEALS_THE_WAR_ENDS_ONLY_WHEN_ONE_SIDE_IS_DEFEATED">
 						<input type="checkbox" id="no-peace-checkbox">
 						<span data-i18n="FIGHT_TO_DEATH">Fight to the Death</span>
 					</label>
@@ -454,21 +454,21 @@
                         type="button"
                         data-i18n="RANDOM_WAR_OFF"
                         title="Periodically spawns extra AI wars between random neighboring countries during the simulation."
-                    >
+                     data-i18n-title="UI_PERIODICALLY_SPAWNS_EXTRA_AI_WARS_BETWEEN_RANDOM_NEIGHBORING_COUNTRIES_DURING_TH">
                         Random War: OFF
                     </button>
                 </div>
 
             </div>
 
-            <div class="setup-side-controls experiment-button-grid" aria-label="Conflict sides">
+            <div class="setup-side-controls experiment-button-grid" aria-label="Conflict sides" data-i18n-aria-label="UI_CONFLICT_SIDES">
                 <button
                     id="add-side-btn"
                     class="mini-btn experiment-secondary-btn"
                     type="button"
                     data-i18n="ADD_SIDE"
                     title="Add another faction column so more teams can join this conflict."
-                >
+                 data-i18n-title="UI_ADD_ANOTHER_FACTION_COLUMN_SO_MORE_TEAMS_CAN_JOIN_THIS_CONFLICT">
                     + Side
                 </button>
                 <button
@@ -478,12 +478,12 @@
                     aria-pressed="false"
                     aria-describedby="ffa-setup-note"
                     title="Free-for-all: view all participants in one box. Existing country groups stay together and fight independently."
-                >
+                 data-i18n-title="UI_FREE_FOR_ALL_VIEW_ALL_PARTICIPANTS_IN_ONE_BOX_EXISTING_COUNTRY_GROUPS_STAY_TOGET" data-i18n="UI_FFA_OFF">
                     FFA: OFF
                 </button>
             </div>
 
-            <p id="ffa-setup-note" class="ffa-setup-note" role="status" hidden>
+            <p id="ffa-setup-note" class="ffa-setup-note" role="status" hidden data-i18n="UI_EACH_PARTICIPANT_FIGHTS_INDEPENDENTLY_EXISTING_ALLIED_GROUPS_STAY_TOGETHER">
                 Each participant fights independently. Existing allied groups stay together.
             </p>
 
@@ -503,43 +503,43 @@
                             <summary data-i18n="EXPERIMENT_FORCES_DATE">Forces &amp; Date</summary>
                             <div class="experiment-detail-content">
                                 <div class="experiment-option-block">
-                                    <span class="experiment-option-label">Alliance Manpower (Optional)</span>
+                                    <span class="experiment-option-label" data-i18n="UI_ALLIANCE_MANPOWER_OPTIONAL">Alliance Manpower (Optional)</span>
                                     <div id="manpower-inputs-container" class="experiment-manpower-inputs">
                                         <label>
-                                            <span>Side A</span>
+                                            <span data-i18n="UI_SIDE_A">Side A</span>
                                             <input
                                                 id="manpower-side-a"
                                                 type="number"
                                                 min="0"
                                                 placeholder="auto"
                                                 title="Total soldiers for Side A (e.g. 2000000)."
-                                            >
+                                             data-i18n-placeholder="UI_AUTO" data-i18n-title="UI_TOTAL_SOLDIERS_FOR_SIDE_A_E_G_2000000">
                                         </label>
                                         <label>
-                                            <span>Side B</span>
+                                            <span data-i18n="UI_SIDE_B">Side B</span>
                                             <input
                                                 id="manpower-side-b"
                                                 type="number"
                                                 min="0"
                                                 placeholder="auto"
                                                 title="Total soldiers for Side B (e.g. 1500000)."
-                                            >
+                                             data-i18n-placeholder="UI_AUTO" data-i18n-title="UI_TOTAL_SOLDIERS_FOR_SIDE_B_E_G_1500000">
                                         </label>
                                     </div>
                                 </div>
                                 <div class="experiment-option-block">
-                                    <label class="experiment-check" title="Toggle the calendar on or off for this conflict.">
+                                    <label class="experiment-check" title="Toggle the calendar on or off for this conflict." data-i18n-title="UI_TOGGLE_THE_CALENDAR_ON_OR_OFF_FOR_THIS_CONFLICT">
                                         <input type="checkbox" id="enable-time-checkbox">
-                                        <span>Time System</span>
+                                        <span data-i18n="UI_TIME_SYSTEM">Time System</span>
                                     </label>
-                                    <div class="experiment-date-inputs" aria-label="Starting date">
+                                    <div class="experiment-date-inputs" aria-label="Starting date" data-i18n-aria-label="UI_STARTING_DATE">
                                         <input
                                             id="time-year-input"
                                             type="number"
                                             placeholder="1936"
                                             aria-label="Starting year"
                                             title="Starting year controls historical missile availability."
-                                        >
+                                         data-i18n-aria-label="UI_STARTING_YEAR" data-i18n-title="UI_STARTING_YEAR_CONTROLS_HISTORICAL_MISSILE_AVAILABILITY">
                                         <span>/</span>
                                         <input
                                             id="time-month-input"
@@ -548,7 +548,7 @@
                                             max="12"
                                             placeholder="1"
                                             aria-label="Starting month"
-                                        >
+                                         data-i18n-aria-label="UI_STARTING_MONTH">
                                         <span>/</span>
                                         <input
                                             id="time-day-input"
@@ -557,7 +557,7 @@
                                             max="31"
                                             placeholder="1"
                                             aria-label="Starting day"
-                                        >
+                                         data-i18n-aria-label="UI_STARTING_DAY">
                                     </div>
                                 </div>
                             </div>
@@ -566,24 +566,24 @@
                         <details id="advanced-rules-capture" class="experiment-detail-group">
                             <summary data-i18n="EXPERIMENT_RULES_CAPTURE">Rules &amp; Capture</summary>
                             <div class="experiment-detail-content experiment-check-grid">
-                                <label class="experiment-check experiment-check--wide" title="Disable long-range missile and bomb attacks.">
+                                <label class="experiment-check experiment-check--wide" title="Disable long-range missile and bomb attacks." data-i18n-title="UI_DISABLE_LONG_RANGE_MISSILE_AND_BOMB_ATTACKS">
                                     <input type="checkbox" id="disable-bombs-checkbox">
                                     <span data-i18n="DISABLE_MISSILES">Disable Long-Range Missiles</span>
                                 </label>
-                                <label class="experiment-check" title="Ignore mountain movement penalties and mountain darkening.">
+                                <label class="experiment-check" title="Ignore mountain movement penalties and mountain darkening." data-i18n-title="UI_IGNORE_MOUNTAIN_MOVEMENT_PENALTIES_AND_MOUNTAIN_DARKENING">
                                     <input type="checkbox" id="setup-disable-mountains-checkbox">
                                     <span data-i18n="DISABLE_MT">Disable Mountains</span>
                                 </label>
-                                <label class="experiment-check" title="Prevent overlords from automatically calling vassals into the war.">
+                                <label class="experiment-check" title="Prevent overlords from automatically calling vassals into the war." data-i18n-title="UI_PREVENT_OVERLORDS_FROM_AUTOMATICALLY_CALLING_VASSALS_INTO_THE_WAR">
                                     <input type="checkbox" id="disable-puppets-checkbox" checked>
                                     <span data-i18n="DISABLE_PUPPETS">Disable Puppets</span>
                                 </label>
                                 <label
                                     class="experiment-check experiment-check--wide experiment-check--capture"
                                     title="Hide most UI during war and record a local video."
-                                >
+                                 data-i18n-title="UI_HIDE_MOST_UI_DURING_WAR_AND_RECORD_A_LOCAL_VIDEO">
                                     <input type="checkbox" id="cinematic-mode-checkbox">
-                                    <span>Cinematic Mode (Record War)</span>
+                                    <span data-i18n="UI_CINEMATIC_MODE_RECORD_WAR">Cinematic Mode (Record War)</span>
                                 </label>
                             </div>
                         </details>
@@ -598,7 +598,7 @@
                     type="button"
                     data-i18n="START_WAR"
                     title="Lock in this configuration and start the war."
-                >
+                 data-i18n-title="UI_LOCK_IN_THIS_CONFIGURATION_AND_START_THE_WAR">
                     Start War
                 </button>
             </footer>
@@ -616,7 +616,7 @@
             <header class="war-desk-header hud-panel-header">
                 <div>
 
-                    <strong id="war-desk-title" >War Overview</strong>
+                    <strong id="war-desk-title"  data-i18n="UI_WAR_OVERVIEW">War Overview</strong>
                 </div>
                 <button
                     id="war-desk-toggle-btn"
@@ -625,7 +625,7 @@
                     aria-expanded="true"
                     aria-controls="war-desk-body"
                     title="Collapse War Desk"
-                >
+                 data-i18n-title="UI_COLLAPSE_WAR_DESK">
                     −
                 </button>
             </header>
@@ -643,7 +643,7 @@
         </aside>
 
         <div id="casualty-panel" class="casualty-panel hud-surface hud-start-hidden">
-            <div class="casualty-title">CASUALTIES &amp; MANPOWER</div>
+            <div class="casualty-title" data-i18n="UI_CASUALTIES_MANPOWER">CASUALTIES &amp; MANPOWER</div>
             <div id="casualty-lists-container"></div>
         </div>
 
@@ -658,7 +658,7 @@
             </div>
 
             <div class="stats-header hud-panel-header">
-                <span>COMBAT OPERATIONS REPORT</span>
+                <span data-i18n="UI_COMBAT_OPERATIONS_REPORT">COMBAT OPERATIONS REPORT</span>
                 <button id="minimize-stats-btn" class="mini-btn hud-action hud-action--compact hud-action--neutral">−</button>
             </div>
 
@@ -683,7 +683,7 @@
     <!-- Editor Choice Modal -->
     <div id="editor-choice-modal" class="settings-overlay" style="display:none">
         <div class="settings-content" style="max-width: 500px;">
-            <h2 class="settings-title">CHOOSE EDITOR MODULE</h2>
+            <h2 class="settings-title" data-i18n="UI_CHOOSE_EDITOR_MODULE">CHOOSE EDITOR MODULE</h2>
             <div class="editor-choice-grid">
                 <button id="choice-ingame-editor" class="menu-card primary">
                     <div class="card-icon">
@@ -692,8 +692,8 @@
                         </svg>
                     </div>
                     <div class="card-body">
-                        <span class="btn-text">IN-GAME ENGINE</span>
-                        <span class="btn-sub">Integrated Map Builder</span>
+                        <span class="btn-text" data-i18n="UI_IN_GAME_ENGINE">IN-GAME ENGINE</span>
+                        <span class="btn-sub" data-i18n="UI_INTEGRATED_MAP_BUILDER">Integrated Map Builder</span>
                     </div>
                 </button>
                 <button id="choice-external-editor" class="menu-card">
@@ -703,19 +703,19 @@
                         </svg>
                     </div>
                     <div class="card-body">
-                        <span class="btn-text">EXTERNAL EDITOR</span>
-                        <span class="btn-sub">Advanced Standalone Module</span>
+                        <span class="btn-text" data-i18n="UI_EXTERNAL_EDITOR">EXTERNAL EDITOR</span>
+                        <span class="btn-sub" data-i18n="UI_ADVANCED_STANDALONE_MODULE">Advanced Standalone Module</span>
                     </div>
                 </button>
             </div>
-            <button id="cancel-editor-choice" class="start-btn" style="background: #444;">BACK TO MENU</button>
+            <button id="cancel-editor-choice" class="start-btn" style="background: #444;" data-i18n="UI_BACK_TO_MENU">BACK TO MENU</button>
         </div>
     </div>
 
     <!-- Editor Source Modal -->
     <div id="editor-source-modal" class="settings-overlay" style="display:none">
         <div class="settings-content" style="max-width: 500px;">
-            <h2 class="settings-title">CHOOSE TERRAIN SOURCE</h2>
+            <h2 class="settings-title" data-i18n="UI_CHOOSE_TERRAIN_SOURCE">CHOOSE TERRAIN SOURCE</h2>
             <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px;">
                 <button id="choice-source-earth" class="menu-card primary" style="width: 100%; border: 1px solid rgba(255, 71, 87, 0.3);">
                     <div class="card-icon">
@@ -725,8 +725,8 @@
                         </svg>
                     </div>
                     <div class="card-body" style="text-align: left;">
-                        <span class="btn-text">REAL EARTH</span>
-                        <span class="btn-sub">Standard Map & Topography</span>
+                        <span class="btn-text" data-i18n="UI_REAL_EARTH">REAL EARTH</span>
+                        <span class="btn-sub" data-i18n="UI_STANDARD_MAP_TOPOGRAPHY">Standard Map & Topography</span>
                     </div>
                 </button>
                 <button id="choice-source-blank" class="menu-card" style="width: 100%; border: 1px solid rgba(255,255,255,0.1);">
@@ -736,32 +736,32 @@
                         </svg>
                     </div>
                     <div class="card-body" style="text-align: left;">
-                        <span class="btn-text">BLANK CANVAS</span>
-                        <span class="btn-sub">Draw your own world from scratch</span>
+                        <span class="btn-text" data-i18n="UI_BLANK_CANVAS">BLANK CANVAS</span>
+                        <span class="btn-sub" data-i18n="UI_DRAW_YOUR_OWN_WORLD_FROM_SCRATCH">Draw your own world from scratch</span>
                     </div>
                 </button>
             </div>
-            <button id="cancel-source-choice" class="start-btn" style="background: #444;">BACK</button>
+            <button id="cancel-source-choice" class="start-btn" style="background: #444;" data-i18n="UI_BACK">BACK</button>
         </div>
     </div>
 
     <!-- Blank Canvas Size Modal -->
     <div id="blank-size-modal" class="settings-overlay" style="display:none">
         <div class="settings-content" style="max-width: 400px;">
-            <h2 class="settings-title">CANVAS DIMENSIONS</h2>
+            <h2 class="settings-title" data-i18n="UI_CANVAS_DIMENSIONS">CANVAS DIMENSIONS</h2>
             <div class="setting-group">
-                <label>Width (Degrees)</label>
+                <label data-i18n="UI_WIDTH_DEGREES">Width (Degrees)</label>
                 <input type="number" id="blank-width-input" value="360" min="10" max="360" style="width: 100%; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px;">
-                <small>360 = Full World. Smaller values limit the map.</small>
+                <small data-i18n="UI_360_FULL_WORLD_SMALLER_VALUES_LIMIT_THE_MAP">360 = Full World. Smaller values limit the map.</small>
             </div>
             <div class="setting-group">
-                <label>Height (Degrees)</label>
+                <label data-i18n="UI_HEIGHT_DEGREES">Height (Degrees)</label>
                 <input type="number" id="blank-height-input" value="180" min="10" max="180" style="width: 100%; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px;">
-                <small>180 = Full World.</small>
+                <small data-i18n="UI_180_FULL_WORLD">180 = Full World.</small>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button id="confirm-blank-size-btn" class="start-btn">Initialize Canvas</button>
-                <button id="cancel-blank-size-btn" class="start-btn" style="background: #444;">Back</button>
+                <button id="confirm-blank-size-btn" class="start-btn" data-i18n="UI_INITIALIZE_CANVAS">Initialize Canvas</button>
+                <button id="cancel-blank-size-btn" class="start-btn" style="background: #444;" data-i18n="UI_BACK_2">Back</button>
             </div>
         </div>
     </div>
@@ -771,41 +771,41 @@
         <div class="menu-v2-overlay"></div>
         <div class="menu-v2-container">
             <div class="menu-v2-header">
-                <h1 class="menu-v2-title">MAP CONFIG</h1>
-                <div class="menu-v2-author">Theater Parameters</div>
+                <h1 class="menu-v2-title" data-i18n="UI_MAP_CONFIG">MAP CONFIG</h1>
+                <div class="menu-v2-author" data-i18n="UI_THEATER_PARAMETERS">Theater Parameters</div>
             </div>
             <div class="menu-v2-nav">
                 <div class="scenario-selection-container">
                     <div class="selection-header">
                         <button id="map-settings-cancel-btn" class="selection-back-btn">
                             <svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-                            <span>BACK</span>
+                            <span data-i18n="UI_BACK">BACK</span>
                         </button>
-                        <h2 class="selection-title">DIMENSIONS</h2>
+                        <h2 class="selection-title" data-i18n="UI_DIMENSIONS">DIMENSIONS</h2>
                     </div>
                     <div class="scenario-scroller-v2">
                         <div class="setting-group">
-                            <label>Map Name</label>
-                            <input type="text" id="map-settings-name-input" placeholder="e.g. Cold War Europe" style="width: 100%; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px;">
+                            <label data-i18n="UI_MAP_NAME">Map Name</label>
+                            <input type="text" id="map-settings-name-input" placeholder="e.g. Cold War Europe" style="width: 100%; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px;" data-i18n-placeholder="UI_E_G_COLD_WAR_EUROPE">
                         </div>
                         <div class="setting-group">
-                            <label>World Width (Degrees)</label>
+                            <label data-i18n="UI_WORLD_WIDTH_DEGREES">World Width (Degrees)</label>
                             <input type="number" id="map-settings-width-input" min="10" max="360" step="1" style="width: 100%; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px;">
-                            <small>360 = full longitude wrap. Smaller values confine the playable world.</small>
+                            <small data-i18n="UI_360_FULL_LONGITUDE_WRAP_SMALLER_VALUES_CONFINE_THE_PLAYABLE_WORLD">360 = full longitude wrap. Smaller values confine the playable world.</small>
                         </div>
                         <div class="setting-group">
-                            <label>World Height (Degrees)</label>
+                            <label data-i18n="UI_WORLD_HEIGHT_DEGREES">World Height (Degrees)</label>
                             <input type="number" id="map-settings-height-input" min="10" max="180" step="1" style="width: 100%; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px;">
-                            <small>180 = full pole‑to‑pole. Smaller values confine latitude.</small>
+                            <small data-i18n="UI_180_FULL_POLE_TO_POLE_SMALLER_VALUES_CONFINE_LATITUDE">180 = full pole‑to‑pole. Smaller values confine latitude.</small>
                         </div>
                         <div class="setting-group">
                             <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
                                 <input type="checkbox" id="map-settings-missiles-checkbox" style="width: 18px; height: 18px; accent-color: #f39c12;">
-                                <span>Enable Long‑Range Missiles in This Map</span>
+                                <span data-i18n="UI_ENABLE_LONG_RANGE_MISSILES_IN_THIS_MAP">Enable Long‑Range Missiles in This Map</span>
                             </label>
-                            <small>When disabled, missile/bomb launches are fully disabled in this scenario.</small>
+                            <small data-i18n="UI_WHEN_DISABLED_MISSILE_BOMB_LAUNCHES_ARE_FULLY_DISABLED_IN_THIS_SCENARIO">When disabled, missile/bomb launches are fully disabled in this scenario.</small>
                         </div>
-                        <button id="map-settings-apply-btn" class="start-btn" style="margin-top: 20px;">Apply Strategic Changes</button>
+                        <button id="map-settings-apply-btn" class="start-btn" style="margin-top: 20px;" data-i18n="UI_APPLY_STRATEGIC_CHANGES">Apply Strategic Changes</button>
                     </div>
                 </div>
             </div>
@@ -817,15 +817,15 @@
         <div class="menu-v2-overlay"></div>
         <div class="menu-v2-container">
             <div class="menu-v2-header">
-                <h1 class="menu-v2-title">CONQUEST</h1>
-                <div class="menu-v2-author">Global Combat Operations</div>
+                <h1 class="menu-v2-title" data-i18n="UI_CONQUEST">CONQUEST</h1>
+                <div class="menu-v2-author" data-i18n="UI_GLOBAL_COMBAT_OPERATIONS">Global Combat Operations</div>
             </div>
             <div class="menu-v2-nav">
                 <div class="scenario-selection-container">
                     <div class="selection-header">
                         <button id="cancel-conquest-choice" class="selection-back-btn">
                             <svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-                            <span>BACK</span>
+                            <span data-i18n="UI_BACK">BACK</span>
                         </button>
                     </div>
                     <div class="scenario-scroller-v2">
@@ -833,7 +833,7 @@
                             <div class="era-grid">
                                 <button id="choice-modern-day" class="era-card era-card-primary">
                                     <div class="era-card-header">
-                                        <span class="era-chip era-chip-hot">LIVE WORLD</span>
+                                        <span class="era-chip era-chip-hot" data-i18n="UI_LIVE_WORLD">LIVE WORLD</span>
                                         <span class="era-icon">
                                             <svg viewBox="0 0 24 24" aria-hidden="true">
                                                 <path d="M4 9h16v9H4V9zm2-4h4v3H6V5zm6 0h4v3h-4V5z" fill="currentColor"/>
@@ -843,14 +843,14 @@
                                     <div class="era-card-body">
                                         <div class="era-name" data-i18n="MODERN_DAY">2022</div>
                                         <div class="era-desc" data-i18n="MODERN_DAY_SUB">Present geopolitics and alliances</div>
-                                        <div class="era-meta">Real borders • 21st century</div>
-                                        <div class="era-meta">Map: UnionOfBritain</div>
+                                        <div class="era-meta" data-i18n="UI_REAL_BORDERS_21ST_CENTURY">Real borders • 21st century</div>
+                                        <div class="era-meta" data-i18n="UI_MAP_UNIONOFBRITAIN">Map: UnionOfBritain</div>
                                     </div>
                                 </button>
 
                                 <button id="choice-1936-scenario" class="era-card">
                                     <div class="era-card-header">
-                                        <span class="era-chip">INTERWAR</span>
+                                        <span class="era-chip" data-i18n="UI_INTERWAR">INTERWAR</span>
                                         <span class="era-icon">
                                             <svg viewBox="0 0 24 24" aria-hidden="true">
                                                 <path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.8 7.1 18.2l.9-5.5-4-3.9 5.5-.8L12 3z" fill="currentColor"/>
@@ -860,14 +860,14 @@
                                     <div class="era-card-body">
                                         <div class="era-name" data-i18n="WW2_SCENARIO">1936 SCENARIO</div>
                                         <div class="era-desc" data-i18n="WW2_SCENARIO_SUB">Build‑up to global conflict</div>
-                                        <div class="era-meta">Revanchism • Rearmament</div>
-                                        <div class="era-meta">Map: filip</div>
+                                        <div class="era-meta" data-i18n="UI_REVANCHISM_REARMAMENT">Revanchism • Rearmament</div>
+                                        <div class="era-meta" data-i18n="UI_MAP_FILIP">Map: filip</div>
                                     </div>
                                 </button>
 
                                 <button id="choice-ww1-1914" class="era-card">
                                     <div class="era-card-header">
-                                        <span class="era-chip">GREAT WAR</span>
+                                        <span class="era-chip" data-i18n="UI_GREAT_WAR">GREAT WAR</span>
                                         <span class="era-icon">
                                             <svg viewBox="0 0 24 24" aria-hidden="true">
                                                 <path d="M4 13a8 8 0 0116 0v3H4v-3zm2 4h12v2H6z" fill="currentColor"/>
@@ -875,9 +875,9 @@
                                         </span>
                                     </div>
                                     <div class="era-card-body">
-                                        <div class="era-name">1914 SCENARIO</div>
-                                        <div class="era-desc">Empires collide on trench frontiers</div>
-                                        <div class="era-meta">Alliances • Mobilisation • Map: orange</div>
+                                        <div class="era-name" data-i18n="UI_1914_SCENARIO">1914 SCENARIO</div>
+                                        <div class="era-desc" data-i18n="UI_EMPIRES_COLLIDE_ON_TRENCH_FRONTIERS">Empires collide on trench frontiers</div>
+                                        <div class="era-meta" data-i18n="UI_ALLIANCES_MOBILISATION_MAP_ORANGE">Alliances • Mobilisation • Map: orange</div>
                                     </div>
                                 </button>
                             </div>
@@ -891,23 +891,23 @@
     <!-- Create Country Modal -->
     <div id="create-country-modal" class="settings-overlay" style="display:none">
         <div class="settings-content">
-            <h3 class="settings-title">Establish New Nation</h3>
+            <h3 class="settings-title" data-i18n="UI_ESTABLISH_NEW_NATION">Establish New Nation</h3>
             <div class="setting-group">
-                <label>Nation Name</label>
-                <input type="text" id="new-country-name" placeholder="e.g. New Atlantica" style="width: 100%; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px;">
+                <label data-i18n="UI_NATION_NAME">Nation Name</label>
+                <input type="text" id="new-country-name" placeholder="e.g. New Atlantica" style="width: 100%; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px;" data-i18n-placeholder="UI_E_G_NEW_ATLANTICA">
             </div>
             <div class="setting-group">
-                <label>Nation Color</label>
+                <label data-i18n="UI_NATION_COLOR">Nation Color</label>
                 <input type="color" id="new-country-color" value="#ff4757" style="width: 100%; height: 40px; border: none; background: none; cursor: pointer;">
             </div>
             <div class="setting-group">
-                <label>National Flag</label>
+                <label data-i18n="UI_NATIONAL_FLAG">National Flag</label>
                 <input type="file" id="new-country-flag" accept="image/*" style="font-size: 12px; color: #888;">
-                <small>Upload a square or rectangular PNG/JPG</small>
+                <small data-i18n="UI_UPLOAD_A_SQUARE_OR_RECTANGULAR_PNG_JPG">Upload a square or rectangular PNG/JPG</small>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button id="confirm-create-btn" class="start-btn">Confirm</button>
-                <button id="cancel-create-btn" class="start-btn" style="background: #444;">Cancel</button>
+                <button id="confirm-create-btn" class="start-btn" data-i18n="UI_CONFIRM">Confirm</button>
+                <button id="cancel-create-btn" class="start-btn" style="background: #444;" data-i18n="UI_CANCEL">Cancel</button>
             </div>
         </div>
     </div>
@@ -917,32 +917,32 @@
         <div class="menu-v2-overlay"></div>
         <div class="menu-v2-container">
             <div class="menu-v2-header">
-                <h1 class="menu-v2-title">EDITOR HUB</h1>
-                <div class="menu-v2-author">Community Content Network</div>
+                <h1 class="menu-v2-title" data-i18n="UI_EDITOR_HUB">EDITOR HUB</h1>
+                <div class="menu-v2-author" data-i18n="UI_COMMUNITY_CONTENT_NETWORK">Community Content Network</div>
             </div>
             <div class="menu-v2-nav">
                 <div class="scenario-selection-container">
                     <div class="selection-header">
                         <button id="close-hub-btn" class="selection-back-btn">
                             <svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-                            <span>EXIT</span>
+                            <span data-i18n="UI_EXIT">EXIT</span>
                         </button>
                         <div class="hub-tabs">
-                            <button id="tab-scenarios-btn" class="mini-btn active">SCENARIOS</button>
-                            <button id="tab-countries-btn" class="mini-btn">NATIONS</button>
-                            <button id="tab-flags-btn" class="mini-btn">FLAGS</button>
+                            <button id="tab-scenarios-btn" class="mini-btn active" data-i18n="UI_SCENARIOS">SCENARIOS</button>
+                            <button id="tab-countries-btn" class="mini-btn" data-i18n="UI_NATIONS">NATIONS</button>
+                            <button id="tab-flags-btn" class="mini-btn" data-i18n="UI_FLAGS">FLAGS</button>
                         </div>
                     </div>
 
                     <div id="hub-list-container" class="scenario-scroller-v2" style="padding-right: 10px;">
                         <div id="hub-list" style="display: flex; flex-direction: column; gap: 15px;">
-                            <div style="text-align: center; color: #666; padding: 40px;">Connecting to satellite network...</div>
+                            <div style="text-align: center; color: #666; padding: 40px;" data-i18n="UI_CONNECTING_TO_SATELLITE_NETWORK">Connecting to satellite network...</div>
                         </div>
                         <div id="library-list" style="display: none; flex-direction: column; gap: 15px;">
-                            <div style="text-align: center; color: #666; padding: 40px;">Searching archives...</div>
+                            <div style="text-align: center; color: #666; padding: 40px;" data-i18n="UI_SEARCHING_ARCHIVES">Searching archives...</div>
                         </div>
                         <div id="flag-library-list" style="display: none; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;">
-                            <div style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;">Loading vexillology archives...</div>
+                            <div style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;" data-i18n="UI_LOADING_VEXILLOLOGY_ARCHIVES">Loading vexillology archives...</div>
                         </div>
                     </div>
                 </div>
@@ -953,18 +953,18 @@
     <!-- Upload Details Modal -->
     <div id="upload-details-modal" class="settings-overlay" style="display:none">
         <div class="settings-content">
-            <h3 class="settings-title">Share Scenario</h3>
+            <h3 class="settings-title" data-i18n="UI_SHARE_SCENARIO">Share Scenario</h3>
             <div class="setting-group">
-                <label>Scenario Name</label>
-                <input type="text" id="upload-scenario-name" placeholder="e.g. World War III" style="width: 100%; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px;">
+                <label data-i18n="UI_SCENARIO_NAME">Scenario Name</label>
+                <input type="text" id="upload-scenario-name" placeholder="e.g. World War III" style="width: 100%; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px;" data-i18n-placeholder="UI_E_G_WORLD_WAR_III">
             </div>
             <div class="setting-group">
-                <label>Description</label>
-                <textarea id="upload-scenario-desc" placeholder="Briefly describe your scenario..." style="width: 100%; height: 80px; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px; font-family: inherit; resize: none;"></textarea>
+                <label data-i18n="UI_DESCRIPTION">Description</label>
+                <textarea id="upload-scenario-desc" placeholder="Briefly describe your scenario..." style="width: 100%; height: 80px; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px; font-family: inherit; resize: none;" data-i18n-placeholder="UI_BRIEFLY_DESCRIBE_YOUR_SCENARIO"></textarea>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button id="confirm-upload-btn" class="start-btn" style="background: #27ae60;">Upload Now</button>
-                <button id="cancel-upload-btn" class="start-btn" style="background: #444;">Cancel</button>
+                <button id="confirm-upload-btn" class="start-btn" style="background: #27ae60;" data-i18n="UI_UPLOAD_NOW">Upload Now</button>
+                <button id="cancel-upload-btn" class="start-btn" style="background: #444;" data-i18n="UI_CANCEL">Cancel</button>
             </div>
         </div>
     </div>
@@ -972,18 +972,18 @@
     <!-- Share Flag Modal -->
     <div id="share-flag-modal" class="settings-overlay" style="display:none">
         <div class="settings-content">
-            <h3 class="settings-title">Contribute to Flag Library</h3>
+            <h3 class="settings-title" data-i18n="UI_CONTRIBUTE_TO_FLAG_LIBRARY">Contribute to Flag Library</h3>
             <div class="setting-group">
-                <label>Flag Name</label>
-                <input type="text" id="share-flag-name" placeholder="e.g. Imperial Banner" style="width: 100%; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px;">
+                <label data-i18n="UI_FLAG_NAME">Flag Name</label>
+                <input type="text" id="share-flag-name" placeholder="e.g. Imperial Banner" style="width: 100%; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px;" data-i18n-placeholder="UI_E_G_IMPERIAL_BANNER">
             </div>
             <div class="setting-group">
-                <label>Description</label>
-                <textarea id="share-flag-desc" placeholder="History or details about this flag..." style="width: 100%; height: 80px; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px; font-family: inherit; resize: none;"></textarea>
+                <label data-i18n="UI_DESCRIPTION">Description</label>
+                <textarea id="share-flag-desc" placeholder="History or details about this flag..." style="width: 100%; height: 80px; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px; font-family: inherit; resize: none;" data-i18n-placeholder="UI_HISTORY_OR_DETAILS_ABOUT_THIS_FLAG"></textarea>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button id="confirm-share-flag-btn" class="start-btn" style="background: #2e86de;">Upload Flag</button>
-                <button id="cancel-share-flag-btn" class="start-btn" style="background: #444;">Cancel</button>
+                <button id="confirm-share-flag-btn" class="start-btn" style="background: #2e86de;" data-i18n="UI_UPLOAD_FLAG">Upload Flag</button>
+                <button id="cancel-share-flag-btn" class="start-btn" style="background: #444;" data-i18n="UI_CANCEL">Cancel</button>
             </div>
         </div>
     </div>
@@ -991,18 +991,18 @@
     <!-- Share Country Modal -->
     <div id="share-country-modal" class="settings-overlay" style="display:none">
         <div class="settings-content">
-            <h3 class="settings-title">Contribute to Library</h3>
+            <h3 class="settings-title" data-i18n="UI_CONTRIBUTE_TO_LIBRARY">Contribute to Library</h3>
             <div class="setting-group">
-                <label>Public Name</label>
-                <input type="text" id="share-country-name" placeholder="e.g. Neo Tokyo" style="width: 100%; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px;">
+                <label data-i18n="UI_PUBLIC_NAME">Public Name</label>
+                <input type="text" id="share-country-name" placeholder="e.g. Neo Tokyo" style="width: 100%; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px;" data-i18n-placeholder="UI_E_G_NEO_TOKYO">
             </div>
             <div class="setting-group">
-                <label>Description</label>
-                <textarea id="share-country-desc" placeholder="Tell the world about this nation..." style="width: 100%; height: 80px; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px; font-family: inherit; resize: none;"></textarea>
+                <label data-i18n="UI_DESCRIPTION">Description</label>
+                <textarea id="share-country-desc" placeholder="Tell the world about this nation..." style="width: 100%; height: 80px; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px; font-family: inherit; resize: none;" data-i18n-placeholder="UI_TELL_THE_WORLD_ABOUT_THIS_NATION"></textarea>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button id="confirm-share-country-btn" class="start-btn" style="background: #8e44ad;">Upload to Library</button>
-                <button id="cancel-share-country-btn" class="start-btn" style="background: #444;">Cancel</button>
+                <button id="confirm-share-country-btn" class="start-btn" style="background: #8e44ad;" data-i18n="UI_UPLOAD_TO_LIBRARY">Upload to Library</button>
+                <button id="cancel-share-country-btn" class="start-btn" style="background: #444;" data-i18n="UI_CANCEL">Cancel</button>
             </div>
         </div>
     </div>
@@ -1010,43 +1010,43 @@
     <!-- Release Selection Modal -->
     <div id="release-modal" class="settings-overlay" style="display:none">
         <div class="settings-content" style="max-width: 400px;">
-            <h3 class="settings-title">Release Nation</h3>
+            <h3 class="settings-title" data-i18n="UI_RELEASE_NATION">Release Nation</h3>
             <div id="releasable-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; max-height: 300px; overflow-y: auto; padding-right: 5px;">
                 <!-- Releasables injected here -->
             </div>
-            <button id="close-release-modal" class="start-btn" style="background: #444;">Cancel</button>
+            <button id="close-release-modal" class="start-btn" style="background: #444;" data-i18n="UI_CANCEL">Cancel</button>
         </div>
     </div>
 
     <!-- Credits Modal -->
     <div id="credits-modal" class="settings-overlay" style="display:none">
         <div class="settings-content" style="text-align: center;">
-            <h3 class="settings-title">Intel Assets & Credits</h3>
+            <h3 class="settings-title" data-i18n="UI_INTEL_ASSETS_CREDITS">Intel Assets & Credits</h3>
             <div class="setting-group" style="margin-top: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px;">
-                <label>Logo & Thumbnail Design</label>
+                <label data-i18n="UI_LOGO_THUMBNAIL_DESIGN">Logo & Thumbnail Design</label>
                 <div style="font-size: 14px; color: #fff; font-weight: bold;">Merry raisan bran cereal box</div>
             </div>
             <div class="setting-group" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px;">
-                <label>Map Design (1936)</label>
+                <label data-i18n="UI_MAP_DESIGN_1936">Map Design (1936)</label>
                 <div style="font-size: 14px; color: #fff; font-weight: bold;">filip</div>
             </div>
             <div class="setting-group" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px;">
-                <label>Map Design (1914 &amp; 1974) &amp; Second Thumbnail Editing</label>
+                <label data-i18n="UI_MAP_DESIGN_1914_1974_SECOND_THUMBNAIL_EDITING">Map Design (1914 &amp; 1974) &amp; Second Thumbnail Editing</label>
                 <div style="font-size: 14px; color: #fff; font-weight: bold;">orange</div>
             </div>
             <div class="setting-group" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px;">
-                <label>Soundtrack</label>
+                <label data-i18n="UI_SOUNDTRACK">Soundtrack</label>
                 <div style="font-size: 14px; color: #fff; font-weight: bold;">OST - Tyler Cunningham Music</div>
             </div>
             <div class="setting-group" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px;">
-                <label>Label Engine</label>
+                <label data-i18n="UI_LABEL_ENGINE">Label Engine</label>
                 <div style="font-size: 14px; color: #fff; font-weight: bold;">certaincoin (HOI4 Style Curved Labels)</div>
             </div>
             <div class="setting-group">
-                <label>Development</label>
+                <label data-i18n="UI_DEVELOPMENT">Development</label>
                 <div style="font-size: 14px; color: #fff; font-weight: bold;">man_82</div>
             </div>
-            <button id="close-credits-btn" class="start-btn" style="background: #444;">Dismiss</button>
+            <button id="close-credits-btn" class="start-btn" style="background: #444;" data-i18n="UI_DISMISS">Dismiss</button>
         </div>
     </div>
 
@@ -1055,22 +1055,22 @@
         <div class="menu-v2-overlay"></div>
         <div class="menu-v2-container">
             <div class="menu-v2-header">
-                <h1 class="menu-v2-title">RANKINGS</h1>
-                <div class="menu-v2-author">Global Power Projection</div>
+                <h1 class="menu-v2-title" data-i18n="UI_RANKINGS">RANKINGS</h1>
+                <div class="menu-v2-author" data-i18n="UI_GLOBAL_POWER_PROJECTION">Global Power Projection</div>
             </div>
             <div class="menu-v2-nav">
                 <div class="scenario-selection-container">
                     <div class="selection-header">
                         <button id="close-leaderboard-btn" class="selection-back-btn">
                             <svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-                            <span>BACK</span>
+                            <span data-i18n="UI_BACK">BACK</span>
                         </button>
-                        <h2 class="selection-title">LEADERBOARD</h2>
+                        <h2 class="selection-title" data-i18n="UI_LEADERBOARD_2">LEADERBOARD</h2>
                     </div>
                     <div class="leaderboard-header" style="margin-top: 10px;">
-                        <span style="flex: 2;">Country</span>
-                        <span style="flex: 1; text-align:right;">Tiles</span>
-                        <span style="flex: 1; text-align:right;">Units</span>
+                        <span style="flex: 2;" data-i18n="UI_COUNTRY">Country</span>
+                        <span style="flex: 1; text-align:right;" data-i18n="UI_TILES">Tiles</span>
+                        <span style="flex: 1; text-align:right;" data-i18n="UI_UNITS">Units</span>
                         <span style="width: 40px; text-align:right;">#</span>
                     </div>
                     <div id="leaderboard-list" class="scenario-scroller-v2 leaderboard-list" style="gap: 6px; padding-right: 5px;">
@@ -1086,20 +1086,20 @@
         <div class="menu-v2-overlay"></div>
         <div class="menu-v2-container">
             <div class="menu-v2-header">
-                <h1 id="item-modal-title" class="menu-v2-title" style="font-size: 48px;">ITEM DETAILS</h1>
-                <div id="item-modal-author-name" class="menu-v2-author" style="font-size: 18px;">Intel Report</div>
+                <h1 id="item-modal-title" class="menu-v2-title" style="font-size: 48px;" data-i18n="UI_ITEM_DETAILS">ITEM DETAILS</h1>
+                <div id="item-modal-author-name" class="menu-v2-author" style="font-size: 18px;" data-i18n="UI_INTEL_REPORT">Intel Report</div>
             </div>
             <div class="menu-v2-nav item-details-nav">
                 <div class="scenario-selection-container">
                     <div class="selection-header">
                         <button id="close-item-modal-btn" class="selection-back-btn">
                             <svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-                            <span>BACK</span>
+                            <span data-i18n="UI_BACK">BACK</span>
                         </button>
                         <div id="item-modal-actions" style="display:none; gap:8px; margin-left: auto;">
-                            <button id="item-modal-play" class="mini-btn active" style="background:#27ae60;">PLAY</button>
-                            <button id="item-modal-remix" class="mini-btn active" style="background:#8e44ad;">REMIX</button>
-                            <button id="item-modal-delete" class="mini-btn" style="background:#c0392b; display:none;">DEL</button>
+                            <button id="item-modal-play" class="mini-btn active" style="background:#27ae60;" data-i18n="UI_PLAY">PLAY</button>
+                            <button id="item-modal-remix" class="mini-btn active" style="background:#8e44ad;" data-i18n="UI_REMIX">REMIX</button>
+                            <button id="item-modal-delete" class="mini-btn" style="background:#c0392b; display:none;" data-i18n="UI_DEL">DEL</button>
                         </div>
                     </div>
 
@@ -1110,16 +1110,16 @@
                         </div>
 
                         <div class="scroller-section">
-                            <div class="scroller-label">COMMUNICATIONS LOG</div>
+                            <div class="scroller-label" data-i18n="UI_COMMUNICATIONS_LOG">COMMUNICATIONS LOG</div>
                             <div id="item-comments-list" class="item-comments-v2"></div>
 
                             <div class="comment-composer-v2">
-                                <textarea id="item-comment-input" placeholder="Transmit a message..." style="width:100%; min-height:80px; padding:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:4px; font-family: inherit; font-size:13px; resize:none;"></textarea>
+                                <textarea id="item-comment-input" placeholder="Transmit a message..." style="width:100%; min-height:80px; padding:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:4px; font-family: inherit; font-size:13px; resize:none;" data-i18n-placeholder="UI_TRANSMIT_A_MESSAGE"></textarea>
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                                    <span id="item-reply-indicator" style="font-size: 12px; color:#f1c40f; text-transform:uppercase; letter-spacing:1px; display:none;">REPLYING...</span>
+                                    <span id="item-reply-indicator" style="font-size: 12px; color:#f1c40f; text-transform:uppercase; letter-spacing:1px; display:none;" data-i18n="UI_REPLYING">REPLYING...</span>
                                     <div style="display:flex; gap:6px; margin-left:auto;">
-                                        <button id="item-comment-cancel-reply" class="mini-btn" style="background:#444; display:none;">CANCEL</button>
-                                        <button id="item-comment-submit" class="start-btn" style="padding:10px 20px; width:auto; font-size:12px;">SEND TRANSMISSION</button>
+                                        <button id="item-comment-cancel-reply" class="mini-btn" style="background:#444; display:none;" data-i18n="UI_CANCEL_2">CANCEL</button>
+                                        <button id="item-comment-submit" class="start-btn" style="padding:10px 20px; width:auto; font-size:12px;" data-i18n="UI_SEND_TRANSMISSION">SEND TRANSMISSION</button>
                 </div>
             </div>
         </div>
@@ -1137,18 +1137,18 @@
     <!-- Global Chat Modal -->
     <div id="global-chat-modal" class="settings-overlay" style="display:none">
         <div class="settings-content" style="max-width: 520px; width: 95%; max-height: 90vh;">
-            <h3 class="settings-title" style="margin-bottom: 10px;">GLOBAL CHAT</h3>
-            <div style="font-size: 12px; color:#777; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">
+            <h3 class="settings-title" style="margin-bottom: 10px;" data-i18n="UI_GLOBAL_CHAT">GLOBAL CHAT</h3>
+            <div style="font-size: 12px; color:#777; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;" data-i18n="UI_SHARED_WAR_ROOM_ACROSS_EVERYONE_IN_THIS_PROJECT">
                 Shared war-room across everyone in this project.
             </div>
             <div id="global-chat-list" style="flex:1; min-height:120px; max-height:320px; overflow-y:auto; padding:8px; border-radius:8px; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.08); margin-bottom:10px;">
-                <div style="text-align:center; font-size: 12px; color:#666; padding:20px;">Connecting to command net...</div>
+                <div style="text-align:center; font-size: 12px; color:#666; padding:20px;" data-i18n="UI_CONNECTING_TO_COMMAND_NET">Connecting to command net...</div>
             </div>
             <div>
-                <textarea id="global-chat-input" placeholder="Type a message..." style="width:100%; min-height:50px; max-height:120px; padding:8px; background:#2a2a30; border:1px solid #444; color:#fff; border-radius:6px; font-size:12px; resize:vertical;"></textarea>
+                <textarea id="global-chat-input" placeholder="Type a message..." style="width:100%; min-height:50px; max-height:120px; padding:8px; background:#2a2a30; border:1px solid #444; color:#fff; border-radius:6px; font-size:12px; resize:vertical;" data-i18n-placeholder="UI_TYPE_A_MESSAGE"></textarea>
                 <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:6px;">
-                    <button id="global-chat-send" class="start-btn" style="width:auto; padding:8px 16px;">Send</button>
-                    <button id="global-chat-close" class="start-btn" style="background:#444; width:auto; padding:8px 16px;">Close</button>
+                    <button id="global-chat-send" class="start-btn" style="width:auto; padding:8px 16px;" data-i18n="UI_SEND">Send</button>
+                    <button id="global-chat-close" class="start-btn" style="background:#444; width:auto; padding:8px 16px;" data-i18n="UI_CLOSE">Close</button>
                 </div>
             </div>
         </div>
@@ -1161,10 +1161,10 @@
                 <!-- Content injected by JS -->
             </div>
             <div class="tutorial-navigation">
-                <button id="tutorial-skip-btn" class="mini-btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1);">Skip Tutorial</button>
-                <button id="tutorial-prev-btn" class="mini-btn">Back</button>
+                <button id="tutorial-skip-btn" class="mini-btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1);" data-i18n="UI_SKIP_TUTORIAL">Skip Tutorial</button>
+                <button id="tutorial-prev-btn" class="mini-btn" data-i18n="UI_BACK_2">Back</button>
                 <div id="tutorial-dots"></div>
-                <button id="tutorial-next-btn" class="start-btn" style="width: auto; padding: 10px 30px;">Next</button>
+                <button id="tutorial-next-btn" class="start-btn" style="width: auto; padding: 10px 30px;" data-i18n="UI_NEXT">Next</button>
             </div>
         </div>
     </div>
@@ -1176,36 +1176,36 @@
     <!-- Country Inspector -->
     <div id="country-inspector" class="setup-panel" style="display:none; position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 1010; max-width: 300px; padding: 15px;">
         <div style="margin-bottom: 15px;">
-            <label style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Nation Name</label>
-            <input type="text" id="inspect-name-input" placeholder="Nation Name" style="width: 100%; background: transparent; border: none; border-bottom: 1px solid #444; color: white; font-size: 18px; font-weight: bold; outline: none; padding: 5px 0;">
+            <label style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;" data-i18n="UI_NATION_NAME">Nation Name</label>
+            <input type="text" id="inspect-name-input" placeholder="Nation Name" style="width: 100%; background: transparent; border: none; border-bottom: 1px solid #444; color: white; font-size: 18px; font-weight: bold; outline: none; padding: 5px 0;" data-i18n-placeholder="UI_NATION_NAME">
         </div>
 
 
 
         <div id="mid-war-recruitment" style="display:none; margin-bottom: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-            <label style="font-size: 12px; color: #888; text-transform: uppercase; display: block; margin-bottom: 8px; text-align: center; letter-spacing: 1px;">Mobilize Into Conflict</label>
+            <label style="font-size: 12px; color: #888; text-transform: uppercase; display: block; margin-bottom: 8px; text-align: center; letter-spacing: 1px;" data-i18n="UI_MOBILIZE_INTO_CONFLICT">Mobilize Into Conflict</label>
             <div id="recruit-sides-btns" style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px;">
                 <!-- Join Side buttons injected here -->
             </div>
-            <button id="vassalize-btn" class="start-btn" style="display:none; background: #9b59b6; font-size: 12px; padding: 10px;">FORCE VASSALIZATION</button>
-            <button id="exit-conflict-btn" class="start-btn" style="display:none; background: #27ae60; font-size: 12px; padding: 10px; margin-top: 8px;">EXIT CONFLICT (ANNEX OCCUPIED)</button>
+            <button id="vassalize-btn" class="start-btn" style="display:none; background: #9b59b6; font-size: 12px; padding: 10px;" data-i18n="UI_FORCE_VASSALIZATION">FORCE VASSALIZATION</button>
+            <button id="exit-conflict-btn" class="start-btn" style="display:none; background: #27ae60; font-size: 12px; padding: 10px; margin-top: 8px;" data-i18n="UI_EXIT_CONFLICT_ANNEX_OCCUPIED">EXIT CONFLICT (ANNEX OCCUPIED)</button>
         </div>
 
         <div style="text-align: center; margin-bottom: 15px;">
             <div id="inspect-color-swatch" style="width: 100%; height: 6px; border-radius: 3px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.2);"></div>
 
             <div class="editor-only" style="margin-bottom: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; text-align: left;">
-                <label style="font-size: 12px; color: #888; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;">National Identity</label>
+                <label style="font-size: 12px; color: #888; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;" data-i18n="UI_NATIONAL_IDENTITY">National Identity</label>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <input type="color" id="inspect-color-picker" style="width: 40px; height: 30px; border: none; background: none; cursor: pointer; padding: 0;">
                     <div style="flex: 1; display: flex; align-items: center; gap: 10px;">
                         <img id="inspect-flag-preview" alt="" loading="lazy" decoding="async" style="width: 40px; height: 25px; object-fit: cover; background: #000; border: 1px solid #444; border-radius: 2px; display: none;">
                         <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
-                            <label style="font-size: 12px; color: #555; text-transform: uppercase; display: block;">Update Flag</label>
+                            <label style="font-size: 12px; color: #555; text-transform: uppercase; display: block;" data-i18n="UI_UPDATE_FLAG">Update Flag</label>
                             <input type="file" id="inspect-flag-input" accept="image/*" style="font-size: 12px; color: #777; width: 100%;">
                             <div style="display: flex; gap: 4px;">
-                                <button id="inspect-fetch-flag-btn" class="mini-btn" style="background: #34495e; font-size: 12px; padding: 2px 4px; flex: 1;">Fetch Modern</button>
-                                <button id="inspect-hub-flag-btn" class="mini-btn" style="background: #2e86de; font-size: 12px; padding: 2px 4px; flex: 1;">Hub Library</button>
+                                <button id="inspect-fetch-flag-btn" class="mini-btn" style="background: #34495e; font-size: 12px; padding: 2px 4px; flex: 1;" data-i18n="UI_FETCH_MODERN">Fetch Modern</button>
+                                <button id="inspect-hub-flag-btn" class="mini-btn" style="background: #2e86de; font-size: 12px; padding: 2px 4px; flex: 1;" data-i18n="UI_HUB_LIBRARY">Hub Library</button>
                             </div>
                         </div>
                     </div>
@@ -1213,124 +1213,124 @@
             </div>
 
             <div class="editor-only" style="display: flex; gap: 5px; margin-bottom: 10px;">
-                <button id="inspect-paint-btn" class="start-btn" style="flex: 1; background: #2e86de; font-size: 12px; padding: 10px;">PAINT</button>
-                <button id="inspect-annex-click-btn" class="start-btn" style="flex: 1; background: #d35400; font-size: 12px; padding: 10px;">ANNEX CLICK</button>
+                <button id="inspect-paint-btn" class="start-btn" style="flex: 1; background: #2e86de; font-size: 12px; padding: 10px;" data-i18n="UI_PAINT">PAINT</button>
+                <button id="inspect-annex-click-btn" class="start-btn" style="flex: 1; background: #d35400; font-size: 12px; padding: 10px;" data-i18n="UI_ANNEX_CLICK">ANNEX CLICK</button>
             </div>
             <div class="editor-only" style="display: flex; gap: 5px; margin-bottom: 10px;">
-                <button id="share-country-btn" class="start-btn" style="flex: 1; background: #8e44ad; font-size: 12px; padding: 8px;">Share Country</button>
-                <button id="share-flag-btn" class="start-btn" style="flex: 1; background: #34495e; font-size: 12px; padding: 8px;">Share Flag</button>
+                <button id="share-country-btn" class="start-btn" style="flex: 1; background: #8e44ad; font-size: 12px; padding: 8px;" data-i18n="UI_SHARE_COUNTRY">Share Country</button>
+                <button id="share-flag-btn" class="start-btn" style="flex: 1; background: #34495e; font-size: 12px; padding: 8px;" data-i18n="UI_SHARE_FLAG">Share Flag</button>
             </div>
 
             <div id="buff-editor-section" class="editor-only" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 5px;">
-                <label style="font-size: 12px; color: #888; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px;">Combat Buff</label>
+                <label style="font-size: 12px; color: #888; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px;" data-i18n="UI_COMBAT_BUFF">Combat Buff</label>
                 <button id="inspect-buff-btn" class="mini-btn" style="width: 100%; margin-bottom: 10px; background:#444; font-size: 12px; padding:6px 8px;">
                     BUFF: NONE
                 </button>
 
                 <div id="vassal-status-display" style="font-size: 12px; color: #f1c40f; margin-bottom: 8px; text-transform: uppercase; display: none;">
-                    Vassal of: <span id="overlord-name-disp">None</span>
+                    <span data-i18n="UI_VASSAL_OF">Vassal of:</span> <span id="overlord-name-disp">None</span>
                 </div>
                 <div id="inspector-release-container" style="display: none; margin-bottom: 10px;">
-                    <button id="inspect-release-btn" class="start-btn" style="background: #27ae60; font-size: 12px; padding: 10px; width: 100%;">RELEASE NATION...</button>
+                    <button id="inspect-release-btn" class="start-btn" style="background: #27ae60; font-size: 12px; padding: 10px; width: 100%;" data-i18n="UI_RELEASE_NATION_2">RELEASE NATION...</button>
                 </div>
                 <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                    <button id="set-overlord-btn" class="mini-btn" style="flex: 1; background: #8e44ad;" title="Set as puppet vassal">Vassalize</button>
-                    <button id="set-releasable-btn" class="mini-btn" style="flex: 1; background: #27ae60;" title="Absorb into another nation as a releasable core">Set Releasable</button>
-                    <button id="clear-overlord-btn" class="mini-btn" style="flex: 0.5; background: #444;">Clear</button>
+                    <button id="set-overlord-btn" class="mini-btn" style="flex: 1; background: #8e44ad;" title="Set as puppet vassal" data-i18n-title="UI_SET_AS_PUPPET_VASSAL" data-i18n="UI_VASSALIZE">Vassalize</button>
+                    <button id="set-releasable-btn" class="mini-btn" style="flex: 1; background: #27ae60;" title="Absorb into another nation as a releasable core" data-i18n-title="UI_ABSORB_INTO_ANOTHER_NATION_AS_A_RELEASABLE_CORE" data-i18n="UI_SET_RELEASABLE">Set Releasable</button>
+                    <button id="clear-overlord-btn" class="mini-btn" style="flex: 0.5; background: #444;" data-i18n="UI_CLEAR">Clear</button>
                 </div>
 
                 <div id="ally-controls" style="margin-bottom: 10px; padding: 8px; border-radius: 6px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06);">
-                    <label style="font-size: 12px; color: #888; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;">Alliances</label>
+                    <label style="font-size: 12px; color: #888; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;" data-i18n="UI_ALLIANCES">Alliances</label>
                     <div id="ally-list" style="font-size: 12px; color: #ccc; margin-bottom: 6px; max-height: 80px; overflow-y: auto;">
-                        <span style="font-size: 12px; color: #666;">No allies set.</span>
+                        <span style="font-size: 12px; color: #666;" data-i18n="UI_NO_ALLIES_SET">No allies set.</span>
                     </div>
                     <div style="display: flex; gap: 5px;">
-                        <button id="add-ally-btn" class="mini-btn" style="flex: 1; background: #16a085;" title="Click to enter ally-select mode, then click another country on the map to form a mutual alliance.">Add Ally (Click Map)</button>
-                        <button id="clear-allies-btn" class="mini-btn" style="flex: 1; background: #444;" title="Remove all alliances for this country.">Clear Allies</button>
+                        <button id="add-ally-btn" class="mini-btn" style="flex: 1; background: #16a085;" title="Click to enter ally-select mode, then click another country on the map to form a mutual alliance." data-i18n-title="UI_CLICK_TO_ENTER_ALLY_SELECT_MODE_THEN_CLICK_ANOTHER_COUNTRY_ON_THE_MAP_TO_FORM_A_" data-i18n="UI_ADD_ALLY_CLICK_MAP">Add Ally (Click Map)</button>
+                        <button id="clear-allies-btn" class="mini-btn" style="flex: 1; background: #444;" title="Remove all alliances for this country." data-i18n-title="UI_REMOVE_ALL_ALLIANCES_FOR_THIS_COUNTRY" data-i18n="UI_CLEAR_ALLIES">Clear Allies</button>
                     </div>
                     <div style="margin-top:6px; display:flex; flex-direction:column; gap:4px;">
-                        <label style="font-size: 12px; color:#888; text-transform:uppercase; letter-spacing:1px;">Alliance Flag</label>
+                        <label style="font-size: 12px; color:#888; text-transform:uppercase; letter-spacing:1px;" data-i18n="UI_ALLIANCE_FLAG">Alliance Flag</label>
                         <input type="file" id="alliance-flag-input" accept="image/*" style="font-size: 12px; color:#777;">
                     </div>
                 </div>
-                <label style="font-size: 12px; color: #888; display: block; margin-bottom: 5px; text-transform: uppercase;">Annex Modern Territory</label>
+                <label style="font-size: 12px; color: #888; display: block; margin-bottom: 5px; text-transform: uppercase;" data-i18n="UI_ANNEX_MODERN_TERRITORY">Annex Modern Territory</label>
                 <div style="display: flex; gap: 5px;">
-                    <input type="text" id="annex-country-input" placeholder="e.g. Poland, France..." style="flex: 1; padding: 6px; font-size: 12px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 4px;">
-                    <button id="annex-country-btn" class="mini-btn" style="background: #e67e22;">Annex</button>
+                    <input type="text" id="annex-country-input" placeholder="e.g. Poland, France..." style="flex: 1; padding: 6px; font-size: 12px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 4px;" data-i18n-placeholder="UI_E_G_POLAND_FRANCE">
+                    <button id="annex-country-btn" class="mini-btn" style="background: #e67e22;" data-i18n="UI_ANNEX">Annex</button>
                 </div>
-                <small style="font-size: 12px; color: #666; display: block; margin-top: 4px;">This adds the territory of a real country to your selection.</small>
+                <small style="font-size: 12px; color: #666; display: block; margin-top: 4px;" data-i18n="UI_THIS_ADDS_THE_TERRITORY_OF_A_REAL_COUNTRY_TO_YOUR_SELECTION">This adds the territory of a real country to your selection.</small>
             </div>
         </div>
-        <button id="close-inspector-btn" class="mini-btn" style="width: 100%;">Close</button>
+        <button id="close-inspector-btn" class="mini-btn" style="width: 100%;" data-i18n="UI_CLOSE">Close</button>
     </div>
 
     <!-- City Inspector -->
     <div id="city-inspector" class="setup-panel" style="display:none; position: absolute; bottom: 80px; left: 10px; z-index: 1001; width: 220px; padding: 15px;">
         <div style="margin-bottom: 10px;">
-            <label style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">City Name</label>
-            <input type="text" id="city-name-input" placeholder="City Name" style="width: 100%; background: transparent; border: none; border-bottom: 1px solid #444; color: white; font-size: 16px; font-weight: bold; outline: none; padding: 5px 0;">
+            <label style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;" data-i18n="UI_CITY_NAME">City Name</label>
+            <input type="text" id="city-name-input" placeholder="City Name" style="width: 100%; background: transparent; border: none; border-bottom: 1px solid #444; color: white; font-size: 16px; font-weight: bold; outline: none; padding: 5px 0;" data-i18n-placeholder="UI_CITY_NAME">
         </div>
         <div style="margin-bottom: 10px;">
-            <label style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Owner Nation</label>
+            <label style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;" data-i18n="UI_OWNER_NATION">Owner Nation</label>
             <select id="city-owner-select" style="width: 100%; padding: 6px; background:#2a2a30; border:1px solid #444; border-radius:4px; color:#fff; font-size: 12px;">
             </select>
         </div>
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
             <label style="display:flex; align-items:center; gap:6px; font-size: 12px; color:#ccc; cursor:pointer;">
                 <input type="checkbox" id="city-capital-checkbox" style="width:16px; height:16px; accent-color:#f1c40f;">
-                <span>Set as Capital</span>
+                <span data-i18n="UI_SET_AS_CAPITAL">Set as Capital</span>
             </label>
         </div>
         <div style="display:flex; gap:6px; margin-bottom:10px;">
-            <button id="city-move-btn" class="start-btn" style="flex:1; background:#2e86de; font-size: 12px; padding:10px;">Move City</button>
-            <button id="city-delete-btn" class="start-btn" style="flex:1; background:#c0392b; font-size: 12px; padding:10px;">Delete</button>
+            <button id="city-move-btn" class="start-btn" style="flex:1; background:#2e86de; font-size: 12px; padding:10px;" data-i18n="UI_MOVE_CITY">Move City</button>
+            <button id="city-delete-btn" class="start-btn" style="flex:1; background:#c0392b; font-size: 12px; padding:10px;" data-i18n="UI_DELETE">Delete</button>
         </div>
-        <button id="city-close-btn" class="mini-btn" style="width: 100%;">Close</button>
+        <button id="city-close-btn" class="mini-btn" style="width: 100%;" data-i18n="UI_CLOSE">Close</button>
     </div>
 
     <!-- Import Country From Scenario Modal -->
     <div id="import-country-modal" class="settings-overlay" style="display:none">
         <div class="settings-content" style="max-width: 520px;">
-            <h3 class="settings-title">Import Country From Scenario</h3>
+            <h3 class="settings-title" data-i18n="UI_IMPORT_COUNTRY_FROM_SCENARIO">Import Country From Scenario</h3>
             <div class="setting-group">
-                <label>Source Scenario</label>
+                <label data-i18n="UI_SOURCE_SCENARIO">Source Scenario</label>
                 <select id="import-scenario-select" style="width:100%; padding:8px; background:#2a2a30; border:1px solid #444; border-radius:6px; color:#fff; font-size:12px;">
-                    <option value="" selected disabled>-- choose source --</option>
-                    <option value="builtin:modern_2022">2022 (world invis)</option>
-                    <option value="builtin:ww2_1936">1936 Scenario (WW2)</option>
-                    <option value="builtin:ww2_1942">1942 Scenario (WW2)</option>
-                    <option value="builtin:ww1_1914">1914 Scenario (WW1)</option>
-                    <option value="builtin:coldwar_1974">1974 Cold War</option>
-                    <option value="builtin:coldwar_1948">1948 Scenario</option>
-                    <option value="builtin:france_states">France States Preset</option>
-                    <option value="builtin:england_states">England States Preset</option>
-                    <option value="file">Load from .json file…</option>
+                    <option value="" selected disabled data-i18n="UI_CHOOSE_SOURCE">-- choose source --</option>
+                    <option value="builtin:modern_2022" data-i18n="UI_2022_WORLD_INVIS">2022 (world invis)</option>
+                    <option value="builtin:ww2_1936" data-i18n="UI_1936_SCENARIO_WW2">1936 Scenario (WW2)</option>
+                    <option value="builtin:ww2_1942" data-i18n="UI_1942_SCENARIO_WW2">1942 Scenario (WW2)</option>
+                    <option value="builtin:ww1_1914" data-i18n="UI_1914_SCENARIO_WW1">1914 Scenario (WW1)</option>
+                    <option value="builtin:coldwar_1974" data-i18n="UI_1974_COLD_WAR">1974 Cold War</option>
+                    <option value="builtin:coldwar_1948" data-i18n="UI_1948_SCENARIO">1948 Scenario</option>
+                    <option value="builtin:france_states" data-i18n="UI_FRANCE_STATES_PRESET">France States Preset</option>
+                    <option value="builtin:england_states" data-i18n="UI_ENGLAND_STATES_PRESET">England States Preset</option>
+                    <option value="file" data-i18n="UI_LOAD_FROM_JSON_FILE">Load from .json file…</option>
                 </select>
-                <small>Pick a built‑in era preset or load any saved scenario preset file.</small>
+                <small data-i18n="UI_PICK_A_BUILT_IN_ERA_PRESET_OR_LOAD_ANY_SAVED_SCENARIO_PRESET_FILE">Pick a built‑in era preset or load any saved scenario preset file.</small>
                 <input type="file" id="import-scenario-file" accept=".json" style="margin-top:8px; display:none; font-size: 12px; color:#aaa;">
             </div>
             <div class="setting-group">
-                <label>Country To Import</label>
+                <label data-i18n="UI_COUNTRY_TO_IMPORT">Country To Import</label>
                 <input
                     type="text"
                     id="import-country-search"
                     placeholder="Search country by name..."
                     style="width:100%; padding:8px; background:#2a2a30; border:1px solid #444; border-radius:6px; color:#fff; font-size:12px; margin-bottom:8px;"
                     disabled
-                >
+                 data-i18n-placeholder="UI_SEARCH_COUNTRY_BY_NAME">
                 <div id="import-country-card-list" class="import-country-card-list">
-                    <div style="font-size: 12px; color:#777; text-align:center; padding:10px;">
+                    <div style="font-size: 12px; color:#777; text-align:center; padding:10px;" data-i18n="UI_CHOOSE_A_SOURCE_SCENARIO_FIRST">
                         Choose a source scenario first
                     </div>
                 </div>
-                <small>The selected country’s territory will be merged into this map as a new nation.</small>
+                <small data-i18n="UI_THE_SELECTED_COUNTRY_S_TERRITORY_WILL_BE_MERGED_INTO_THIS_MAP_AS_A_NEW_NATION">The selected country’s territory will be merged into this map as a new nation.</small>
             </div>
-            <div style="font-size: 12px; color:#777; margin-bottom:10px;">
+            <div style="font-size: 12px; color:#777; margin-bottom:10px;" data-i18n="UI_GRID_DIFFERENCES_ARE_HANDLED_AUTOMATICALLY_IMPORTED_BORDERS_ARE_APPROXIMATED_TO_">
                 Grid differences are handled automatically; imported borders are approximated to your current engine resolution.
             </div>
             <div style="display:flex; gap:10px; margin-top:5px;">
-                <button id="import-country-confirm-btn" class="start-btn" style="flex:1;">Import</button>
-                <button id="import-country-cancel-btn" class="start-btn" style="flex:1; background:#444;">Cancel</button>
+                <button id="import-country-confirm-btn" class="start-btn" style="flex:1;" data-i18n="UI_IMPORT">Import</button>
+                <button id="import-country-cancel-btn" class="start-btn" style="flex:1; background:#444;" data-i18n="UI_CANCEL">Cancel</button>
             </div>
         </div>
     </div>
@@ -1338,18 +1338,18 @@
     <!-- No Nations Detection Modal -->
     <div id="no-nations-modal" class="settings-overlay" style="display:none">
         <div class="settings-content" style="max-width: 420px;">
-            <h2 class="settings-title">UNINHABITED WORLD</h2>
-            <p style="color: #ccc; font-size: 13px; line-height: 1.6; text-align: center; margin-bottom: 20px;">
+            <h2 class="settings-title" data-i18n="UI_UNINHABITED_WORLD">UNINHABITED WORLD</h2>
+            <p style="color: #ccc; font-size: 13px; line-height: 1.6; text-align: center; margin-bottom: 20px;" data-i18n="UI_SATELLITE_ANALYSIS_INDICATES_THIS_SCENARIO_CONTAINS_NO_ESTABLISHED_NATIONS_WOULD">
                 Satellite analysis indicates this scenario contains no established nations. Would you like to procedurally generate a new geopolitical landscape?
             </p>
             <div class="setting-group">
-                <label>Number of Nations to Spawn</label>
+                <label data-i18n="UI_NUMBER_OF_NATIONS_TO_SPAWN">Number of Nations to Spawn</label>
                 <input type="number" id="random-nations-count" value="15" min="2" max="100" style="width: 100%; padding: 10px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 8px;">
-                <small>Nations will expand until they cover all available land.</small>
+                <small data-i18n="UI_NATIONS_WILL_EXPAND_UNTIL_THEY_COVER_ALL_AVAILABLE_LAND">Nations will expand until they cover all available land.</small>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px;">
-                <button id="confirm-random-gen-btn" class="start-btn" style="background: #27ae60;">Generate Civilization</button>
-                <button id="skip-random-gen-btn" class="start-btn" style="background: #444;">Continue Nationless</button>
+                <button id="confirm-random-gen-btn" class="start-btn" style="background: #27ae60;" data-i18n="UI_GENERATE_CIVILIZATION">Generate Civilization</button>
+                <button id="skip-random-gen-btn" class="start-btn" style="background: #444;" data-i18n="UI_CONTINUE_NATIONLESS">Continue Nationless</button>
             </div>
         </div>
     </div>
@@ -1360,9 +1360,9 @@
 
 <div id="benchmark-results" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center;">
     <div style="background:#111; padding:32px 48px; border-radius:4px; border:1px solid rgba(0,255,0,0.3); text-align:center;">
-        <h2 style="color:#0f0; font:24px monospace; margin:0 0 24px;">BENCHMARK COMPLETE</h2>
+        <h2 style="color:#0f0; font:24px monospace; margin:0 0 24px;" data-i18n="UI_BENCHMARK_COMPLETE">BENCHMARK COMPLETE</h2>
         <div id="benchmark-stats" style="color:#ccc; font:13px monospace; line-height:2.2;"></div>
-        <button id="benchmark-dismiss-btn" style="margin-top:24px; padding:10px 30px; background:#ff4757; border:none; color:#fff; cursor:pointer; font:12px monospace; border-radius:2px;">DISMISS</button>
+        <button id="benchmark-dismiss-btn" style="margin-top:24px; padding:10px 30px; background:#ff4757; border:none; color:#fff; cursor:pointer; font:12px monospace; border-radius:2px;" data-i18n="UI_DISMISS_2">DISMISS</button>
     </div>
 </div>
 

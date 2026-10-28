@@ -1,3 +1,4 @@
+import { gameText } from "./i18n.js";
 import { getCookie, setCookie } from "./preferences.js";
 export let isMuted = false;
 export function setSecretSounds(value) {
@@ -395,7 +396,7 @@ export function wireAudioControls({
 
 	muteBtn.addEventListener("click", () => {
 		isMuted = !isMuted;
-		muteBtn.innerText = isMuted ? "Sound: off" : "Sound: on";
+		muteBtn.innerText = gameText(isMuted ? "GAME_SOUND_OFF" : "GAME_SOUND_ON");
 		muteBtn.setAttribute("aria-pressed", String(isMuted));
 
 		if (!audioCtx) return;

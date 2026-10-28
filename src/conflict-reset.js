@@ -1,3 +1,4 @@
+import { gameText } from "./i18n.js";
 // Explicit live context keeps replacements of arrays/state visible across awaits and callbacks.
 export function createConflictReset(runtime) {
 	function resetToSelection() {
@@ -34,7 +35,7 @@ export function createConflictReset(runtime) {
 			}
 			if (!runtime.godModeActive) {
 				runtime.gameState = "EDITOR_ACTIVE";
-				runtime.statusText.innerText = "Map Editor (Alpha)";
+				runtime.statusText.innerText = gameText("APP_5");
 			}
 			runtime.setupPanel.style.display = "none";
 			runtime.statsPanel.style.display = "none";
@@ -71,7 +72,7 @@ export function createConflictReset(runtime) {
 		runtime.setSpeed(0);
 		runtime.frameAccumulator = 0;
 
-		runtime.statusText.innerText = "Select First Country";
+		runtime.statusText.innerText = gameText("APP_6");
 		runtime.setupPanel.style.display = "block";
 		runtime.setupOptions.style.display = "none";
 
@@ -92,7 +93,7 @@ export function createConflictReset(runtime) {
 		runtime.godBombBtn.style.display = "none";
 		runtime.godBombActive = false;
 		runtime.godBombSourceId = -1;
-		runtime.godBombBtn.innerText = "GOD BOMB: OFF";
+		runtime.godBombBtn.innerText = gameText("APP_7");
 		runtime.godBombBtn.classList.remove("active");
 		runtime.forcePeaceBtn.style.display = "none";
 		runtime.unitCountsDiv.style.display = "none";
@@ -104,7 +105,7 @@ export function createConflictReset(runtime) {
 
 		// Scenario-specific reset: Reload the original preset if available
 		if (runtime.currentScenarioContext?.blobUrl) {
-			runtime.loadingStatus.innerText = "Reloading Scenario Assets...";
+			runtime.loadingStatus.innerText = gameText("APP_8");
 			runtime.loadingOverlay.style.display = "flex";
 			try {
 				if (runtime.currentScenarioContext.compiledUrl) {

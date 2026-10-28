@@ -3549,7 +3549,11 @@ input:focus-visible {
 	margin: 0;
 }
 #settings-overlay .menu-v2-title {
-	font-size: 42px;
+	font-size: 24px;
+	overflow-wrap: anywhere;
+}
+#unit-counts > [data-i18n="UNITS"] {
+	margin-inline-start: 0.3em;
 }
 #settings-overlay .menu-v2-author {
 	font: 14px var(--hud-font-body);

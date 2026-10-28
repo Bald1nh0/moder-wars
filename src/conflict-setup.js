@@ -1,3 +1,4 @@
+import { gameText, getTranslation } from "./i18n.js";
 // Dependencies are supplied by the application; this module does not import it.
 export function createConflictSetup(runtime) {
 	function rebuildManpowerInputs() {
@@ -6,10 +7,12 @@ export function createConflictSetup(runtime) {
 		let html = "";
 		for (let i = 0; i < runtime.sides.length; i++) {
 			const color = runtime.sideColors[i].replace(runtime.rgbaRe, "1)");
-			const label = `Side ${String.fromCharCode(65 + i)}`;
+			const label = gameText("GAME_SIDE", {
+				side: String.fromCharCode(65 + i),
+			});
 			html += `<div style="display:flex; flex-direction:column; gap:2px;">
             <span style="font-size: 12px; color:${color}; text-transform:uppercase; letter-spacing:0.5px;">${label}</span>
-            <input id="manpower-side-${i}" type="number" min="0" placeholder="auto" style="width:110px; padding:4px 6px; background:#2a2a30; border:1px solid #444; border-radius:4px; color:#fff; font-size: 12px;" title="Total soldiers for ${label}.">
+            <input id="manpower-side-${i}" type="number" min="0" placeholder="${gameText("GAME_AUTO")}" style="width:110px; padding:4px 6px; background:#2a2a30; border:1px solid #444; border-radius:4px; color:#fff; font-size: 12px;" title="${gameText("GAME_TOTAL_SOLDIERS", { side: label })}">
         </div>`;
 		}
 		container.innerHTML = html;
@@ -30,14 +33,14 @@ export function createConflictSetup(runtime) {
 			const heading = document.createElement("div");
 			heading.className = "ffa-participants-heading";
 			const count = runtime.sides.filter((side) => side.length > 0).length;
-			heading.textContent = `Free for all · ${count} independent sides`;
+			heading.textContent = gameText("GAME_FFA_COUNT", { count });
 			ffaParticipants = document.createElement("div");
 			ffaParticipants.className = "ffa-participants-grid";
 			runtime.sidesContainer.append(heading, ffaParticipants);
 			if (!count) {
 				const empty = document.createElement("p");
 				empty.className = "ffa-participants-empty";
-				empty.textContent = "Select countries on the map to add participants.";
+				empty.textContent = gameText("GAME_SELECT_PARTICIPANTS");
 				ffaParticipants.appendChild(empty);
 			}
 		}
@@ -60,13 +63,13 @@ export function createConflictSetup(runtime) {
 			const sideLabel = String.fromCharCode(65 + sideIdx);
 			if (sideList.length > 0 && sideTotalTroops > 0) {
 				sideHeader.innerHTML = `
-                <div style="font-size: 12px; font-weight:900;">SIDE ${sideLabel}</div>
+                <div style="font-size: 12px; font-weight:900;">${gameText("GAME_SIDE_UPPER", { side: sideLabel })}</div>
                 <div style="font-size: 12px; color:#777; margin-top:2px; text-transform:uppercase; letter-spacing:0.5px;">
-                    ~ ${runtime.influenceLayer.formatSoldiers(sideTotalTroops)} troops
+                    ~ ${gameText("GAME_TROOPS", { count: runtime.influenceLayer.formatSoldiers(sideTotalTroops) })}
                 </div>
             `;
 			} else {
-				sideHeader.innerText = `SIDE ${sideLabel}`;
+				sideHeader.innerText = gameText("GAME_SIDE_UPPER", { side: sideLabel });
 			}
 			const sideColor =
 				runtime.sideColors[sideIdx] ||
@@ -110,7 +113,7 @@ export function createConflictSetup(runtime) {
 				const estTroops = runtime.estimateUnitsForCountry(country.id);
 				const estLabel = estTroops
 					? runtime.influenceLayer.formatSoldiers(estTroops)
-					: "UNKNOWN";
+					: gameText("GAME_UNKNOWN");
 
 				const releasables = runtime.countryMetadata.filter(
 					(m) => m && m.releasableBy === country.id,
@@ -122,37 +125,37 @@ export function createConflictSetup(runtime) {
 					"NATIONS",
 				);
 				slot.innerHTML = `
-                <button class="clear-slot-btn" type="button" aria-label="Remove country" title="Remove this country from the selected side.">×</button>
+                <button class="clear-slot-btn" type="button" aria-label="${gameText("GAME_REMOVE_COUNTRY")}" title="${gameText("GAME_REMOVE_COUNTRY_HINT")}">×</button>
                 <div class="slot-name" title="${country.name}" style="display: flex; flex-direction: column; gap: 2px; align-items: center; justify-content: center; margin-bottom: 5px;">
                     <div style="display: flex; align-items: center; gap: 8px; justify-content: center;">
                         ${flagUrl ? `<img src="${flagUrl}" style="width: 22px; height: 13px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0; border-radius: 1px;">` : ""}
                         <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${displayName}</span>
                     </div>
-                    <div style="font-size: 12px; color: #777; text-transform: uppercase; letter-spacing: 0.5px;">~ ${estLabel} troops</div>
+                    <div style="font-size: 12px; color: #777; text-transform: uppercase; letter-spacing: 0.5px;">~ ${gameText("GAME_TROOPS", { count: estLabel })}</div>
                 </div>
                 <details class="country-configuration">
-                    <summary>Configure</summary>
+                    <summary>${gameText("GAME_CONFIGURE")}</summary>
                     <div class="country-configuration-actions">
-                    <button class="mini-btn buff-toggle-btn" style="margin-top: 4px; background:${bMeta.color}; color:${bMeta.textColor}; font-size: 12px; padding:2px 6px; display:flex; align-items:center; gap:4px; justify-content:center;" title="Adjust combat buffs: use ◀ / ▶ to move between CRIPPLED, WEAKENED, NONE, GOLIATH, DEITY, GODLY. Hold ALT while clicking to change an invisible buff that only affects combat.">
+                    <button class="mini-btn buff-toggle-btn" style="margin-top: 4px; background:${bMeta.color}; color:${bMeta.textColor}; font-size: 12px; padding:2px 6px; display:flex; align-items:center; gap:4px; justify-content:center;" title="${gameText("GAME_BUFF_HINT")}">
                         <span class="buff-arrow" data-dir="-1" style="font-size: 12px;">◀</span>
-                        <span class="buff-label">BUFF: ${bMeta.label}</span>
+                        <span class="buff-label">${gameText("GAME_BUFF", { label: bMeta.label })}</span>
                         <span class="buff-arrow" data-dir="1" style="font-size: 12px;">▶</span>
                     </button>
-                    <button class="mini-btn add-allies-btn" style="margin-top: 4px; background:#16a085; font-size: 12px; padding: 2px 6px;" title="Recruit all formal allies (overlord and vassals) of this nation into this side.">ADD ALLIES</button>
+                    <button class="mini-btn add-allies-btn" style="margin-top: 4px; background:#16a085; font-size: 12px; padding: 2px 6px;" title="${gameText("GAME_ADD_ALLIES_HINT")}">${gameText("GAME_ADD_ALLIES")}</button>
 
-                    ${releasables.length > 0 ? `<button class="mini-btn release-btn" style="background: #27ae60; font-size: 12px; padding: 2px 6px; margin-top: 4px;" title="Release a releasable core from this country into the war.">RELEASE...</button>` : ""}
+                    ${releasables.length > 0 ? `<button class="mini-btn release-btn" style="background: #27ae60; font-size: 12px; padding: 2px 6px; margin-top: 4px;" title="${gameText("GAME_RELEASE_HINT")}">${gameText("GAME_RELEASE")}</button>` : ""}
                 </div>
                 <div class="slot-controls">
-                    <select class="mini-select role-select" aria-label="Country role" title="OFF: Leads attacks and creates new fronts. SUP: Sends expeditionary support to allied offensives instead of opening its own invasions.">
-                        <option value="OFFENSE" ${country.role === "OFFENSE" ? "selected" : ""} title="OFF: Offensive main participant, pushes its own fronts.">Offensive</option>
-                        <option value="SUPPORT" ${country.role === "SUPPORT" ? "selected" : ""} title="SUP: Support nation; mostly sends troops to help allies instead of starting new invasions.">Support</option>
+                    <select class="mini-select role-select" aria-label="${gameText("GAME_COUNTRY_ROLE")}" title="${gameText("GAME_ROLE_HINT")}">
+                        <option value="OFFENSE" ${country.role === "OFFENSE" ? "selected" : ""} title="${gameText("GAME_OFFENSE_HINT")}">${gameText("GAME_OFFENSIVE")}</option>
+                        <option value="SUPPORT" ${country.role === "SUPPORT" ? "selected" : ""} title="${gameText("GAME_SUPPORT_HINT")}">${gameText("GAME_SUPPORT")}</option>
                     </select>
-                    <select class="mini-select strategy-select" aria-label="Country doctrine" title="Per-country behavior: TUR = pure defense; DEF = hold cores; BAL = mixed; AGG = push hard; BLZ = fast breakthroughs.">
-                        <option value="TURTLE" ${country.strategy === "TURTLE" ? "selected" : ""} title="TUR: Zero offensive plans until force advantage. Pure defense.">Hold position</option>
-                        <option value="DEFENSIVE" ${country.strategy === "DEFENSIVE" ? "selected" : ""} title="DEF: Focuses on defending own cores and reclaiming lost land.">Defensive</option>
-                        <option value="BALANCED" ${country.strategy === "BALANCED" ? "selected" : ""} title="BAL: Balanced offense and defense along the whole front.">Balanced</option>
-                        <option value="AGGRESSIVE" ${country.strategy === "AGGRESSIVE" ? "selected" : ""} title="AGG: Very aggressive, tries to push hard even when risky.">Aggressive</option>
-                        <option value="BLITZ" ${country.strategy === "BLITZ" ? "selected" : ""} title="BLZ: Blitz-style spearheads that seek breakthroughs and deep pushes.">Blitz</option>
+                    <select class="mini-select strategy-select" aria-label="${gameText("GAME_COUNTRY_DOCTRINE")}" title="${gameText("GAME_DOCTRINE_HINT")}">
+                        <option value="TURTLE" ${country.strategy === "TURTLE" ? "selected" : ""} title="${gameText("GAME_HOLD_HINT")}">${gameText("GAME_HOLD")}</option>
+                        <option value="DEFENSIVE" ${country.strategy === "DEFENSIVE" ? "selected" : ""} title="${gameText("GAME_DEFENSE_HINT")}">${gameText("GAME_DEFENSIVE")}</option>
+                        <option value="BALANCED" ${country.strategy === "BALANCED" ? "selected" : ""} title="${gameText("GAME_BALANCE_HINT")}">${gameText("GAME_BALANCED")}</option>
+                        <option value="AGGRESSIVE" ${country.strategy === "AGGRESSIVE" ? "selected" : ""} title="${gameText("GAME_AGGRESSIVE_HINT")}">${gameText("GAME_AGGRESSIVE")}</option>
+                        <option value="BLITZ" ${country.strategy === "BLITZ" ? "selected" : ""} title="${gameText("GAME_BLITZ_HINT")}">${gameText("GAME_BLITZ")}</option>
                     </select>
 
                 </div>
@@ -172,7 +175,9 @@ export function createConflictSetup(runtime) {
 						const metaBuff =
 							runtime.BUFF_METADATA[newState] || runtime.BUFF_METADATA.none;
 						if (buffLabelEl)
-							buffLabelEl.textContent = `BUFF: ${metaBuff.label}`;
+							buffLabelEl.textContent = gameText("GAME_BUFF", {
+								label: metaBuff.label,
+							});
 						buffBtn.style.background = metaBuff.color;
 						buffBtn.style.color = metaBuff.textColor;
 					};
@@ -250,8 +255,7 @@ export function createConflictSetup(runtime) {
 						);
 
 						if (validAllies.length <= 1) {
-							runtime.statusText.innerText =
-								"No allies linked via overlord/vassal or editor alliances for this nation.";
+							runtime.statusText.innerText = gameText("GAME_NO_ALLIES");
 							return;
 						}
 
@@ -282,12 +286,14 @@ export function createConflictSetup(runtime) {
 						});
 
 						if (addedCount > 0) {
-							runtime.statusText.innerText = `Alliance Mobilized: Added ${addedCount} allied member${addedCount === 1 ? "" : "s"} to Side ${String.fromCharCode(65 + sideIdx)}.`;
+							runtime.statusText.innerText = gameText(
+								"GAME_ALLIANCE_MOBILIZED",
+								{ count: addedCount, side: String.fromCharCode(65 + sideIdx) },
+							);
 							updateSidesUI();
 							runtime.influenceLayer.render();
 						} else {
-							runtime.statusText.innerText =
-								"All linked allies are already committed to a side.";
+							runtime.statusText.innerText = gameText("GAME_ALLIES_COMMITTED");
 						}
 					});
 				}
@@ -327,7 +333,7 @@ export function createConflictSetup(runtime) {
 			if (runtime.sides.length > 2) {
 				const delBtn = document.createElement("button");
 				delBtn.className = "mini-btn";
-				delBtn.innerText = "Remove Side";
+				delBtn.innerText = gameText("GAME_REMOVE_SIDE");
 				delBtn.style.fontSize = "8px";
 				delBtn.style.padding = "2px";
 				delBtn.onclick = (e) => {
@@ -347,7 +353,7 @@ export function createConflictSetup(runtime) {
 			if (sideIdx < runtime.sides.length - 1) {
 				const divider = document.createElement("div");
 				divider.className = "vs-divider";
-				divider.innerText = "VS";
+				divider.innerText = getTranslation("VS_MINI");
 				divider.style.alignSelf = "center";
 				runtime.sidesContainer.appendChild(divider);
 			}
@@ -372,13 +378,13 @@ export function createConflictSetup(runtime) {
 
 	function updateFfaSetupUi() {
 		runtime.ffaToggleBtn.setAttribute("aria-pressed", String(runtime.ffaMode));
-		runtime.ffaToggleBtn.textContent = `${runtime.getTranslation("FFA")}: ${runtime.ffaMode ? "ON" : "OFF"}`;
+		runtime.ffaToggleBtn.textContent = `${runtime.getTranslation("FFA")}: ${runtime.ffaMode ? gameText("GAME_ON") : gameText("GAME_OFF")}`;
 		runtime.setupPanel.classList.toggle("ffa-setup-active", runtime.ffaMode);
 		runtime.addSideBtn.hidden = runtime.ffaMode;
 		const prompt = document.getElementById("setup-prompt");
 		if (prompt) {
 			prompt.textContent = runtime.ffaMode
-				? "Click countries on the map to add independent participants."
+				? gameText("GAME_SELECT_INDEPENDENT")
 				: runtime.getTranslation("SETUP_PROMPT");
 		}
 		const note = document.getElementById("ffa-setup-note");

@@ -1,4 +1,5 @@
 import { showAlert } from "./dialogs.js";
+import { gameText } from "./i18n.js";
 import { COMPILED_SCENARIO_URLS } from "./scenario-codec.js";
 
 export const BUILTIN_SCENARIOS = {
@@ -46,7 +47,7 @@ export function createScenarioHandler(
 		}
 		primeAudio();
 		setLoadingThematic(true);
-		loadingStatus.innerText = scenario.loading;
+		loadingStatus.innerText = gameText(`GAME_LOADING_${key.toUpperCase()}`);
 		loadingOverlay.style.display = "flex";
 		try {
 			const compiledUrl = COMPILED_SCENARIO_URLS[key];
@@ -68,7 +69,9 @@ export function createScenarioHandler(
 			if (key === "modern") await modernFallback();
 			else {
 				showAlert(
-					`Failed to load ${key === "ww1" ? "1914" : scenario.name} scenario.`,
+					gameText("GAME_LOAD_SCENARIO_FAILED", {
+						name: key === "ww1" ? "1914" : scenario.name,
+					}),
 				);
 				loadingOverlay.style.display = "none";
 			}

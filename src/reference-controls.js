@@ -1,3 +1,4 @@
+import { gameText } from "./i18n.js";
 // Controls receive live state and commands; they do not import the application.
 export function createReferenceControls(runtime) {
 	function bindCustomSatInputChange() {
@@ -6,7 +7,9 @@ export function createReferenceControls(runtime) {
 			?.addEventListener("change", async (e) => {
 				const file = e.target.files[0];
 				if (!file) return;
-				runtime.loadingStatus.innerText = "Uploading Background Overlay...";
+				runtime.loadingStatus.innerText = gameText(
+					"EDITOR_MSG_BACKGROUND_UPLOADING",
+				);
 				runtime.loadingOverlay.style.display = "flex";
 				try {
 					const url = await websim.upload(file);
@@ -43,7 +46,9 @@ export function createReferenceControls(runtime) {
 			?.addEventListener("change", async (e) => {
 				const file = e.target.files[0];
 				if (!file) return;
-				runtime.loadingStatus.innerText = "Processing Reference Image...";
+				runtime.loadingStatus.innerText = gameText(
+					"EDITOR_MSG_REFERENCE_PROCESSING",
+				);
 				runtime.loadingOverlay.style.display = "flex";
 				try {
 					const url = await websim.upload(file);

@@ -1,3 +1,4 @@
+import { gameText } from "./i18n.js";
 import { hasSavedCells, visitSavedCells } from "./saved-cells.js";
 
 // Controls receive live state and commands; they do not import the application.
@@ -12,7 +13,7 @@ export function createCountryActions(runtime) {
 
 			const isWar = runtime.gameState === "SIMULATING";
 
-			runtime.loadingStatus.innerText = `RESTORING NATION: ${meta.name}...`;
+			runtime.loadingStatus.innerText = gameText("APP_19", { p0: meta.name });
 			runtime.loadingOverlay.style.display = "flex";
 			await new Promise((r) => setTimeout(r, 50));
 
@@ -108,7 +109,7 @@ export function createCountryActions(runtime) {
 			if (!restoredAny) {
 				runtime.loadingOverlay.style.display = "none";
 				runtime.releaseModal.style.display = "none";
-				runtime.statusText.innerText = `No valid territory found to release for ${meta.name}.`;
+				runtime.statusText.innerText = gameText("APP_20", { p0: meta.name });
 				runtime.influenceLayer.render();
 				return;
 			}
@@ -148,7 +149,7 @@ export function createCountryActions(runtime) {
 			runtime.recalculateAllBounds();
 			runtime.updateSidesUI();
 			runtime.influenceLayer.render();
-			runtime.statusText.innerText = `${meta.name} has been released!`;
+			runtime.statusText.innerText = gameText("APP_21", { p0: meta.name });
 		};
 		window.releaseNation = (...args) =>
 			runtime.simulationClient
