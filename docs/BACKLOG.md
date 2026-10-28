@@ -4,18 +4,22 @@ Recorded on 2026-10-28. Persistence and production backend work remain proposals
 
 The [post-prototype research](PERFORMANCE-NEXT-STEPS.md) ranks the next experiments and explains why extra compression, Redis, or a backend-language rewrite are not assumed speedups.
 
-## Gameplay proposals
+## Gameplay expansion
 
 The [forces, economy, events and relationships proposal](GAMEPLAY-EXPANSION.md)
 records the player's ideas, existing mechanics, source limitations and delivery order.
 
-- [ ] Clarify formations versus personnel/equipment and add dated country force profiles with source attribution and editable game defaults.
-- [ ] Add a bounded event journal for cities, capitulation and mobilization; add region-control notifications after administrative cell indexing.
-- [ ] Add city income, upkeep, construction/training queues and AI budgets using the same rules as the player.
-- [ ] Introduce distinct force roles and aggregated air/air-defense/unmanned/missile capabilities without one agent per vehicle or projectile inventory item.
-- [ ] Extend typed country relationships using existing vassalage; keep sourced dependencies separate from alliances, occupation and scenario-created control.
+- [x] Clarify formations versus personnel/equipment and add dated country force profiles with source attribution and editable game defaults.
+- [x] Add a bounded event journal for cities, capitulation and mobilization; add region-control notifications after administrative cell indexing.
+- [x] Add city income, upkeep, construction/training queues and AI budgets using the same rules as the player.
+- [x] Introduce distinct force roles and aggregated air/air-defense/unmanned/missile capabilities without one agent per vehicle or projectile inventory item.
+- [x] Extend typed country relationships using existing vassalage; keep sourced dependencies separate from alliances, occupation and scenario-created control.
 
-These are proposals, not implemented inventory imports or economy mechanics.
+A first playable version is implemented on `feature/forces-economy-events`;
+see [the campaign guide](CAMPAIGN-GUIDE.md). Public observations have partial
+coverage; game defaults remain explicitly fictional and editable through scenario
+metadata. Detailed vehicle simulation, complete country inventories and full
+campaign save/resume are still future work.
 
 ## Decision baseline
 

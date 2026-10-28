@@ -1,8 +1,10 @@
 # Forces, economy, events and country relationships
 
 Research and design proposal, 2026-10-28. The server-mode feature flag is implemented
-separately in `0.28.7-server.3`. The gameplay systems below are a proposed backlog;
-no country inventories or economic simulation have been imported or enabled yet.
+separately in `0.28.7-server.3`. The first playable implementation is now in `0.29.0-experimental.1` on
+`feature/forces-economy-events`; see [the campaign guide](CAMPAIGN-GUIDE.md).
+The design below remains the broader roadmap, not a claim of full real-world
+inventory coverage or a detailed logistics/air-war simulation.
 
 ## Existing foundation
 

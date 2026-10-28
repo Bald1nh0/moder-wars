@@ -2,6 +2,17 @@
 
 ## 2026-10-28
 
+### 0.29.0-experimental.1 (experimental, unreleased)
+
+- Keep the open HUD menu above the mobile war overview so every action remains reachable.
+- Add a playable campaign panel in English, Ukrainian and Russian with explicit formation/personnel counts, role composition, budgets, equipment stocks, city construction, training and production queues, mobilization and demobilization.
+- Fund player and AI actions from the same country budgets; preserve resource accounting across deployment, casualties, cancellation, city capture and changes of side. Keep formations bounded and calculate role/mission effects without individual vehicle objects.
+- Add aggregate aviation, air defense, reconnaissance, strike-drone and missile mechanics; decorative flights do not apply duplicate impact damage.
+- Add a bounded event journal with optional popups, city/capital captures, country events and sparse administrative control checks for Ukraine's 27 regions.
+- Bundle dated public country profiles and a limited sourced equipment sample, preserving unknowns, provenance and licenses. Distinguish game assumptions and game vassalage from factual observations and formal constitutional relationships.
+- Preserve force-profile/dependency metadata and stable country identity across scenario exports/imports. Carry campaign state through acknowledged ownership handoffs and omit internal region indexes from presentation traffic.
+- Keep browser simulation as the default, retain the optional server flag and pin existing performance benchmarks to their previous workload. Publish the new experiment separately from the frozen Docker playtest.
+
 ### 0.28.7-server.3 (experimental, unreleased)
 
 - Add a separate persistent server-simulation feature flag, off by default, with an explicit current-tab mode and a fresh-game link; switching the preference leaves the current game intact.

@@ -250,3 +250,12 @@ Use its **Open a new game** link to apply the choice in a fresh tab; the current
 game keeps its mode. Explicit `?simulation=browser` or `?simulation=server` links
 override the saved preference. Server mode requires the prototype backend at the
 same origin; a static Docker image alone does not provide it.
+
+## Experimental campaign
+
+The `feature/forces-economy-events` branch adds country economies, formation roles,
+production, mobilization, aggregate missions and an event journal. Open the map
+menu → **Forces & economy** after starting a war. See
+[the campaign guide](docs/CAMPAIGN-GUIDE.md) for controls, data provenance and
+limitations. Browser simulation remains the default; the public Docker image is
+updated separately from this experimental preview.
