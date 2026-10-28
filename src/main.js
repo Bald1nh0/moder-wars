@@ -1,4 +1,18 @@
+import { createAdminRegionsLoader } from "./admin-regions.js";
+import {
+	initializeCampaign,
+	reconcileCampaignMembership,
+} from "./campaign-core.js";
+import {
+	buildCampaignRegionIndex,
+	updateCampaignEvents,
+} from "./campaign-events.js";
+import { installCampaignUI } from "./campaign-ui.js";
 import { createConflictPresentation } from "./conflict-presentation.js";
+import {
+	getCountryForceProfiles,
+	resolveCountryRelationship,
+} from "./country-force-profiles.js";
 import { installDevicePerformanceTest } from "./device-performance-test.js";
 import { showConfirm } from "./dialogs.js";
 import { getSimulationMode } from "./feature-flags.js";
@@ -19,9 +33,13 @@ import { PERF_COUNTER_DEFAULTS } from "./simulation-metrics.js";
 import { installSimulationModeSettings } from "./simulation-mode-settings.js";
 import { resizeSimulationGrid } from "./simulation-resize.js";
 
+let campaign = null;
+const campaignRegionsLoader = createAdminRegionsLoader();
+
 // Shared live binding bridge. Systems receive commands/state without importing main.js.
 const applicationRuntime = createLiveContext(
 	{
+		campaign: () => campaign,
 		perf: () => window.__perf,
 		simulationClient: () => simulationClient,
 		editSimulation: () => editSimulation,
@@ -880,6 +898,9 @@ const applicationRuntime = createLiveContext(
 		frontlineDirLng: (value) => {
 			frontlineDirLng = value;
 		},
+		campaign: (value) => {
+			campaign = value;
+		},
 		provinceMap: (value) => {
 			provinceMap = value;
 		},
@@ -1420,9 +1441,15 @@ function resetLocalSimulationClock() {
 	localSimulationClock.reset();
 }
 function editSimulation(mutation) {
-	return simulationClient.ownsState
-		? simulationClient.edit(mutation)
-		: mutation();
+	const reconcile = (value) => {
+		reconcileCampaignMembership(applicationRuntime);
+		return value;
+	};
+	const apply = () => {
+		const result = mutation();
+		return result?.then ? result.then(reconcile) : reconcile(result);
+	};
+	return simulationClient.ownsState ? simulationClient.edit(apply) : apply();
 }
 function onControlCellsChanged(indices) {
 	influenceLayer?.notifyControlCellsChanged(indices);
@@ -2549,6 +2576,7 @@ export let flagCodes = null;
 
 export let currentScenarioContext = null; // { id, name, ownerUsername }
 export function setCurrentScenarioContext(value) {
+	campaign = null;
 	currentScenarioContext = value;
 }
 
@@ -5594,6 +5622,52 @@ function reopenConflictSetupAfterWar(...args) {
 	return lifecycle.reopenConflictSetupAfterWar(...args);
 }
 
+async function prepareCampaign(options = {}) {
+	const date = gameTimeDate
+		? `${gameTimeDate.year}-${String(gameTimeDate.month).padStart(2, "0")}-${String(gameTimeDate.day).padStart(2, "0")}`
+		: "2026-01-01";
+	const profiles = getCountryForceProfiles(
+		countryMetadata.filter(Boolean),
+		date,
+	);
+	initializeCampaign(applicationRuntime, {
+		profiles,
+		enabled: options.campaign !== false,
+	});
+	campaign.scenarioDate = date;
+	if (!campaign.enabled) return;
+	for (const country of Object.values(campaign.countries)) {
+		const metadata = countryMetadata.find((entry) => entry?.id === country.id);
+		country.relationship = resolveCountryRelationship(
+			metadata,
+			countryMetadata,
+			date,
+		);
+	}
+	// Province checks use sparse memberships prepared once; no world scan per tick.
+	if (
+		!isCustomTerrain &&
+		Object.values(campaign.countries).some(
+			(country) => country.profile?.iso3 === "UKR",
+		)
+	) {
+		const regions =
+			campaignRegionsLoader.data || (await campaignRegionsLoader.load());
+		options.signal?.throwIfAborted();
+		if (regions) {
+			try {
+				campaign.regions = buildCampaignRegionIndex(
+					applicationRuntime,
+					regions,
+				);
+			} catch (error) {
+				console.warn("Optional campaign region index unavailable", error);
+			}
+		}
+	}
+	updateCampaignEvents(applicationRuntime);
+}
+
 export async function startWar(...args) {
 	const signal = args[0]?.signal;
 	signal?.throwIfAborted();
@@ -5601,7 +5675,18 @@ export async function startWar(...args) {
 	ensureSideInfluenceMaps();
 	const result = await lifecycle.startWar(...args);
 	signal?.throwIfAborted();
-	if (gameState === "SIMULATING") await simulationClient.start();
+	if (gameState === "SIMULATING") {
+		const paused = isPaused;
+		isPaused = true;
+		try {
+			await prepareCampaign(args[0]);
+		} finally {
+			isPaused = paused;
+			resetLocalSimulationClock();
+		}
+		args[0]?.signal?.throwIfAborted();
+		await simulationClient.start();
+	}
 	return result;
 }
 
@@ -5609,7 +5694,18 @@ export async function _startWarInner(...args) {
 	simulationClient.stop();
 	ensureSideInfluenceMaps();
 	const result = await lifecycle._startWarInner(...args);
-	if (gameState === "SIMULATING") await simulationClient.start();
+	if (gameState === "SIMULATING") {
+		const paused = isPaused;
+		isPaused = true;
+		try {
+			await prepareCampaign(args[0]);
+		} finally {
+			isPaused = paused;
+			resetLocalSimulationClock();
+		}
+		args[0]?.signal?.throwIfAborted();
+		await simulationClient.start();
+	}
 	return result;
 }
 
@@ -7106,3 +7202,4 @@ function removeCountryFormations(...args) {
 // Install after all live UI and simulation bindings have initialized.
 installDevicePerformanceTest(applicationRuntime);
 installSimulationModeSettings(simulationMode);
+installCampaignUI(applicationRuntime);

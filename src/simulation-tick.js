@@ -1,3 +1,5 @@
+import { advanceCampaign } from "./campaign-core.js";
+import { updateCampaignEvents } from "./campaign-events.js";
 import { findEncirclementPockets } from "./encirclement-pockets.js";
 import { multiplyInfluence } from "./influence-grid.js";
 import { getSimulationMetrics } from "./simulation-metrics.js";
@@ -1160,8 +1162,9 @@ export function createSimulationTick(runtime) {
 		perf.neutralBorder += clockNow() - _tn;
 
 		const _t2 = clockNow();
-		// Mid-War Recruitment (Steady, Land-Capped, and Underdog-Aware)
+		// The campaign owns funded recruitment; legacy games retain pooled recruitment.
 		runtime.sides.forEach((side, sIdx) => {
+			if (runtime.campaign?.enabled) return;
 			side.forEach((country) => {
 				const stats = countryStats.get(country.id);
 				if (!stats) return;
@@ -1383,6 +1386,7 @@ export function createSimulationTick(runtime) {
 		}
 		const _detailedPerfEnabled = perf._mode === "detailed";
 		const groundFrame = {
+			campaign: runtime.campaign,
 			getArmyMovement: runtime.getArmyMovement,
 			isArmyCellPassable: runtime.isArmyCellPassable,
 			perf,
@@ -1698,7 +1702,11 @@ export function createSimulationTick(runtime) {
 				// Damage units in radius instead of instantly killing them
 				const killRadiusSq = 0.5 * 0.5;
 				const killRadius = Math.sqrt(killRadiusSq);
-				for (let j = 0; j < runtime.units.length; j++) {
+				for (
+					let j = 0;
+					!b.campaignDecorative && j < runtime.units.length;
+					j++
+				) {
 					const victim = runtime.units[j];
 					if (!runtime.areSidesHostile(b.sideIndex, victim.sideIndex)) continue;
 					const dSq =
@@ -1722,7 +1730,11 @@ export function createSimulationTick(runtime) {
 		// Enforce 1942 technology gate for missiles/bombs
 		const canFireMissiles = !runtime.gameTimeEnabled || simYear >= 1942;
 
-		if (!runtime.bombsDisabled && canFireMissiles) {
+		if (
+			!runtime.campaign?.enabled &&
+			!runtime.bombsDisabled &&
+			canFireMissiles
+		) {
 			const activeSideList = runtime.sides
 				.map((s, idx) => ({ s, idx }))
 				.filter((x) => x.s.length > 0);
@@ -1765,6 +1777,9 @@ export function createSimulationTick(runtime) {
 			runtime.explosions[i].life--;
 			if (runtime.explosions[i].life <= 0) runtime.explosions.splice(i, 1);
 		}
+
+		advanceCampaign(runtime);
+		updateCampaignEvents(runtime);
 
 		// Cache unit counts / soldier estimates once per tick instead of re-scanning
 		// the full units[] array every visual frame in updateLoop().

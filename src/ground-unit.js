@@ -1,3 +1,4 @@
+import { roleModifiers } from "./campaign-core.js";
 import { CAPITAL_SHOCK_TICKS } from "./defensive-lines.js";
 import { pocketCellLookup } from "./encirclement-pockets.js";
 import { executeGroundTarget } from "./ground-movement.js";
@@ -261,6 +262,11 @@ export function createGroundFormationUpdater(frame) {
 			// positive defPct reduces damageTaken (tougher), negative increases (softer)
 			if (defFactor > 0.01) damageTakenMult *= 1 / defFactor;
 		}
+
+		const formationRole = roleModifiers(u, frame);
+		damageDealtMult *= formationRole.attack;
+		damageTakenMult /= formationRole.defense;
+		speedBuffMult *= formationRole.speed;
 
 		// Terrain Modifiers: Mountains reduce speed and lethality based on intensity (size/scale)
 		if (isMountain) {

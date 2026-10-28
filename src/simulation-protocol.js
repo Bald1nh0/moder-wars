@@ -5,7 +5,7 @@ import {
 } from "./simulation-metrics.js";
 import { createSimulationState } from "./simulation-state.js";
 
-export const SIMULATION_PROTOCOL_VERSION = 2;
+export const SIMULATION_PROTOCOL_VERSION = 3;
 export const CONTROL_TILE_SIZE = 32;
 export const CONTROL_MAP_FIELDS = [
 	"worldControlMap",
@@ -227,17 +227,20 @@ const unitFields = [
 	"deployTicks",
 	"lastCombatTick",
 ];
+const campaignRoles = ["infantry", "armor", "artillery", "airDefense"];
 export function packPresentationUnits(units) {
 	const numbers = new Float64Array(units.length * unitFields.length);
 	const flags = new Uint8Array(units.length);
+	const roles = new Uint8Array(units.length);
 	units.forEach((unit, index) => {
 		unitFields.forEach((key, column) => {
 			numbers[index * unitFields.length + column] = unit[key] ?? NaN;
 		});
+		roles[index] = Math.max(0, campaignRoles.indexOf(unit.campaignRole));
 		flags[index] =
 			(unit.isAlpenjager ? 1 : 0) | (unit.isAtSea || unit._isAtSea ? 2 : 0);
 	});
-	return { numbers, flags };
+	return { numbers, flags, roles };
 }
 
 /** A bounded owner for the stable unit lookup and result array used by snapshots. */
@@ -290,6 +293,7 @@ export function unpackPresentationUnits(packed, previous = [], cache = null) {
 			if (Number.isNaN(value)) delete unit[unitFields[column]];
 			else unit[unitFields[column]] = value;
 		}
+		unit.campaignRole = campaignRoles[packed.roles?.[index] ?? 0] || "infantry";
 		unit.isAlpenjager = !!(packed.flags[index] & 1);
 		unit.isAtSea = !!(packed.flags[index] & 2);
 		result[index] = unit;
@@ -633,6 +637,7 @@ export function collectTransferBuffers(
 	return Array.from(buffers);
 }
 const snapshotKeys = [
+	"campaign",
 	"gameState",
 	"encirclementPockets",
 	"_simTickCount",
@@ -799,6 +804,22 @@ export function createPresentationSnapshot(
 		reuseBaselineForWorker = false,
 	} = {},
 ) {
+	const campaign = state.campaign;
+	const visibleCampaign = campaign
+		? {
+				...campaign,
+				eventBaseline: undefined,
+				regions: campaign.regions
+					? {
+							regions: campaign.regions.regions.map(
+								({ id, names, summary }) => ({ id, names, summary }),
+							),
+						}
+					: null,
+			}
+		: null;
+	const readValue = (key) =>
+		key === "campaign" ? visibleCampaign : state[key];
 	const values = {};
 	const valueCache = cache?.values instanceof Map ? cache.values : null;
 	const wireSeen = new Map();
@@ -806,10 +827,10 @@ export function createPresentationSnapshot(
 	const publishBaseline = (key, baseline) => {
 		values[key] = reuseBaselineForWorker
 			? baseline
-			: cloneSimulationData(state[key], wireSeen);
+			: cloneSimulationData(readValue(key), wireSeen);
 	};
 	const publishValue = (key) => {
-		const value = state[key];
+		const value = readValue(key);
 		if (!valueCache) {
 			values[key] = cloneSimulationData(value, wireSeen);
 			return;
@@ -853,7 +874,26 @@ export function createPresentationSnapshot(
 		);
 		publishBaseline(key, baseline);
 	};
-	for (const key of snapshotKeys) publishValue(key);
+	for (const key of snapshotKeys) {
+		if (key === "campaign" && valueCache && campaign) {
+			// Logistics is displayed once per second; commands and new events bypass the budget.
+			const tick = state._simTickCount || 0;
+			const revision = campaign.commandRevision || 0;
+			const events = campaign.nextEventId || 0;
+			if (
+				cache.campaignTick != null &&
+				tick >= cache.campaignTick &&
+				tick - cache.campaignTick < 60 &&
+				cache.campaignCommandRevision === revision &&
+				cache.campaignEventId === events
+			)
+				continue;
+			cache.campaignTick = tick;
+			cache.campaignCommandRevision = revision;
+			cache.campaignEventId = events;
+		}
+		publishValue(key);
+	}
 	if (includeTopology) {
 		for (const key of [
 			"countryMetadata",

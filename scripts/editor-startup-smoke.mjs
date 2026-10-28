@@ -5,6 +5,11 @@ import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 import { build } from "vite";
 import { CONFIG } from "../src/config.js";
+import {
+	getCountryForceProfile,
+	normalizeCountryDependency,
+	normalizeForceProfile,
+} from "../src/country-force-profiles.js";
 import { normalizeSavedCells } from "../src/saved-cells.js";
 import { decodeScenarioJson } from "../src/scenario-codec.js";
 import { generateScenarioSnapshot } from "../src/scenario-export.js";
@@ -149,11 +154,30 @@ const historicalSource = {
 	url: "https://deepstatemap.live/",
 	date: "2023-01-01",
 };
+const forceProfileOverride = {
+	...getCountryForceProfile({ iso3: "UKR" }, "2023-01-01"),
+	gameAssumptions: { treasury: 2345, equipment: { armor: 41 } },
+	unrecognizedField: "must not survive import",
+};
+const dependencyOverride = {
+	type: "game_vassal",
+	controllerIso3: "RUS",
+	controllerId: 136,
+	confidence: "scenario",
+	definition: "Fictional editor test relationship.",
+	unrecognizedField: "must not survive import",
+};
 const scenarioData = {
 	name: "Ukraine 2023",
 	gridRes: 90,
 	metadata: [
-		{ id: 167, name: "Ukraine" },
+		{
+			id: 167,
+			name: "Ukraine",
+			iso2: "UA",
+			forceProfile: forceProfileOverride,
+			dependency: dependencyOverride,
+		},
 		{ id: 136, name: "Russia" },
 	],
 	mapData: [
@@ -177,6 +201,8 @@ const factory = vm.runInNewContext(
 		console,
 		setTimeout,
 		normalizeSavedCells,
+		normalizeForceProfile,
+		normalizeCountryDependency,
 		generateScenarioSnapshot,
 		applyScenarioSovereigntyOverrides,
 		applyScenarioTheater,
@@ -316,6 +342,29 @@ try {
 	assert.equal(context.worldControlMap[0], 136);
 	assert.equal(context.deJureMap[0], 167);
 	assert.equal(context.initialDeJureMapSnapshot[0], 167);
+	const loadedUkraine = context.countryMetadata[166];
+	assert.deepEqual(
+		loadedUkraine.forceProfile,
+		normalizeForceProfile(forceProfileOverride),
+	);
+	assert.deepEqual(
+		loadedUkraine.dependency,
+		normalizeCountryDependency(dependencyOverride),
+	);
+	assert.equal(loadedUkraine.forceProfile.unrecognizedField, undefined);
+	assert.equal(loadedUkraine.dependency.unrecognizedField, undefined);
+	assert.equal(loadedUkraine.forceProfile.gameAssumptions.equipment.armor, 41);
+	loadedUkraine.name = "Renamed editor country";
+	const exportedUkraine = loaders
+		.generatePresetData("Edited country")
+		.metadata.find((country) => country.id === 167);
+	assert.equal(
+		exportedUkraine.iso3,
+		"UKR",
+		"ISO identity survives a renamed country without a known flag URL",
+	);
+	assert.deepEqual(exportedUkraine.forceProfile, loadedUkraine.forceProfile);
+	assert.deepEqual(exportedUkraine.dependency, loadedUkraine.dependency);
 	assert.deepEqual(
 		loaders.generatePresetData("Edited").historicalSource,
 		historicalSource,
@@ -332,6 +381,15 @@ try {
 		"JSON import also reaches the end of the real loader",
 	);
 	assert.equal(contextWrites, 2);
+	assert.deepEqual(
+		context.countryMetadata[166].forceProfile,
+		normalizeForceProfile(forceProfileOverride),
+		"JSON imports apply the same profile sanitizer as compiled scenarios",
+	);
+	assert.deepEqual(
+		context.countryMetadata[166].dependency,
+		normalizeCountryDependency(dependencyOverride),
+	);
 	const theater = {
 		id: "fixture",
 		bounds: [-180, -90, -90, 0],

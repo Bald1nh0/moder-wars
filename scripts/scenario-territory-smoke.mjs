@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { getCountryForceProfile, normalizeCountryDependency, normalizeForceProfile } from "../src/country-force-profiles.js";
 import { decodeScenarioBinary, decodeScenarioJson, encodeScenario } from "../src/scenario-codec.js";
 import { generateScenarioSnapshot } from "../src/scenario-export.js";
 import { applyScenarioSovereigntyOverrides, scenarioContextWithHistoricalSource } from "../src/scenario-territory.js";
@@ -79,6 +80,34 @@ const snapshot = generateScenarioSnapshot("Historical ownership", state);
 assert.equal(snapshot.sovereigntyBase, "control");
 assert.deepEqual(snapshot.sovereigntyOverrides, [{ ownerId: 167, cells: [0] }]);
 const restored = decodeScenarioBinary(encodeScenario(snapshot));
+
+// Metadata references remain reproducible after renaming a country and roundtripping both formats.
+const forceProfile = {
+	...getCountryForceProfile({ iso3: "UKR" }, "2023-01-01"),
+	gameAssumptions: { treasury: 1234, equipment: { armor: 37, artillery: 0 } },
+	unrecognizedField: "discard",
+};
+const dependency = {
+	type: "game_vassal", controllerIso3: "RUS", controllerId: 136,
+	definition: "Fictional roundtrip fixture.", confidence: "scenario",
+	sourceUrl: "javascript:alert(1)", unrecognizedField: "discard",
+};
+const profileSnapshot = generateScenarioSnapshot("Profile overrides", {
+	...state,
+	countryMetadata: [{ ...countryMetadata[0], iso3: "RUS" }, { id: 167, iso2: "UA", name: "Renamed fixture", forceProfile, dependency }],
+});
+for (const decode of [() => decodeScenarioJson(JSON.parse(JSON.stringify(profileSnapshot))), () => decodeScenarioBinary(encodeScenario(profileSnapshot))]) {
+	const imported = decode().scenario.metadata.find((country) => country.id === 167);
+	assert.equal(imported.iso3, "UKR");
+	assert.equal(imported.name, "Renamed fixture");
+	assert.deepEqual(imported.forceProfile, normalizeForceProfile(forceProfile));
+	assert.deepEqual(imported.dependency, normalizeCountryDependency(dependency));
+	assert.equal(imported.forceProfile.personnel.asOf, "2020-12-31");
+	assert.equal(imported.forceProfile.personnel.license, "CC-BY-4.0");
+	assert.equal(imported.forceProfile.equipment.tank, null, "Unknown factual stocks stay unknown");
+	assert.equal(imported.forceProfile.gameAssumptions.equipment.artillery, 0, "An explicit game stock override can be zero");
+	assert.equal(imported.dependency.sourceUrl, null, "Unsafe source schemes never reach the restored profile");
+}
 const militaryControl = new Uint16Array(restored.worldControl);
 applyScenarioSovereigntyOverrides(restored.scenario.sovereigntyOverrides, {
 	sourceGridRes: restored.scenario.gridRes,

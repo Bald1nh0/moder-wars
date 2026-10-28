@@ -1,4 +1,8 @@
 import { CONFIG } from "./config.js";
+import {
+	normalizeCountryDependency,
+	normalizeForceProfile,
+} from "./country-force-profiles.js";
 import { showAlert } from "./dialogs.js";
 import { gameText } from "./i18n.js";
 import { beginLoadTrace } from "./load-profiler.js";
@@ -396,6 +400,8 @@ export function createScenarioLoader(context, loadSession) {
 				const meta = {
 					...m,
 					...normalizedTerritory,
+					forceProfile: normalizeForceProfile(m.forceProfile),
+					dependency: normalizeCountryDependency(m.dependency),
 					rgba: context.parseColorToRGBA(m.color || "rgba(150, 150, 150, 0.5)"),
 					bounds: m.bounds || {
 						minX: Infinity,

@@ -92,7 +92,9 @@ inactive territory alone does not produce a capitulation event.
 
 City polling checks at most 2,048 cities every 60 ticks. Ukraine administrative
 membership is precomputed from the packaged reference polygons and land-cell
-centers, not synthetic game provinces. Region polling inspects at most 2,048 cells
+centers, restricted to the matching scenario sovereignty where available. This
+avoids counting a neighboring country's cells when the two cartographic sources
+disagree along a border. It does not use synthetic game provinces. Region polling inspects at most 2,048 cells
 per interval and reports a complete region pass. Full control requires every
 indexed cell; majority control enters at 75% and leaves below 70%. A changed
 classification must survive two passes. This delays notifications and filters

@@ -3,6 +3,7 @@ import { createAiPlanner } from "./ai-planning.js";
 import { createAiProposalPipeline } from "./ai-proposals.js";
 import { createAiRuntime } from "./ai-runtime.js";
 import { createArmyFormation } from "./army-formation.js";
+import { commandCampaign } from "./campaign-core.js";
 import { createConflictPersonnel } from "./conflict-personnel.js";
 import { createConflictResolution } from "./conflict-resolution.js";
 import {
@@ -360,6 +361,13 @@ export function createSimulationCore(
 		const type = typeof message === "string" ? message : message.type;
 		const input =
 			typeof message === "string" ? payload : message.payload || message;
+		if (type === "campaign") {
+			const result = commandCampaign(state, input);
+			if (result.ok)
+				state.campaign.commandRevision =
+					(state.campaign.commandRevision || 0) + 1;
+			return result;
+		}
 		if (type === "APPLY_TREATY") {
 			state.applyTreaty(
 				input.treatyType ||

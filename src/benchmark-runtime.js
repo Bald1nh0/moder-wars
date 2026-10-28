@@ -276,9 +276,7 @@ export function createBenchmarkRuntime(runtime) {
 				? requestedUnits * runtime.CONFIG.UNIT_TO_SOLDIER_RATIO
 				: null;
 		runtime.updateSidesUI();
-		await runtime.startWar(
-			options.signal ? { signal: options.signal } : undefined,
-		);
+		await runtime.startWar({ signal: options.signal, campaign: false });
 		options.signal?.throwIfAborted();
 		runtime._benchmarkForcePersonnelPerSide = null;
 		if (runtime.gameState !== "SIMULATING") {

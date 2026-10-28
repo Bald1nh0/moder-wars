@@ -9,6 +9,7 @@ export function createSimulationState(initial = {}) {
 	state._frontlineSlotApplyPendingMs = 0;
 	state._simTickCount = 0;
 	state.gameState = "MAIN_MENU";
+	state.campaign = null;
 	state.godModeActive = false;
 	state.preGodModeState = "SIMULATING";
 	state._tickAllCombatants = [];

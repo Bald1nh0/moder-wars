@@ -1,6 +1,10 @@
 import { spawnSync } from "node:child_process";
 
 const checks = [
+	"campaign-core",
+	"campaign-data",
+	"campaign-ui",
+	"campaign-integration",
 	"admin-regions",
 	"leaderboard",
 	"occupation-regions",

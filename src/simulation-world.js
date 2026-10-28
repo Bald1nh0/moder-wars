@@ -153,6 +153,10 @@ export function createSimulationWorld(runtime) {
 		const personnel = getLiveFormationPersonnel(unit);
 		if (personnel > 0) {
 			runtime.sideRecruitableManpower[sideIdx] += personnel;
+			const country = runtime.campaign?.enabled
+				? runtime.campaign.countries[unit.sovereignId]
+				: null;
+			if (country) country.reserve += personnel;
 		}
 		return personnel;
 	}

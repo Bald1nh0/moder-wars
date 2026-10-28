@@ -1,3 +1,8 @@
+import {
+	emitCampaignEvent,
+	recordCampaignCapitulation,
+} from "./campaign-events.js";
+import { getFormationPersonnel } from "./formation-strength.js";
 import { writeInfluence } from "./influence-grid.js";
 // Explicit live context keeps replacements of arrays/state visible across awaits and callbacks.
 export function createConflictResolution(runtime) {
@@ -268,6 +273,7 @@ export function createConflictResolution(runtime) {
 			return false;
 		}
 
+		recordCampaignCapitulation(runtime, country, primaryAnnexerId);
 		runtime._lastCapitulationTick = runtime._simTickCount;
 		runtime.presentCapitulation?.(country);
 
@@ -380,6 +386,32 @@ export function createConflictResolution(runtime) {
 		if (runtime.gameState === "WAR_OVER") return;
 		runtime.invalidateWarLifecycleTimers();
 		runtime.gameState = "WAR_OVER";
+		if (runtime.campaign?.enabled) {
+			runtime.campaign.finished = true;
+			runtime.campaign.finalForces = Object.fromEntries(
+				Object.keys(runtime.campaign.countries).map((id) => [
+					id,
+					{
+						formations: 0,
+						personnel: 0,
+						roles: { infantry: 0, armor: 0, artillery: 0, airDefense: 0 },
+					},
+				]),
+			);
+			for (const unit of runtime.units) {
+				const totals = runtime.campaign.finalForces[unit.sovereignId];
+				if (!totals || !(unit.health > 0) || unit.kind === "transport")
+					continue;
+				const personnel = getFormationPersonnel(unit);
+				if (!(personnel > 0)) continue;
+				totals.formations++;
+				totals.personnel += personnel;
+				const role = Object.hasOwn(totals.roles, unit.campaignRole)
+					? unit.campaignRole
+					: "infantry";
+				totals.roles[role]++;
+			}
+		}
 		runtime.gameTimeEnabled = false;
 		runtime.gameTimeAccumulatorMs = 0;
 		runtime.presentTreatyStart?.();
@@ -561,6 +593,7 @@ export function createConflictResolution(runtime) {
 		runtime.adjacencyCache = null;
 
 		runtime.onConflictMapChanged?.();
+		emitCampaignEvent(runtime, "peace_signed", { reason: type });
 		runtime.presentTreatyFinished?.();
 	}
 	return { capitulateCountry, applyTreaty };

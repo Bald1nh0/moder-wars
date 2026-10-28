@@ -1,4 +1,5 @@
 import { APP_TRANSLATIONS } from "./translations-app.js";
+import { CAMPAIGN_TRANSLATIONS } from "./translations-campaign.js";
 import { COMMUNITY_TRANSLATIONS } from "./translations-community.js";
 import { DEVICE_TEST_TRANSLATIONS } from "./translations-device-test.js";
 import { EDITOR_TRANSLATIONS } from "./translations-editor.js";
@@ -925,6 +926,7 @@ export const TRANSLATIONS = {
 };
 
 for (const source of [
+	CAMPAIGN_TRANSLATIONS,
 	DEVICE_TEST_TRANSLATIONS,
 	MAP_TRANSLATIONS,
 	COMMUNITY_TRANSLATIONS,

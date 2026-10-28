@@ -33,6 +33,8 @@ export function createArmyFormation(
 		// share one V8 hidden class. Mixed shapes made unit property reads
 		// megamorphic in every hot loop. undefined matches an absent field.
 		maxHealth: undefined,
+		campaignRole: undefined,
+		campaignEquipment: undefined,
 		personnel: undefined,
 		personnelCapacity: undefined,
 		nominalPersonnel: undefined,

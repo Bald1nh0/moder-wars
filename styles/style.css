@@ -3384,6 +3384,9 @@ input:focus-visible {
 	padding: 8px 12px;
 	overflow: visible;
 }
+#game-status:has(#hud-menu[open]) {
+	z-index: 1200;
+}
 #game-status .status-right {
 	gap: 10px;
 	flex-wrap: wrap;
@@ -3435,7 +3438,8 @@ input:focus-visible {
 	display: grid;
 	gap: 6px;
 	width: 240px;
-	max-height: calc(100vh - 100px);
+	max-height: min(560px, calc(100dvh - 180px));
+	box-sizing: border-box;
 	overflow-y: auto;
 	padding: 14px;
 	background: #121b23;

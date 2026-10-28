@@ -10,6 +10,7 @@ import {
 	collectTransferBuffers,
 	createControlDeltaTracker,
 	createPresentationSnapshot,
+	createPresentationSnapshotCache,
 	createPresentationUnitCache,
 	resetPresentationUnitCache,
 	SIMULATION_PROTOCOL_VERSION,
@@ -47,6 +48,14 @@ export function createSimulationClient(
 	let remoteFailed = false;
 	let ownerTermination = Promise.resolve();
 	let nextRequest = 0;
+	const pendingCommands = new Map();
+	function cancelCommands() {
+		for (const pending of pendingCommands.values()) {
+			clearTimeout(pending.timer);
+			pending.resolve({ ok: false, reason: "unavailable" });
+		}
+		pendingCommands.clear();
+	}
 	let pendingEdits = 0;
 	let presentationRevision = 0;
 	let pendingPresentationWorkMs = 0;
@@ -77,6 +86,7 @@ export function createSimulationClient(
 		diagnostics.startupMs ??= Math.max(0, now() - startupStartedAt);
 	}
 	function recordFailure(error) {
+		cancelCommands();
 		diagnostics.owner = null;
 		diagnostics.status = "error";
 		diagnostics.error = error?.message || String(error);
@@ -209,6 +219,7 @@ export function createSimulationClient(
 		onFailure(error);
 	}
 	function stop({ invalidateEdits = true } = {}) {
+		cancelCommands();
 		diagnostics.owner = null;
 		diagnostics.status = "idle";
 		remoteFailed = false;
@@ -232,6 +243,7 @@ export function createSimulationClient(
 	}
 	function startLocal(state) {
 		const trackerState = {};
+		const presentationCache = createPresentationSnapshotCache();
 		local = createSimulationCore(state, {
 			onEvent: (type, ...args) => {
 				events.push({ type, args });
@@ -263,6 +275,7 @@ export function createSimulationClient(
 						local.state,
 						trackerState.tracker,
 						{
+							cache: presentationCache,
 							includeTopology: events.some(
 								(event) =>
 									event.type === "onConflictMapChanged" ||
@@ -334,6 +347,13 @@ export function createSimulationClient(
 					else if (data.type === "SNAPSHOT") {
 						applySnapshot(data.snapshot);
 						worker?.postMessage({ type: "ACK", epoch });
+					} else if (data.type === "COMMAND_RESULT") {
+						const pending = pendingCommands.get(data.requestId);
+						if (pending) {
+							clearTimeout(pending.timer);
+							pendingCommands.delete(data.requestId);
+							pending.resolve(data.result);
+						}
 					} else if (data.type === "HANDOFF") {
 						if (!handoff || data.requestId !== handoff.requestId) return;
 						applyFullOwnerState(data.state, data.events);
@@ -539,6 +559,27 @@ export function createSimulationClient(
 		return result;
 	}
 	function command(command) {
+		if (command?.type === "campaign") {
+			if (!active || handoff || pendingCommands.size >= 32)
+				return Promise.resolve({ ok: false, reason: "unavailable" });
+			if (local) return Promise.resolve(local.command(command));
+			if (!worker) return Promise.resolve({ ok: false, reason: "unavailable" });
+			const requestId = ++nextRequest;
+			return new Promise((resolve) => {
+				const timer = setTimeout(() => {
+					pendingCommands.delete(requestId);
+					resolve({ ok: false, reason: "timeout" });
+				}, 15_000);
+				pendingCommands.set(requestId, { resolve, timer });
+				try {
+					worker.postMessage({ type: "COMMAND", epoch, requestId, command });
+				} catch {
+					clearTimeout(timer);
+					pendingCommands.delete(requestId);
+					resolve({ ok: false, reason: "unavailable" });
+				}
+			});
+		}
 		if (worker && active)
 			worker.postMessage({ type: "COMMAND", epoch, command });
 		else if (local && active) local.command(command);

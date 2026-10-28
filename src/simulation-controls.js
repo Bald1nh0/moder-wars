@@ -12,6 +12,7 @@ export function createSimulationControls(runtime) {
 					e.ctrlKey ||
 					e.metaKey ||
 					e.altKey ||
+					active?.closest?.("#campaign-panel") ||
 					active?.isContentEditable ||
 					["TEXTAREA", "SELECT"].includes(active?.tagName) ||
 					(active?.tagName === "INPUT" &&

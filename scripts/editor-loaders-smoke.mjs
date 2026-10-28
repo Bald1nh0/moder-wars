@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 import { CONFIG } from "../src/config.js";
+import { normalizeCountryDependency, normalizeForceProfile } from "../src/country-force-profiles.js";
 import { generateScenarioSnapshot } from "../src/scenario-export.js";
 
 function loadFactory(file, name, dependencies = {}) {
@@ -17,6 +18,7 @@ const makeGeography = loadFactory("geography-loader.js", "createGeographyLoader"
  mapRuntime: {latLng:(lat,lng)=>({lat,lng}),latLngBounds:(southwest,northeast)=>({getSouth:()=>southwest.lat,getWest:()=>southwest.lng,getNorth:()=>northeast.lat,getEast:()=>northeast.lng})},
 });
 const makeScenario = loadFactory("scenario-loader.js", "createScenarioLoader", {
+ normalizeCountryDependency, normalizeForceProfile,
  generateScenarioSnapshot, document:{getElementById:()=>({value:"110m"})}, alert(message){throw new Error(message);},
 });
 assert.equal(typeof makeGeography(blockedContext,session).loadCountries,"function");

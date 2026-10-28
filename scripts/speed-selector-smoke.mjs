@@ -211,7 +211,7 @@ try {
 		documentDouble.activeElement = {
 			tagName,
 			type: "radio",
-			closest: () => ({}),
+			closest: (selector) => selector === "#campaign-panel" ? null : {},
 		};
 		event = key(" ");
 		assert.equal(event.prevented, false, "native focused controls own Space");
@@ -220,7 +220,7 @@ try {
 	documentDouble.activeElement = {
 		tagName: "INPUT",
 		type: "radio",
-		closest: () => ({}),
+		closest: (selector) => selector === "#campaign-panel" ? null : {},
 	};
 	event = key("ArrowRight");
 	assert.equal(
@@ -234,6 +234,11 @@ try {
 		3,
 		"plus/minus still work with speed selector focus",
 	);
+	documentDouble.activeElement = { tagName: "BUTTON", closest: (selector) => selector === "#campaign-panel" ? {} : null };
+	key("+");
+	assert.equal(context.simSpeed, 3, "campaign dialog owns speed shortcuts");
+	key(" ");
+	assert.equal(context.isPaused, true, "campaign dialog owns Space");
 	for (const active of [
 		{ tagName: "INPUT", type: "text" },
 		{ tagName: "TEXTAREA" },

@@ -1,3 +1,8 @@
+import {
+	normalizeCountryDependency,
+	normalizeCountryIso3,
+	normalizeForceProfile,
+} from "./country-force-profiles.js";
 import { expandSavedCells } from "./saved-cells.js";
 
 /** Serialize scenario state without depending on the simulation bootstrap. */
@@ -80,6 +85,7 @@ export function generateScenarioSnapshot(
 		.filter((m) => m && typeof m === "object" && m.id)
 		.map((m) => ({
 			id: m.id,
+			...(normalizeCountryIso3(m) ? { iso3: normalizeCountryIso3(m) } : {}),
 			name: m.name || m.feature?.properties?.NAME || "Unnamed Nation",
 			color: m.color || "rgba(150, 150, 150, 0.5)",
 			isCustom: !!m.isCustom,
@@ -88,6 +94,12 @@ export function generateScenarioSnapshot(
 			allianceFlagUrl: m.allianceFlagUrl || null,
 			role: m.role || "OFFENSE",
 			overlordId: m.overlordId || null,
+			...(m.forceProfile
+				? { forceProfile: normalizeForceProfile(m.forceProfile) }
+				: {}),
+			...(m.dependency
+				? { dependency: normalizeCountryDependency(m.dependency) }
+				: {}),
 			releasableBy: m.releasableBy || null,
 			savedCells: expandSavedCells(m),
 			buffState: m.buffState || "none",
