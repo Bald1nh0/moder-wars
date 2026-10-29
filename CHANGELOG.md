@@ -4,6 +4,7 @@
 
 ### 0.30.0-experimental.1 (unreleased)
 
+- Run full CodeQL analysis on pull requests so exact reviewed findings match local and main-branch scans. Reject diff-filtered reports explicitly instead of reporting unchanged findings as stale exceptions.
 - Harden CI with hosted npm advisory, redacted full-history secret and CodeQL security checks that gate publication, plus reviewed dependency update proposals. Add owner review coverage and document required GitHub settings and the remaining public-runner trust boundary.
 - Deliver anti-framing policy through HTTP headers, add MIME-sniffing/referrer protections, and preserve index/service-worker caching and binary asset decoding. Verify headers across success, redirect, conditional and error responses in an isolated container; existing production is unchanged.
 - Harden simulation state/transport against prototype and method-shadowing keys, use explicit typed-array constructors, and validate country/equipment/side/cell keys. Restrict worker downloads to same-origin packaged assets while preserving local scenario blobs. Add malicious-input regressions and verify built scenario loading/reloading in Chromium.

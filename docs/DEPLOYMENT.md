@@ -207,7 +207,9 @@ returned HTTP 403, so classic branch protection was not certified. The earlier
 fork-approval screenshot showed first-time contributors only; a saved change to
 all external contributors still needs confirmation. The latest Advanced Security
 screenshot confirms the dependency graph, Dependabot alerts/security updates and
-private vulnerability reporting enabled; CodeQL is not yet configured. Local
+private vulnerability reporting enabled. Later screenshots confirm Secret
+Protection and repository Push protection enabled; advanced CodeQL ran in PR #2.
+The ruleset screenshots show configuration in progress, not proof of saved rules. Local
 `dependabot.yml` takes effect only after it reaches the default branch; it does
 not enable all these settings itself.
 
@@ -227,6 +229,10 @@ written rationale. They also bind to a digest of all versioned/nonignored source
 dependency and configuration inputs, so changing a caller or validator elsewhere
 invalidates an old review. New findings, changed inputs, missing results and
 stale reviews fail the gate.
+PR analysis explicitly disables `CODEQL_ACTION_DIFF_INFORMED_QUERIES` so the
+report includes unchanged code, just like local and main-branch scans. A
+diff-filtered report cannot validate the complete reviewed finding set and is
+rejected. Keep this setting when updating the pinned CodeQL action.
 These entries do not disable any query or hide results from GitHub code scanning.
 Do not regenerate hashes or approve a baseline without repeating the relevant
 security review. Scan findings can remain visible in GitHub despite a passing

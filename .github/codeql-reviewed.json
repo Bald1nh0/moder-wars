@@ -8,7 +8,7 @@
 		"endColumn": 6,
 		"count": 1,
 		"sourceSha256": "555471329b38c5554211f7ba0e8ef0f6e4bb3a0df8a28557e23f73f640e58628",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "writeInfluence rejects non-number, non-uint32 and out-of-range indexes before the dense-map write, then applies index >>>= 0. The property key is therefore a uint32 numeric cell index; __proto__, constructor and prototype cannot reach this assignment. Dense/sparse key safety and valid Float32 semantics are tested."
 	},
 	{
@@ -20,7 +20,7 @@
 		"endColumn": 11,
 		"count": 1,
 		"sourceSha256": "95360fc00506f9e52330eec0ed944eecbfbd2c7e6891e067c69642ee8b1915fd",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "Math.random selects an in-game allied formation beneficiary. It does not generate a credential, authorization identifier, cryptographic nonce or secret. Predictable game choices do not cross an authentication boundary."
 	},
 	{
@@ -32,7 +32,7 @@
 		"endColumn": 11,
 		"count": 1,
 		"sourceSha256": "95360fc00506f9e52330eec0ed944eecbfbd2c7e6891e067c69642ee8b1915fd",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "Math.random selects an in-game allied formation beneficiary. It does not generate a credential, authorization identifier, cryptographic nonce or secret. Predictable game choices do not cross an authentication boundary."
 	},
 	{
@@ -44,7 +44,7 @@
 		"endColumn": 74,
 		"count": 1,
 		"sourceSha256": "95360fc00506f9e52330eec0ed944eecbfbd2c7e6891e067c69642ee8b1915fd",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "Math.random selects an in-game allied formation beneficiary. It does not generate a credential, authorization identifier, cryptographic nonce or secret. Predictable game choices do not cross an authentication boundary."
 	},
 	{
@@ -56,7 +56,7 @@
 		"endColumn": 52,
 		"count": 1,
 		"sourceSha256": "c6f0f1d7fa1d56caa2dcce849561b7a6641e3515694e17882c26bde932050de1",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "The proposal invalidation branch directly requires Number.isInteger(proposalJob.sideIdx), a nonnegative value and a value below sides.length before updating the per-side reassessment array. Snapshot-derived prototype strings cannot satisfy these guards."
 	},
 	{
@@ -68,7 +68,7 @@
 		"endColumn": 34,
 		"count": 1,
 		"sourceSha256": "c6f0f1d7fa1d56caa2dcce849561b7a6641e3515694e17882c26bde932050de1",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "advanceProposalJob removes queue entries until the first entry passes Number.isInteger(si), nonnegative/in-range side checks and a nonempty side. An exhausted queue returns before this write. The retained key is a validated numeric side index; the job object does not mutate it."
 	},
 	{
@@ -80,7 +80,7 @@
 		"endColumn": 24,
 		"count": 1,
 		"sourceSha256": "c6f0f1d7fa1d56caa2dcce849561b7a6641e3515694e17882c26bde932050de1",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "evaluateAllPlans requires Number.isInteger(finished.sideIdx) and bounds 0 <= sideIdx < sides.length before destructuring the immutable local si used here. This assignment only updates the selected numeric side slot; no arbitrary object-property name survives the guard."
 	},
 	{
@@ -92,7 +92,7 @@
 		"endColumn": 29,
 		"count": 1,
 		"sourceSha256": "c6f0f1d7fa1d56caa2dcce849561b7a6641e3515694e17882c26bde932050de1",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "The second land-plan slot adds sides.length to a side index explicitly checked with Number.isInteger and side bounds. createSimulationState requires sides to be a real array of arrays, and later side operations preserve arrays, so Array.length plus the integer si remains numeric, never a prototype property."
 	},
 	{
@@ -104,7 +104,7 @@
 		"endColumn": 27,
 		"count": 1,
 		"sourceSha256": "c6f0f1d7fa1d56caa2dcce849561b7a6641e3515694e17882c26bde932050de1",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "evaluateAllPlans requires Number.isInteger(finished.sideIdx) and bounds 0 <= sideIdx < sides.length before destructuring the immutable local si used here. This assignment only updates the selected numeric side slot; no arbitrary object-property name survives the guard."
 	},
 	{
@@ -116,7 +116,7 @@
 		"endColumn": 28,
 		"count": 1,
 		"sourceSha256": "c6f0f1d7fa1d56caa2dcce849561b7a6641e3515694e17882c26bde932050de1",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "evaluateAllPlans requires Number.isInteger(finished.sideIdx) and bounds 0 <= sideIdx < sides.length before destructuring the immutable local si used here. This assignment only updates the selected numeric side slot; no arbitrary object-property name survives the guard."
 	},
 	{
@@ -128,7 +128,7 @@
 		"endColumn": 32,
 		"count": 1,
 		"sourceSha256": "c6f0f1d7fa1d56caa2dcce849561b7a6641e3515694e17882c26bde932050de1",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "evaluateAllPlans requires Number.isInteger(finished.sideIdx) and bounds 0 <= sideIdx < sides.length before destructuring the immutable local si used here. This assignment only updates the selected numeric side slot; no arbitrary object-property name survives the guard."
 	},
 	{
@@ -140,7 +140,7 @@
 		"endColumn": 31,
 		"count": 1,
 		"sourceSha256": "c6f0f1d7fa1d56caa2dcce849561b7a6641e3515694e17882c26bde932050de1",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "evaluateAllPlans requires Number.isInteger(finished.sideIdx) and bounds 0 <= sideIdx < sides.length before destructuring the immutable local si used here. This assignment only updates the selected numeric side slot; no arbitrary object-property name survives the guard."
 	},
 	{
@@ -152,7 +152,7 @@
 		"endColumn": 28,
 		"count": 1,
 		"sourceSha256": "c6f0f1d7fa1d56caa2dcce849561b7a6641e3515694e17882c26bde932050de1",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "evaluateAllPlans requires Number.isInteger(finished.sideIdx) and bounds 0 <= sideIdx < sides.length before destructuring the immutable local si used here. This assignment only updates the selected numeric side slot; no arbitrary object-property name survives the guard."
 	},
 	{
@@ -164,7 +164,7 @@
 		"endColumn": 36,
 		"count": 1,
 		"sourceSha256": "c6f0f1d7fa1d56caa2dcce849561b7a6641e3515694e17882c26bde932050de1",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "evaluateAllPlans requires Number.isInteger(finished.sideIdx) and bounds 0 <= sideIdx < sides.length before destructuring the immutable local si used here. This assignment only updates the selected numeric side slot; no arbitrary object-property name survives the guard."
 	},
 	{
@@ -176,7 +176,7 @@
 		"endColumn": 12,
 		"count": 1,
 		"sourceSha256": "d17efe2f7c14cda250c8a9ece5e14218762d0dd7edd834943545362f43757ee5",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "The land BFS rejects !Number.isInteger(ni), negative and out-of-range neighbors before writing seen/parent scratch cells. These explicit guards apply even to malformed imported scratch state or grid dimensions; dynamic prototype-property names cannot reach the assignments."
 	},
 	{
@@ -188,7 +188,7 @@
 		"endColumn": 14,
 		"count": 1,
 		"sourceSha256": "d17efe2f7c14cda250c8a9ece5e14218762d0dd7edd834943545362f43757ee5",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "The land BFS rejects !Number.isInteger(ni), negative and out-of-range neighbors before writing seen/parent scratch cells. These explicit guards apply even to malformed imported scratch state or grid dimensions; dynamic prototype-property names cannot reach the assignments."
 	},
 	{
@@ -200,7 +200,7 @@
 		"endColumn": 13,
 		"count": 1,
 		"sourceSha256": "d17efe2f7c14cda250c8a9ece5e14218762d0dd7edd834943545362f43757ee5",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "The sea BFS rejects !Number.isInteger(ni), negative/out-of-range neighbors and non-sea cells before writing the seen scratch cell. Therefore even malformed imported state cannot turn this key into a prototype or arbitrary string property."
 	},
 	{
@@ -212,7 +212,7 @@
 		"endColumn": 25,
 		"count": 1,
 		"sourceSha256": "c6f0f1d7fa1d56caa2dcce849561b7a6641e3515694e17882c26bde932050de1",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "Inactive-side cleanup initializes si from sides.length and increments it numerically while below a plan-array length. createSimulationState rejects fake array-like sides; all later side replacement uses actual arrays. Array.length cannot be a string or a prototype key, so this loop writes only numeric plan slots."
 	},
 	{
@@ -224,7 +224,7 @@
 		"endColumn": 31,
 		"count": 1,
 		"sourceSha256": "c6f0f1d7fa1d56caa2dcce849561b7a6641e3515694e17882c26bde932050de1",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "Inactive-side cleanup initializes si from sides.length and increments it numerically while below a plan-array length. createSimulationState rejects fake array-like sides; all later side replacement uses actual arrays. Array.length cannot be a string or a prototype key, so this loop writes only numeric plan slots."
 	},
 	{
@@ -236,7 +236,7 @@
 		"endColumn": 29,
 		"count": 1,
 		"sourceSha256": "c6f0f1d7fa1d56caa2dcce849561b7a6641e3515694e17882c26bde932050de1",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "Inactive-side cleanup initializes si from sides.length and increments it numerically while below a plan-array length. createSimulationState rejects fake array-like sides; all later side replacement uses actual arrays. Array.length cannot be a string or a prototype key, so this loop writes only numeric plan slots."
 	},
 	{
@@ -248,7 +248,7 @@
 		"endColumn": 36,
 		"count": 1,
 		"sourceSha256": "c6f0f1d7fa1d56caa2dcce849561b7a6641e3515694e17882c26bde932050de1",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "Inactive-side cleanup initializes si from sides.length and increments it numerically while below a plan-array length. createSimulationState rejects fake array-like sides; all later side replacement uses actual arrays. Array.length cannot be a string or a prototype key, so this loop writes only numeric plan slots."
 	},
 	{
@@ -260,7 +260,7 @@
 		"endColumn": 26,
 		"count": 1,
 		"sourceSha256": "9e32f2f7c7ded53c6ffe70a268f3eef523f8b7db918b1db7c02cf0785a8b7b9f",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "discardNonHostileOperationalPlans rejects noninteger, negative and out-of-range sideIndex values before creating its two slots. The only slot keys are that integer and the integer plus a real sides Array.length. Malformed side keys are covered by simulation-key-safety-smoke."
 	},
 	{
@@ -272,7 +272,7 @@
 		"endColumn": 26,
 		"count": 1,
 		"sourceSha256": "9e32f2f7c7ded53c6ffe70a268f3eef523f8b7db918b1db7c02cf0785a8b7b9f",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "clearOperationalPlanForTaskForce rejects noninteger, negative and out-of-range sideIndex values before comparing signatures or writing. Its slot list consists solely of that integer and that integer plus a real sides Array.length, preventing a matching undefined signature from writing __proto__. The malicious-key regression verifies this."
 	},
 	{
@@ -284,7 +284,7 @@
 		"endColumn": 26,
 		"count": 1,
 		"sourceSha256": "9e32f2f7c7ded53c6ffe70a268f3eef523f8b7db918b1db7c02cf0785a8b7b9f",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "updateOperationalAiTaskForces derives sideIndex from (local numeric armySideCursor + numeric loop step) % sides.length. armySideCursor starts at zero and is updated using numeric modulo; sides is an actual validated array. The chosen slot is sideIndex or sideIndex plus numeric Array.length, not a message-controlled string key."
 	},
 	{
@@ -296,7 +296,7 @@
 		"endColumn": 63,
 		"count": 1,
 		"sourceSha256": "7e44c65e90d180d0ab4a488f30976ec30999103da80815a5878ab95786bb9726",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "The side-territory histogram is a fresh local numeric array and writes only if ds >= 0 and ds < sides.length. ds normally comes from the typed dominant-side grid. Prototype-property strings fail the positive numeric comparison, so remote taint does not permit arbitrary prototype writes here."
 	},
 	{
@@ -308,7 +308,7 @@
 		"endColumn": 19,
 		"count": 1,
 		"sourceSha256": "7e44c65e90d180d0ab4a488f30976ec30999103da80815a5878ab95786bb9726",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "The ownership frequency table is a fresh Uint16Array. Only owner > 0 values from the numeric world-control grid reach the increment; prototype-property names cannot satisfy that condition. Noncanonical numeric inputs cannot alter Object.prototype or another application object through this local frequency table."
 	},
 	{
@@ -320,7 +320,7 @@
 		"endColumn": 23,
 		"count": 1,
 		"sourceSha256": "57b2ab18ca82c57409e1bbdd4cef2d203c2ce77d15ba2daae0afdd58d0ab0008",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "buildDirectionField uses simulation-core-owned frontlineScratch, not scratch supplied by the worker message; source/queue buffers are allocated Int32Arrays. Before the write, the neighbor passes grid bounds/row checks and its existing sourceCell value must be numeric -1. Prototype/inherited object properties cannot satisfy that strict value check."
 	},
 	{
@@ -332,7 +332,7 @@
 		"endColumn": 42,
 		"count": 1,
 		"sourceSha256": "2977e0d181be3b86bf64faee9b5d196f66df65181186a5e2c1035a3b0ae43ca0",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "enqueueInfluenceFrontierIndex directly rejects !Number.isInteger(index), negative and out-of-range values before either priority or regular queued-state write. The key is strictly a bounded grid integer; malformed string/prototype indexes are regression-tested for both queue paths."
 	},
 	{
@@ -344,7 +344,7 @@
 		"endColumn": 41,
 		"count": 1,
 		"sourceSha256": "2977e0d181be3b86bf64faee9b5d196f66df65181186a5e2c1035a3b0ae43ca0",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "enqueueInfluenceFrontierIndex directly rejects !Number.isInteger(index), negative and out-of-range values before either priority or regular queued-state write. The key is strictly a bounded grid integer; malformed string/prototype indexes are regression-tested for both queue paths."
 	},
 	{
@@ -356,7 +356,7 @@
 		"endColumn": 42,
 		"count": 1,
 		"sourceSha256": "2977e0d181be3b86bf64faee9b5d196f66df65181186a5e2c1035a3b0ae43ca0",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "processInfluenceFrontierDiffusion validates each dequeued index with Number.isInteger and bounds before matching the numeric expected queued state and clearing it. This independently protects the write even when the queue came from malformed state; regression tests inject invalid queued keys."
 	},
 	{
@@ -368,7 +368,7 @@
 		"endColumn": 37,
 		"count": 1,
 		"sourceSha256": "9e6feaf65daea9ffab7c849a90326899765ef7f1744012a2f244c30f5cf46bc6",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "cloneSimulationData intentionally copies game records into fresh data objects. It strips functions and asset fields and excludes prototype-chain keys, all Object.prototype names and array prototype names before assignment. Country/config merges use the same safeguards and root state fields are allowlisted; attacker data cannot replace inherited methods through this sink."
 	},
 	{
@@ -380,7 +380,7 @@
 		"endColumn": 19,
 		"count": 1,
 		"sourceSha256": "3120e803fdfb4f8adfa8815100eedea452826f62d6ba916255b813fa97b83c6f",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "This local neighbor-credit histogram only writes nId after nId > 0 and a matching allied-country Map lookup. nId is normally read from the typed primary-occupier grid. Prototype-property names fail the positive numeric comparison and cannot become object-control keys in this local count table."
 	},
 	{
@@ -392,7 +392,7 @@
 		"endColumn": 37,
 		"count": 1,
 		"sourceSha256": "0eac3d30a349b0f81a35540e190f4be1486eccb3261e3a9f4ca372382cc135dd",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "The decoder reconstructs fresh data records using Object.defineProperty after rejecting duplicate keys, prototype-chain keys, Object.prototype names and array methods/length/out-of-bounds indexes. Property descriptors are fixed and decoded values cannot be functions. The assignment is required to preserve ordinary custom game fields, without invoking a prototype setter or inherited method."
 	},
 	{
@@ -404,7 +404,7 @@
 		"endColumn": 18,
 		"count": 1,
 		"sourceSha256": "3120e803fdfb4f8adfa8815100eedea452826f62d6ba916255b813fa97b83c6f",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "Formation totals require Number.isInteger(si) and 0 <= si < numSides immediately before the two local array increments. Snapshot-derived strings, fractional indexes and NaN cannot reach either numeric counter write."
 	},
 	{
@@ -416,7 +416,7 @@
 		"endColumn": 19,
 		"count": 1,
 		"sourceSha256": "3120e803fdfb4f8adfa8815100eedea452826f62d6ba916255b813fa97b83c6f",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "Formation totals require Number.isInteger(si) and 0 <= si < numSides immediately before the two local array increments. Snapshot-derived strings, fractional indexes and NaN cannot reach either numeric counter write."
 	},
 	{
@@ -428,7 +428,7 @@
 		"endColumn": 66,
 		"count": 1,
 		"sourceSha256": "7eef37fa87fdecd1d07cb93c4c93b053fa84d94f2d2770274048d5b807d5b072",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "refreshLiveCombatPower first skips every noninteger unit.sideIndex. countsForLivePower additionally requires 0 <= sideIndex < MAX_SIDES before this typed per-side accumulator write. Malformed keys cannot bypass the explicit integer gate; key-safety tests preserve valid power accounting."
 	},
 	{
@@ -440,7 +440,7 @@
 		"endColumn": 27,
 		"count": 1,
 		"sourceSha256": "7eef37fa87fdecd1d07cb93c4c93b053fa84d94f2d2770274048d5b807d5b072",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "refreshLiveCombatPower first rejects every noninteger unit.sideIndex, then countsForPosture requires a nonnegative side index below sides.length. The subsequent write is into freshly allocated per-side numeric arrays. This fixes the prior NaN/string negated-comparison gap and has malformed-index regression coverage."
 	},
 	{
@@ -452,7 +452,7 @@
 		"endColumn": 29,
 		"count": 1,
 		"sourceSha256": "7eef37fa87fdecd1d07cb93c4c93b053fa84d94f2d2770274048d5b807d5b072",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "refreshLiveCombatPower first rejects every noninteger unit.sideIndex, then countsForPosture requires a nonnegative side index below sides.length. The subsequent write is into freshly allocated per-side numeric arrays. This fixes the prior NaN/string negated-comparison gap and has malformed-index regression coverage."
 	},
 	{
@@ -464,7 +464,7 @@
 		"endColumn": 31,
 		"count": 1,
 		"sourceSha256": "7eef37fa87fdecd1d07cb93c4c93b053fa84d94f2d2770274048d5b807d5b072",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "clearSideLandPlanSlots rejects noninteger or negative sideIdx before computing secondSlot. The offset is sides.length from an actual array, so secondSlot remains an integer and is checked against the plan-array length. The invalid-string/index regression verifies that plan-array prototype and contents remain unchanged."
 	},
 	{
@@ -476,7 +476,7 @@
 		"endColumn": 63,
 		"count": 1,
 		"sourceSha256": "9f7dcdda5c490235631f4904be6bc741b4189461de9b6e1c51b60b7493426ea2",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "The owner-operated release CLI intentionally reads the selected changelog/notes file and publishes release notes to GitHub. It is only called in the trusted main publication job with fixed CLI arguments. The client restricts destinations to api.github.com or uploads.github.com. This is the documented release operation, not a path supplied by a remote request."
 	},
 	{
@@ -488,7 +488,7 @@
 		"endColumn": 22,
 		"count": 1,
 		"sourceSha256": "8a1a7fec15aa28497e1e6b0843c9d35cf05c00f28efefadf4f0f0cc7b1fe18c8",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "This handler belongs to a dedicated Worker created by the application, not a Window message listener. Only the creating document/parent has its private Worker channel; event.origin is not a Window-origin authentication signal here. Input and download restrictions are handled separately and must remain in place."
 	},
 	{
@@ -500,7 +500,7 @@
 		"endColumn": 30,
 		"count": 1,
 		"sourceSha256": "3fb3b97ef7429137a84f4850e7720e37ec17637882269bf91724f8e1e2bb6218",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "This handler belongs to a dedicated Worker created by the application, not a Window message listener. Only the creating document/parent has its private Worker channel; event.origin is not a Window-origin authentication signal here. Input and download restrictions are handled separately and must remain in place."
 	},
 	{
@@ -512,7 +512,7 @@
 		"endColumn": 33,
 		"count": 1,
 		"sourceSha256": "1591e180b84ce0e52dc774838ea4be41fae9b7447a4f5acf34de4cd496c86bb9",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "This handler belongs to a dedicated Worker created by the application, not a Window message listener. Only the creating document/parent has its private Worker channel; event.origin is not a Window-origin authentication signal here. Input and download restrictions are handled separately and must remain in place."
 	},
 	{
@@ -524,7 +524,7 @@
 		"endColumn": 24,
 		"count": 1,
 		"sourceSha256": "ffb33f7d39659fa5cc7f48d996fdfa845704de52945122775e4161d9ff8b1e98",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "This handler belongs to a dedicated Worker created by the application, not a Window message listener. Only the creating document/parent has its private Worker channel; event.origin is not a Window-origin authentication signal here. Input and download restrictions are handled separately and must remain in place."
 	},
 	{
@@ -536,7 +536,7 @@
 		"endColumn": 27,
 		"count": 1,
 		"sourceSha256": "24a86ef9d46f42ea84b3463c59624677fa7ffd6350f13ac2f0ae9a0bb77d454d",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "This handler belongs to a dedicated Worker created by the application, not a Window message listener. Only the creating document/parent has its private Worker channel; event.origin is not a Window-origin authentication signal here. Input and download restrictions are handled separately and must remain in place."
 	},
 	{
@@ -548,7 +548,7 @@
 		"endColumn": 6,
 		"count": 1,
 		"sourceSha256": "3fb3b97ef7429137a84f4850e7720e37ec17637882269bf91724f8e1e2bb6218",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "Worker requests pass through resolveWorkerAssetUrl: only this application origin and packaged assets (plus explicitly allowed same-origin scenario blobs) survive. Userinfo, foreign origins and encoded path escapes are rejected; fetch omits credentials and rejects redirects. There is no arbitrary external URL or authenticated endpoint request."
 	},
 	{
@@ -560,7 +560,7 @@
 		"endColumn": 4,
 		"count": 1,
 		"sourceSha256": "1591e180b84ce0e52dc774838ea4be41fae9b7447a4f5acf34de4cd496c86bb9",
-		"analysisSha256": "ac13be71658c97cf5bc46ff196f472baeaf9ea58dd1e70ea8aa8e93e9e488d9e",
+		"analysisSha256": "c0817770e9cfb90b701ca9e7da3f859679c1dc4017e88b999f3e9972b35f4e62",
 		"reason": "Worker requests pass through resolveWorkerAssetUrl: only this application origin and packaged assets (plus explicitly allowed same-origin scenario blobs) survive. Userinfo, foreign origins and encoded path escapes are rejected; fetch omits credentials and rejects redirects. There is no arbitrary external URL or authenticated endpoint request."
 	}
 ]

@@ -39,6 +39,11 @@ function check(value, expectedStatus) {
 }
 try {
 	check(report(), 0);
+	for (const incrementalMode of ["diff-informed", "overlay,diff-informed"]) {
+		const partial = report();
+		partial.runs[0].properties = { incrementalMode };
+		check(partial, 1);
+	}
 	check(undefined, 1);
 	check("{sensitive-fixture-value", 1);
 	check({ version: "2.1.0", runs: [] }, 1);

@@ -10,7 +10,7 @@ supersedes their original descriptions of missing local controls:
 | Finding | Local remediation | Remaining verification |
 | --- | --- | --- |
 | CI-TRUST-001 | Owner review for all files via `.github/CODEOWNERS`; documented owner-only, all-workflow execution policy, fork approvals and main protections | GitHub settings must be activated/verified by the administrator; the runner still has production authority and is not isolated |
-| CI-COVERAGE-002 | Hosted npm audit, full-history redacted Gitleaks and CodeQL security-extended jobs gate publication; weekly checks and dependency update proposals | First GitHub run, account security features and scan outcomes; local results recorded below |
+| CI-COVERAGE-002 | Hosted npm audit, full-history redacted Gitleaks and CodeQL security-extended jobs gate publication; weekly checks and dependency update proposals | First hosted build/image/source-security jobs passed; full-report CodeQL correction requires a new hosted run |
 | JS-CSP-001 | HTTP framing CSP, XFO, nosniff and referrer headers with consistent inheritance; unsupported meta directive removed | Public HTTPS/proxy verification after an authorized release |
 | Network verification | Recorded administrator-provided router/segmentation controls; repeated read-only host inspection | Confirm forwarding destinations, IPv6 policy and allowed/denied proxy, management and monitoring paths before cutover |
 
@@ -31,13 +31,14 @@ production image has not received the new headers or application hardening.
 - The SARIF release gate rejects missing/malformed reports, unsuccessful scans
   and unreviewed findings. Exact reviewed false positives must match location,
   count, file hash and the complete analysis-input digest; a changed caller also
-  invalidates review. Nineteen regression checks passed. Release/version, registry and
+  invalidates review. Twenty-one regression checks passed, including rejection
+  of diff-informed PR reports. Release/version, registry and
   deployment/rollback checks passed; actionlint and Biome passed.
 - GitHub rulesets returned `[]`; classic branch-protection inspection returned
   403 due to integration permissions. Do not infer that classic protection is
   absent or enabled. The latest screenshots confirm dependency graph, Dependabot
-  alerts/security updates and private vulnerability reporting enabled, CodeQL
-  unconfigured, and an earlier screenshot
+  alerts/security updates, private vulnerability reporting, Secret Protection and
+  repository Push protection enabled. CodeQL advanced setup ran in PR #2; an earlier screenshot
   showed only first-time-contributor workflow approval. Saved settings changes
   have not been independently verified.
 - The administrator reports router exposure limited to 80/443, no public SSH,
@@ -78,6 +79,17 @@ recorded in `.github/codeql-reviewed.json`; no rule or file was excluded.
 The gate passed against the final SARIF with **zero unreviewed findings**.
 This is not a claim of zero CodeQL alerts or complete application security.
 Any change to analysis inputs invalidates the review digest and requires triage.
+
+The first hosted PR run passed the build/container/image scan and source-security
+jobs. Its CodeQL scan succeeded, but the exact-review gate rejected a partial
+diff-informed report because unchanged reviewed findings were absent. Full PR
+analysis is now configured; no stale-review or unreviewed-finding check was
+removed. The release-notes upload alert was independently re-reviewed as the
+intended CHANGELOG-to-GitHub Release data flow, not an arbitrary file upload.
+The repeated full local analysis covered 266/266 files and produced the same 47
+exact finding identities. All reviewed sink files are unchanged; the diff only
+adjusts workflow analysis mode and adds fail-closed report validation/tests.
+The analysis-input digest was refreshed after this comparison and review.
 
 Full Git history including merge diffs was scanned (473 commits). The single
 Gitleaks match was verified as encoded SVG flag content in historical scenario

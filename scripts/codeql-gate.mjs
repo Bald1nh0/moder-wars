@@ -86,6 +86,13 @@ try {
 				throw new Error("Expected CodeQL analysis results.");
 			}
 			if (
+				String(run.properties?.incrementalMode || "").includes("diff-informed")
+			) {
+				throw new Error(
+					"A full CodeQL report is required; disable diff-informed PR analysis.",
+				);
+			}
+			if (
 				run.invocations?.some(
 					(invocation) => invocation.executionSuccessful === false,
 				)
