@@ -19,6 +19,75 @@
 	background: #02080dc9;
 }
 
+.campaign-tutorial-guide {
+	margin: 14px 0;
+	border: 1px solid #7496ac;
+	border-radius: 8px;
+	background: #172b3d;
+}
+
+.tutorial-content > .campaign-tutorial-action {
+	flex-shrink: 0;
+	width: 100%;
+	min-height: 40px;
+	margin: 0 0 8px;
+	padding: 8px 12px;
+	font-size: 13px;
+}
+
+.campaign-tutorial-guide > summary {
+	min-height: 44px;
+	box-sizing: border-box;
+	padding: 10px 14px;
+	color: #c8e8fa;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.campaign-tutorial-guide .tutorial-content {
+	width: 100%;
+	max-width: none;
+	/* The dialog scrolls on short screens; keep room for text above the controls. */
+	max-height: clamp(360px, 70dvh, 440px);
+	margin: 0;
+	padding: 12px 14px;
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+}
+
+.campaign-tutorial-guide #tutorial-step-container {
+	min-height: 120px;
+}
+
+.campaign-tutorial-guide .tutorial-title {
+	font-size: 17px;
+	letter-spacing: 0;
+}
+
+.campaign-tutorial-guide .tutorial-header {
+	margin-bottom: 8px;
+}
+
+.campaign-tutorial-guide .tutorial-icon {
+	font-size: 24px;
+}
+
+.campaign-tutorial-guide .tutorial-body {
+	margin-bottom: 10px;
+	color: #e0e9ef;
+}
+
+.campaign-tutorial-guide .tutorial-navigation {
+	gap: 6px;
+	padding-top: 8px;
+}
+
+.campaign-tutorial-guide .tutorial-navigation button {
+	min-height: 36px;
+	font-size: 12px;
+}
+
 .campaign-panel [hidden],
 .campaign-toast[hidden],
 .campaign-hud-button[hidden] {

@@ -107,3 +107,41 @@ for (const [gameState, initiallyPaused, accepted] of [
 }
 assert.ok(main.includes("menu_controls.bindMainMenuBtnClick();"));
 console.log("Main menu exit: running/paused/setup, cancel, confirm and duplicate clicks passed");
+
+// Exercise HUD placement with wrapped controls and the editor above the status bar.
+{
+    const handlers = {};
+    const panel = { style: {} };
+    const menu = {
+        open: true,
+        querySelector: () => panel,
+        addEventListener: (type, handler) => { handlers[type] = handler; },
+    };
+    let bounds = { top: 16, bottom: 168 };
+    const header = { clientTop: 1, getBoundingClientRect: () => bounds };
+    const root = { clientHeight: 568 };
+    const context = vm.createContext({
+        document: {
+            documentElement: root,
+            getElementById: id => id === "hud-menu" ? menu : header,
+        },
+        window: { addEventListener: (type, handler) => { handlers[type] = handler; } },
+    });
+    vm.runInContext(controls.replace(/^import .*;$/gm, "").replace("export function", "function"), context);
+    context.createMenuControls({}).bindHudMenuClick();
+    for (const [height, top, barHeight] of [[568, 16, 152], [720, 141, 66], [320, 120, 190]]) {
+        root.clientHeight = height;
+        bounds = { top, bottom: top + barHeight };
+        handlers.resize();
+        const menuTop = top + header.clientTop + Number.parseFloat(panel.style.top);
+        const menuHeight = Number.parseFloat(panel.style.maxHeight);
+        assert.ok(menuTop >= 8 && menuHeight >= 100, "menu keeps a usable scroll area");
+        assert.ok(menuTop + menuHeight <= height - 16, "menu stays inside the viewport");
+    }
+    handlers.click({ target: { closest: () => ({}) } });
+    assert.equal(menu.open, false, "choosing a menu action closes the menu");
+    const previousTop = panel.style.top;
+    handlers.resize();
+    assert.equal(panel.style.top, previousTop, "closed menus do not perform layout work");
+}
+console.log("HUD menu: wrapped controls, editor offset, short viewports and action dismissal passed");

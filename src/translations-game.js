@@ -162,22 +162,44 @@ export const GAME_TRANSLATIONS = {
 		GAME_OFF: "OFF",
 		GAME_TUTORIAL_0_TITLE: "Welcome Commander",
 		GAME_TUTORIAL_0_CONTENT:
-			"Modern Wars is a grand strategy simulation of <b>organic frontlines</b>. Let's walk through a basic engagement setup.",
+			"Modern Wars simulates countries, moving frontlines and an economy. We will use Germany and Poland as a setup example, then explain <b>forces, cities and resources</b>. You can reopen this guide from <b>Menu → How to play</b>.",
 		GAME_TUTORIAL_1_TITLE: "Initialize World",
 		GAME_TUTORIAL_1_CONTENT:
-			"First, let's load the global theater. Click 'Next' to initialize the engine.",
+			"Choose a scenario in the <b>main menu</b> and start it before adding countries. <b>Modern World 2026</b> provides the global map for this example. In <b>How to play</b>, Next only turns the page: it does not replace your current map or selected countries.",
 		GAME_TUTORIAL_2_TITLE: "Recruit Side A",
 		GAME_TUTORIAL_2_CONTENT:
-			"We need an aggressor. Find <b>Germany</b> on the map and click it to recruit for Side A.",
+			"For this example, select <b>Side A</b> in the setup panel, then find <b>Germany</b> on the map and click it to add the country to that side.",
 		GAME_TUTORIAL_3_TITLE: "Recruit Side B",
 		GAME_TUTORIAL_3_CONTENT:
-			"Now for the opposition. Switch to <b>Side B</b> in the setup panel, then click <b>Poland</b> on the map.",
+			"For the opposing side in this example, switch to <b>Side B</b> in the setup panel, then click <b>Poland</b> on the map. In your own game, choose the countries you want to participate.",
 		GAME_TUTORIAL_4_TITLE: "Launch Operation",
 		GAME_TUTORIAL_4_CONTENT:
-			"Both sides are ready. Click <b>Inaugurate Conflict</b> to begin the simulation.",
+			"Once countries are assigned to opposing sides, click <b>Start War</b> to begin the simulation. The next pages explain the campaign controls available once the battle starts.",
 		GAME_TUTORIAL_5_TITLE: "The Frontline",
 		GAME_TUTORIAL_5_CONTENT:
-			"The war is live! Units will now push borders organically. You can use <b>God Mode</b> to edit the map while the simulation runs. Good luck, Commander.",
+			"The AI moves formations and pushes the front. Open <b>Menu → Forces & economy</b> to manage any participating country. The battle continues while panels and this guide are open. Use the <b>Pause</b> control before studying the map or planning orders.",
+		GAME_TUTORIAL_PROGRESS: "Step {current} of {total}",
+		GAME_TUTORIAL_FORCES_TITLE: "Flags, people and stock",
+		GAME_TUTORIAL_FORCES_CONTENT:
+			"One flag represents a <b>formation</b>, not one soldier. Infantry, armor, artillery and air defense have different roles. <b>Deployed personnel</b> counts people in living formations; <b>reserve</b> is available for training. Equipment stock is separate. Game stocks and prices are fictional. Source observations show their dates; <b>unknown does not mean zero</b>.",
+		GAME_TUTORIAL_ECONOMY_TITLE: "Fund your forces",
+		GAME_TUTORIAL_ECONOMY_CONTENT:
+			"1. Open <b>Menu → Forces & economy</b>. Choose a country in <b>Country</b>, then select <b>Recruitment & cities</b>.<br><br>2. Under <b>Train formations</b>, choose <b>Formation role</b> and <b>Quantity</b>, then press <b>Order training</b>.<br><br>3. To make equipment, find <b>Equipment production</b>, choose <b>Stock type</b> and <b>Quantity</b>, then press <b>Order production</b>.<br><br>Credits and required resources are reserved immediately; progress appears in the queue below. Orders finish over logistics cycles, not instantly. Collapse this guide to make room for the controls.",
+		GAME_TUTORIAL_CITIES_TITLE: "Build in controlled cities",
+		GAME_TUTORIAL_CITIES_CONTENT:
+			"Choose a controlled city and a building, then press <b>Build / upgrade</b>. <b>Economy</b> raises income; <b>Industry</b> and <b>Training center</b> add parallel production and training slots; <b>Supply depot</b> replenishes supplies. Capturing a city transfers its buildings. Losing cities or supplies can stop queued work. A logistics cycle is game time, not a real day.",
+		GAME_TUTORIAL_MOBILIZATION_TITLE: "Mobilization and priorities",
+		GAME_TUTORIAL_MOBILIZATION_CONTENT:
+			"Mobilization gradually moves a limited civilian pool into reserve and reduces income. It does <b>not</b> instantly create trained troops or aircraft. Demobilization returns surviving personnel and recoverable equipment. Priorities affect spending, recruitment and combat advantages. <b>Disable AI automation</b> to control spending yourself; otherwise it uses the same budgets and queues. Confirm mobilization, priority or automation changes with <b>Apply</b> in the relevant section.",
+		GAME_TUTORIAL_MISSIONS_TITLE: "Air and drone operations",
+		GAME_TUTORIAL_MISSIONS_CONTENT:
+			"Open <b>Air & drone operations</b>, select a mission and an opposing country, then order it. Operations cost credits, stock and supplies. <b>Aircraft and reconnaissance drones return</b> after the mission; strike drones and missiles are expended. Enemy air defense reduces effectiveness. These are simplified game effects, not real weapon capabilities or individual aircraft simulation.",
+		GAME_TUTORIAL_JOURNAL_TITLE: "Follow events and regions",
+		GAME_TUTORIAL_JOURNAL_CONTENT:
+			"The <b>Event journal</b> records recruitment, construction, missions and territory changes. Filter by country or event type; map popups can be switched off separately. Ukraine also has oblast notices: <b>majority control differs from full control</b>, and checks are periodic. Region outlines are administrative references, separate from military control. Territory cell counts are game grid cells, not square kilometres.",
+		GAME_TUTORIAL_SESSION_TITLE: "Your browser and your session",
+		GAME_TUTORIAL_SESSION_CONTENT:
+			"Simulation runs <b>in your browser by default</b>. The optional server flag is in <b>Settings → Advanced</b>; its fresh-game link applies the choice. It does not create multiplayer rooms. Language and saved preferences persist on this browser. There is <b>no automatic battle save</b>: leaving for the main menu, reloading or closing loses the campaign. Scenario export is not a live save.",
 		GAME_TUTORIAL_6_TITLE: "World Builder",
 		GAME_TUTORIAL_6_CONTENT:
 			"Welcome to the <b>Satellite Editor</b>. Here you can redraw history or create entirely new worlds from scratch.",
@@ -373,22 +395,44 @@ export const GAME_TRANSLATIONS = {
 		GAME_OFF: "ВЫКЛ",
 		GAME_TUTORIAL_0_TITLE: "Добро пожаловать, командующий",
 		GAME_TUTORIAL_0_CONTENT:
-			"Modern Wars — стратегическая симуляция с <b>динамичными линиями фронта</b>. Давайте подготовим первый конфликт.",
+			"Modern Wars моделирует страны, движение фронта и экономику. Рассмотрим подготовку на примере Германии и Польши, затем разберём управление <b>войсками, городами и ресурсами</b>. Руководство можно открыть снова через <b>Меню → Как играть</b>.",
 		GAME_TUTORIAL_1_TITLE: "Загрузка мира",
 		GAME_TUTORIAL_1_CONTENT:
-			"Сначала загрузим карту мира. Нажмите «Далее», чтобы запустить движок.",
+			"Выберите сценарий в <b>главном меню</b> и запустите его перед добавлением стран. Для этого примера подходит глобальная карта <b>Современный мир 2026</b>. В <b>Как играть</b> кнопка «Далее» только листает страницы: она не заменяет текущую карту и выбранные страны.",
 		GAME_TUTORIAL_2_TITLE: "Набор стороны A",
 		GAME_TUTORIAL_2_CONTENT:
-			"Нужен участник наступления. Найдите на карте <b>Германию</b> и нажмите на неё, чтобы добавить на сторону A.",
+			"Для этого примера выберите <b>сторону A</b> в панели подготовки, затем найдите на карте <b>Германию</b> и нажмите на неё, чтобы добавить страну на эту сторону.",
 		GAME_TUTORIAL_3_TITLE: "Набор стороны B",
 		GAME_TUTORIAL_3_CONTENT:
-			"Теперь выберите противника. Переключитесь на <b>сторону B</b> в панели подготовки и нажмите на <b>Польшу</b>.",
+			"Для противоположной стороны в этом примере переключитесь на <b>сторону B</b> в панели подготовки и нажмите на <b>Польшу</b>. В своей игре выбирайте нужные вам страны-участницы.",
 		GAME_TUTORIAL_4_TITLE: "Начать операцию",
 		GAME_TUTORIAL_4_CONTENT:
-			"Обе стороны готовы. Нажмите <b>Начать войну</b>, чтобы запустить симуляцию.",
+			"Когда страны распределены по противоборствующим сторонам, нажмите <b>Начать войну</b>, чтобы запустить симуляцию. Следующие страницы объясняют управление кампанией, доступное после начала битвы.",
 		GAME_TUTORIAL_5_TITLE: "Линия фронта",
 		GAME_TUTORIAL_5_CONTENT:
-			"Война началась! Войска будут продвигать границы. Используйте <b>Режим бога</b> для редактирования карты. Удачи, командующий.",
+			"ИИ перемещает подразделения и продвигает фронт. Откройте <b>Меню → Войска и экономика</b>, чтобы управлять любой участвующей страной. Битва продолжается, пока открыты панели и это руководство. Используйте <b>Паузу</b>, чтобы изучить карту или обдумать приказы.",
+		GAME_TUTORIAL_PROGRESS: "Шаг {current} из {total}",
+		GAME_TUTORIAL_FORCES_TITLE: "Флажки, люди и запасы",
+		GAME_TUTORIAL_FORCES_CONTENT:
+			"Один флажок обозначает <b>подразделение</b>, а не одного солдата. У пехоты, бронетехники, артиллерии и ПВО разные роли. <b>Военные в строю</b> — люди в действующих подразделениях; <b>резерв</b> доступен для обучения. Техника учитывается отдельно. Игровые запасы и цены условные. У данных источников указаны даты; <b>«неизвестно» не означает ноль</b>.",
+		GAME_TUTORIAL_ECONOMY_TITLE: "Финансируйте войска",
+		GAME_TUTORIAL_ECONOMY_CONTENT:
+			"1. Откройте <b>Меню → Войска и экономика</b>. Выберите участника в поле <b>Страна</b>, затем вкладку <b>Пополнение и города</b>.<br><br>2. В разделе <b>Обучение подразделений</b> выберите <b>Роль подразделения</b> и <b>Количество</b>, затем нажмите <b>Заказать обучение</b>.<br><br>3. Для техники найдите <b>Производство техники</b>, выберите <b>Тип запаса</b> и <b>Количество</b>, нажмите <b>Заказать производство</b>.<br><br>Кредиты и нужные ресурсы резервируются сразу; прогресс виден в очереди ниже. Заказы выполняются за циклы снабжения, не мгновенно. Сверните эту подсказку, чтобы освободить место для управления.",
+		GAME_TUTORIAL_CITIES_TITLE: "Стройте в своих городах",
+		GAME_TUTORIAL_CITIES_CONTENT:
+			"Выберите подконтрольный город и здание, затем нажмите <b>Построить / улучшить</b>. <b>Экономика</b> повышает доход; <b>Промышленность</b> и <b>Учебный центр</b> добавляют параллельные места производства и обучения; <b>Склад снабжения</b> пополняет запасы. Захват города передаёт его здания. Потеря городов или снабжения может остановить очередь. Цикл снабжения — игровое время, а не реальный день.",
+		GAME_TUTORIAL_MOBILIZATION_TITLE: "Мобилизация и приоритеты",
+		GAME_TUTORIAL_MOBILIZATION_CONTENT:
+			"Мобилизация постепенно переводит ограниченный гражданский ресурс в резерв и снижает доход. Она <b>не создаёт мгновенно</b> обученные войска или самолёты. Демобилизация возвращает уцелевших военных и пригодную технику. Приоритеты влияют на расходы, пополнение и боевые преимущества. <b>Выключите автоматизацию ИИ</b>, чтобы управлять расходами самостоятельно. Изменения мобилизации, приоритета или автоматизации подтвердите кнопкой <b>Применить</b> в соответствующем разделе.",
+		GAME_TUTORIAL_MISSIONS_TITLE: "Авиация и дроны",
+		GAME_TUTORIAL_MISSIONS_CONTENT:
+			"Откройте <b>Авиация и дроны</b>, выберите операцию и страну-противника, затем отдайте приказ. Операции расходуют кредиты, технику и снабжение. <b>Авиационный и разведывательный ресурс возвращается</b> после операции; ударные дроны и ракеты расходуются. ПВО противника снижает эффективность. Это упрощённые игровые эффекты, а не реальные характеристики оружия или симуляция отдельных самолётов.",
+		GAME_TUTORIAL_JOURNAL_TITLE: "События и области",
+		GAME_TUTORIAL_JOURNAL_CONTENT:
+			"<b>Журнал событий</b> показывает обучение, строительство, операции и смену контроля. Фильтруйте его по стране или типу событий; всплывающие уведомления отключаются отдельно. Для Украины есть сообщения об областях: <b>контроль большей части отличается от полного</b>, проверки периодические. Границы областей — административный ориентир, отдельный от военного контроля. Клетки территории — клетки игровой сетки, а не квадратные километры.",
+		GAME_TUTORIAL_SESSION_TITLE: "Браузер и текущая игра",
+		GAME_TUTORIAL_SESSION_CONTENT:
+			"По умолчанию симуляция работает <b>в вашем браузере</b>. Серверный режим можно включить в <b>Настройки → Дополнительно</b>; примените выбор через ссылку новой игры. Это не создаёт многопользовательскую комнату. Язык и сохранённые настройки остаются в этом браузере. <b>Автосохранения битвы нет</b>: выход в главное меню, перезагрузка или закрытие теряют кампанию. Экспорт сценария не сохраняет текущую битву.",
 		GAME_TUTORIAL_6_TITLE: "Создание мира",
 		GAME_TUTORIAL_6_CONTENT:
 			"Добро пожаловать в <b>редактор карт</b>. Здесь можно изменить историю или создать совершенно новый мир.",
@@ -580,22 +624,44 @@ export const GAME_TRANSLATIONS = {
 		GAME_OFF: "ВИМК.",
 		GAME_TUTORIAL_0_TITLE: "Вітаємо, командувачу",
 		GAME_TUTORIAL_0_CONTENT:
-			"Modern Wars — стратегічна симуляція з <b>динамічними лініями фронту</b>. Підготуймо перший конфлікт.",
+			"Modern Wars моделює країни, рух фронту й економіку. Розглянемо підготовку на прикладі Німеччини та Польщі, потім розберемо керування <b>військами, містами та ресурсами</b>. Посібник можна відкрити знову через <b>Меню → Як грати</b>.",
 		GAME_TUTORIAL_1_TITLE: "Завантаження світу",
 		GAME_TUTORIAL_1_CONTENT:
-			"Спочатку завантажимо карту світу. Натисніть «Далі», щоб запустити рушій.",
+			"Виберіть сценарій у <b>головному меню</b> й запустіть його перед додаванням країн. Для цього прикладу підходить глобальна мапа <b>Сучасний світ 2026</b>. У <b>Як грати</b> кнопка «Далі» лише гортає сторінки: вона не замінює поточну мапу й вибрані країни.",
 		GAME_TUTORIAL_2_TITLE: "Набір сторони A",
 		GAME_TUTORIAL_2_CONTENT:
-			"Потрібен учасник наступу. Знайдіть на карті <b>Німеччину</b> і натисніть на неї, щоб додати на сторону A.",
+			"Для цього прикладу виберіть <b>сторону A</b> у панелі підготовки, потім знайдіть на мапі <b>Німеччину</b> й натисніть на неї, щоб додати країну на цю сторону.",
 		GAME_TUTORIAL_3_TITLE: "Набір сторони B",
 		GAME_TUTORIAL_3_CONTENT:
-			"Тепер виберіть противника. Перемкніться на <b>сторону B</b> у панелі підготовки й натисніть на <b>Польщу</b>.",
+			"Для протилежної сторони в цьому прикладі перемкніться на <b>сторону B</b> у панелі підготовки й натисніть на <b>Польщу</b>. У власній грі вибирайте потрібні вам країни-учасниці.",
 		GAME_TUTORIAL_4_TITLE: "Почати операцію",
 		GAME_TUTORIAL_4_CONTENT:
-			"Обидві сторони готові. Натисніть <b>Почати війну</b>, щоб запустити симуляцію.",
+			"Коли країни розподілені між протиборчими сторонами, натисніть <b>Почати війну</b>, щоб запустити симуляцію. Наступні сторінки пояснюють керування кампанією, доступне після початку битви.",
 		GAME_TUTORIAL_5_TITLE: "Лінія фронту",
 		GAME_TUTORIAL_5_CONTENT:
-			"Війна почалася! Війська просуватимуть кордони. Використовуйте <b>Режим бога</b> для редагування карти. Успіхів, командувачу.",
+			"ШІ переміщує підрозділи й просуває фронт. Відкрийте <b>Меню → Війська та економіка</b>, щоб керувати будь-якою країною-учасницею. Битва триває, поки відкриті панелі та цей посібник. Скористайтеся <b>Паузою</b>, щоб вивчити мапу чи обміркувати накази.",
+		GAME_TUTORIAL_PROGRESS: "Крок {current} із {total}",
+		GAME_TUTORIAL_FORCES_TITLE: "Прапорці, люди й запаси",
+		GAME_TUTORIAL_FORCES_CONTENT:
+			"Один прапорець позначає <b>підрозділ</b>, а не одного солдата. Піхота, бронетехніка, артилерія та ППО мають різні ролі. <b>Військові у строю</b> — люди в діючих підрозділах; <b>резерв</b> доступний для навчання. Техніка обліковується окремо. Ігрові запаси й ціни умовні. Дані джерел мають дати; <b>«невідомо» не означає нуль</b>.",
+		GAME_TUTORIAL_ECONOMY_TITLE: "Фінансуйте війська",
+		GAME_TUTORIAL_ECONOMY_CONTENT:
+			"1. Відкрийте <b>Меню → Війська та економіка</b>. Виберіть учасника в полі <b>Країна</b>, потім вкладку <b>Поповнення та міста</b>.<br><br>2. У розділі <b>Навчання підрозділів</b> виберіть <b>Роль підрозділу</b> й <b>Кількість</b>, потім натисніть <b>Замовити навчання</b>.<br><br>3. Для техніки знайдіть <b>Виробництво техніки</b>, виберіть <b>Тип запасу</b> й <b>Кількість</b>, натисніть <b>Замовити виробництво</b>.<br><br>Кредити й потрібні ресурси резервуються одразу; поступ видно в черзі нижче. Замовлення виконуються за цикли забезпечення, не миттєво. Згорніть цю підказку, щоб звільнити місце для керування.",
+		GAME_TUTORIAL_CITIES_TITLE: "Будуйте у своїх містах",
+		GAME_TUTORIAL_CITIES_CONTENT:
+			"Виберіть підконтрольне місто й будівлю, потім натисніть <b>Збудувати / поліпшити</b>. <b>Економіка</b> підвищує дохід; <b>Промисловість</b> і <b>Навчальний центр</b> додають паралельні місця виробництва й навчання; <b>Склад забезпечення</b> поповнює запаси. Захоплення міста передає його будівлі. Втрата міст або забезпечення може зупинити чергу. Цикл забезпечення — ігровий час, а не реальний день.",
+		GAME_TUTORIAL_MOBILIZATION_TITLE: "Мобілізація та пріоритети",
+		GAME_TUTORIAL_MOBILIZATION_CONTENT:
+			"Мобілізація поступово переводить обмежений цивільний ресурс у резерв і зменшує дохід. Вона <b>не створює миттєво</b> навчені війська чи літаки. Демобілізація повертає вцілілих військових і придатну техніку. Пріоритети впливають на витрати, поповнення й бойові переваги. <b>Вимкніть автоматизацію ШІ</b>, щоб керувати витратами самостійно. Зміни мобілізації, пріоритету чи автоматизації підтвердьте кнопкою <b>Застосувати</b> у відповідному розділі.",
+		GAME_TUTORIAL_MISSIONS_TITLE: "Авіація та дрони",
+		GAME_TUTORIAL_MISSIONS_CONTENT:
+			"Відкрийте <b>Авіація та дрони</b>, виберіть операцію й країну-супротивника, потім віддайте наказ. Операції витрачають кредити, техніку й забезпечення. <b>Авіаційний та розвідувальний ресурс повертається</b> після операції; ударні дрони й ракети витрачаються. ППО супротивника зменшує ефективність. Це спрощені ігрові ефекти, а не реальні характеристики зброї чи симуляція окремих літаків.",
+		GAME_TUTORIAL_JOURNAL_TITLE: "Події та області",
+		GAME_TUTORIAL_JOURNAL_CONTENT:
+			"<b>Журнал подій</b> показує навчання, будівництво, операції та зміну контролю. Фільтруйте його за країною чи типом подій; спливні сповіщення вимикаються окремо. Для України є повідомлення про області: <b>контроль більшої частини відрізняється від повного</b>, перевірки періодичні. Межі областей — адміністративний орієнтир, окремий від військового контролю. Клітини території — клітини ігрової сітки, а не квадратні кілометри.",
+		GAME_TUTORIAL_SESSION_TITLE: "Браузер і поточна гра",
+		GAME_TUTORIAL_SESSION_CONTENT:
+			"За замовчуванням симуляція працює <b>у вашому браузері</b>. Серверний режим можна ввімкнути в <b>Налаштування → Додатково</b>; застосуйте вибір через посилання нової гри. Це не створює багатокористувацьку кімнату. Мова й збережені налаштування залишаються в цьому браузері. <b>Автозбереження битви немає</b>: вихід у головне меню, перезавантаження чи закриття втрачають кампанію. Експорт сценарію не зберігає поточну битву.",
 		GAME_TUTORIAL_6_TITLE: "Створення світу",
 		GAME_TUTORIAL_6_CONTENT:
 			"Вітаємо в <b>редакторі карт</b>. Тут можна змінити історію або створити цілком новий світ.",

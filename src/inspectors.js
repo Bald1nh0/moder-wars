@@ -15,7 +15,7 @@ export function createInspectors(runtime) {
 			.querySelectorAll("#country-inspector .editor-only")
 			.forEach((el) => {
 				if (el === buffSection) return; // handle buff separately
-				el.style.display = isWar ? "none" : "block";
+				el.style.display = isWar ? "none" : "";
 			});
 		if (buffSection) {
 			buffSection.style.display = "block";

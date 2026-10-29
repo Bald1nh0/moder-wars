@@ -6,10 +6,302 @@ import {
 	campaignOrderError,
 	campaignOrdersReady,
 	campaignPanelState,
+	campaignTutorialAction,
+	createCampaignTutorialGuide,
 	formatCampaignEvent,
 	selectCampaignEvents,
 } from "../src/campaign-ui.js";
 import { CAMPAIGN_TRANSLATIONS } from "../src/translations-campaign.js";
+
+// Exercise real node ownership and focus decisions without claiming browser layout coverage.
+class GuideNode extends EventTarget {
+	constructor(documentRef) {
+		super();
+		this.documentRef = documentRef;
+		this.children = [];
+		this.parentNode = null;
+		this.open = false;
+		this.hidden = false;
+	}
+	get nextSibling() {
+		return (
+			this.parentNode?.children[this.parentNode.children.indexOf(this) + 1] ||
+			null
+		);
+	}
+	append(node) {
+		node.remove();
+		this.children.push(node);
+		node.parentNode = this;
+	}
+	insertBefore(node, before) {
+		node.remove();
+		const index = before ? this.children.indexOf(before) : this.children.length;
+		assert.ok(index >= 0);
+		this.children.splice(index, 0, node);
+		node.parentNode = this;
+	}
+	remove() {
+		if (this.parentNode)
+			this.parentNode.children.splice(
+				this.parentNode.children.indexOf(this),
+				1,
+			);
+		this.parentNode = null;
+	}
+	contains(node) {
+		return node === this || this.children.some((child) => child.contains(node));
+	}
+	querySelector(selector) {
+		for (const child of this.children) {
+			if (
+				selector.startsWith("#")
+					? child.id === selector.slice(1)
+					: child.className === selector.slice(1)
+			)
+				return child;
+			const nested = child.querySelector(selector);
+			if (nested) return nested;
+		}
+		return null;
+	}
+	focus() {
+		this.documentRef.activeElement = this;
+	}
+}
+const guideDocument = new EventTarget();
+guideDocument.createElement = () => new GuideNode(guideDocument);
+guideDocument.body = guideDocument.createElement("body");
+guideDocument.getElementById = (id) =>
+	guideDocument.body.querySelector(`#${id}`);
+const guideOverlay = guideDocument.createElement("div");
+guideOverlay.id = "tutorial-overlay";
+const guideCard = guideDocument.createElement("div");
+guideCard.className = "tutorial-content";
+const guideNext = guideDocument.createElement("button");
+guideCard.append(guideNext);
+const guideAfter = guideDocument.createElement("span");
+guideOverlay.append(guideCard);
+guideOverlay.append(guideAfter);
+guideDocument.body.append(guideOverlay);
+const guidePanel = guideDocument.createElement("dialog");
+const guideHeader = guideDocument.createElement("header");
+const guideCountry = guideDocument.createElement("select");
+guideCountry.id = "campaign-country";
+guidePanel.append(guideHeader);
+guidePanel.append(guideCountry);
+guideDocument.body.append(guidePanel);
+let guideActive = true;
+let guideAction = null;
+const routedActions = [];
+const guideBridge = createCampaignTutorialGuide({
+	panel: guidePanel,
+	anchor: guideHeader,
+	documentRef: guideDocument,
+	isActive: () => guideActive,
+	getAction: () => guideAction,
+	onAction: (target) => {
+		routedActions.push(target);
+		guidePanel.open = true;
+		guideBridge.refresh();
+		return guideCountry;
+	},
+});
+const guideDock = guideDocument.getElementById("campaign-tutorial-guide");
+const guideActionButton = guideDocument.getElementById(
+	"campaign-tutorial-action",
+);
+guideBridge.refresh();
+assert.equal(
+	guideCard.parentNode,
+	guideOverlay,
+	"A closed dialog cannot steal the map tutorial",
+);
+assert.equal(
+	guideActionButton.hidden,
+	true,
+	"Non-campaign tutorial pages have no action",
+);
+guideAction = {
+	tab: "management",
+	label: "CAMPAIGN_MANAGEMENT",
+	controlId: "campaign-training-role",
+};
+guideBridge.refresh();
+assert.equal(
+	guideActionButton.hidden,
+	false,
+	"The floating tutorial has a route even when it covers the HUD menu",
+);
+guideActionButton.dispatchEvent(new Event("click"));
+assert.equal(routedActions[0], guideAction);
+assert.equal(guideCard.parentNode, guideDock);
+assert.equal(
+	guideDock.open,
+	false,
+	"A routed action collapses the guide to free the country controls",
+);
+assert.equal(guideDocument.activeElement, guideCountry);
+guideAction = {
+	tab: "operations",
+	label: "CAMPAIGN_OPERATIONS",
+	controlId: "campaign-mission",
+};
+guideBridge.refresh();
+guideActionButton.dispatchEvent(new Event("click"));
+assert.equal(
+	routedActions[1].tab,
+	"operations",
+	"Actions route to the current page's section even while docked",
+);
+assert.equal(
+	guideCard.children[0],
+	guideNext,
+	"Opening a section preserves the existing tutorial navigation",
+);
+guidePanel.open = false;
+guidePanel.dispatchEvent(new Event("close"));
+guidePanel.open = true;
+guideBridge.refresh();
+assert.equal(
+	guideCard.parentNode,
+	guideDock,
+	"The original live tutorial must enter the native dialog's top layer",
+);
+assert.equal(guideDock.open, true);
+assert.equal(guideDock.hidden, false);
+assert.equal(
+	guideCard.children[0],
+	guideNext,
+	"Navigation handlers and current content survive reparenting",
+);
+guideNext.focus();
+guideDock.open = false;
+guideDock.dispatchEvent(new Event("toggle"));
+assert.equal(
+	guideDocument.activeElement,
+	guideDock.children[0],
+	"Collapsing a focused guide keeps keyboard focus on its summary",
+);
+guideDocument.dispatchEvent(new Event("tutorialchange"));
+assert.equal(
+	guideDock.open,
+	false,
+	"Page changes and refreshes must respect manual collapse",
+);
+guidePanel.open = false;
+guidePanel.dispatchEvent(new Event("close"));
+assert.equal(guideCard.parentNode, guideOverlay);
+assert.equal(
+	guideOverlay.children[1],
+	guideAfter,
+	"Restoration preserves the original DOM position",
+);
+assert.equal(guideDock.hidden, true);
+guidePanel.open = true;
+guideBridge.refresh();
+assert.equal(
+	guideDock.open,
+	true,
+	"Reopening starts the active guide expanded",
+);
+guidePanel.dispatchEvent(new Event("close"));
+assert.equal(
+	guideCard.parentNode,
+	guideDock,
+	"A delayed close event cannot remove the guide from a reopened dialog",
+);
+guideNext.focus();
+guideActive = false;
+guideDocument.dispatchEvent(new Event("tutorialchange"));
+assert.equal(guideActionButton.hidden, true);
+assert.equal(guideCard.parentNode, guideOverlay);
+assert.equal(
+	guideDock.hidden,
+	true,
+	"Finish and Skip remove the empty guide area immediately",
+);
+assert.equal(
+	guideDocument.activeElement,
+	guideCountry,
+	"Finishing the embedded tutorial returns focus to usable country controls",
+);
+guideActive = true;
+guideDocument.dispatchEvent(new Event("tutorialchange"));
+assert.equal(
+	guideCard.parentNode,
+	guideDock,
+	"Starting help while a dialog is open remains visible",
+);
+guideBridge.restore();
+assert.equal(
+	guideCard.parentNode,
+	guideOverlay,
+	"An invalidated dialog restores the map tutorial before closing",
+);
+guideBridge.refresh();
+guideBridge.destroy();
+assert.equal(
+	guideCard.parentNode,
+	guideOverlay,
+	"Destroy restores the live tutorial before removing the dialog",
+);
+assert.equal(guideDocument.getElementById("campaign-tutorial-guide"), null);
+guideDocument.dispatchEvent(new Event("tutorialchange"));
+assert.equal(
+	guideCard.parentNode,
+	guideOverlay,
+	"Destroyed bridges remove their listeners",
+);
+
+const actionRuntime = {
+	gameState: "SIMULATING",
+	campaign: { enabled: true },
+	tutorialActive: true,
+	currentTutorialStep: 0,
+	activeTutorialSet: [],
+};
+for (const [content, tab, controlId] of [
+	["GAME_TUTORIAL_5_CONTENT", "overview", "campaign-country"],
+	["GAME_TUTORIAL_FORCES_CONTENT", "overview", "campaign-country"],
+	["GAME_TUTORIAL_ECONOMY_CONTENT", "management", "campaign-training-role"],
+	["GAME_TUTORIAL_CITIES_CONTENT", "management", "campaign-city"],
+	["GAME_TUTORIAL_MOBILIZATION_CONTENT", "management", "campaign-mobilization"],
+	["GAME_TUTORIAL_MISSIONS_CONTENT", "operations", "campaign-mission"],
+	["GAME_TUTORIAL_JOURNAL_CONTENT", "journal", "campaign-event-country"],
+]) {
+	actionRuntime.activeTutorialSet = [{ content }];
+	assert.equal(campaignTutorialAction(actionRuntime)?.tab, tab);
+	assert.equal(campaignTutorialAction(actionRuntime)?.controlId, controlId);
+	assert.equal(
+		actionRuntime.currentTutorialStep,
+		0,
+		"Routing must not advance or reset the current step",
+	);
+}
+for (const content of [
+	"GAME_TUTORIAL_0_CONTENT",
+	"GAME_TUTORIAL_6_CONTENT",
+	"GAME_TUTORIAL_SESSION_CONTENT",
+]) {
+	actionRuntime.activeTutorialSet = [{ content }];
+	assert.equal(
+		campaignTutorialAction(actionRuntime),
+		null,
+		"Setup/editor/session pages do not offer unrelated campaign actions",
+	);
+}
+actionRuntime.activeTutorialSet = [
+	{ content: "GAME_TUTORIAL_ECONOMY_CONTENT" },
+];
+assert.equal(
+	campaignTutorialAction({ ...actionRuntime, tutorialActive: false }),
+	null,
+);
+assert.equal(
+	campaignTutorialAction({ ...actionRuntime, campaign: null }),
+	null,
+);
 
 for (const status of ["starting", "idle", "suspended", "error"]) {
 	assert.equal(

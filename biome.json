@@ -31,6 +31,7 @@
 			"scripts/camera-gesture-smoke.mjs",
 			"scripts/render-budget-smoke.mjs",
 			"scripts/i18n-smoke.mjs",
+			"scripts/tutorial-smoke.mjs",
 			"workers/**/*.js",
 			"styles/**/*.css"
 		]

@@ -127,9 +127,9 @@ export function createConflictSetup(runtime) {
 				slot.innerHTML = `
                 <button class="clear-slot-btn" type="button" aria-label="${gameText("GAME_REMOVE_COUNTRY")}" title="${gameText("GAME_REMOVE_COUNTRY_HINT")}">×</button>
                 <div class="slot-name" title="${country.name}" style="display: flex; flex-direction: column; gap: 2px; align-items: center; justify-content: center; margin-bottom: 5px;">
-                    <div style="display: flex; align-items: center; gap: 8px; justify-content: center;">
+                    <div class="slot-identity">
                         ${flagUrl ? `<img src="${flagUrl}" style="width: 22px; height: 13px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0; border-radius: 1px;">` : ""}
-                        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${displayName}</span>
+                        <span class="slot-country-name">${displayName}</span>
                     </div>
                     <div style="font-size: 12px; color: #777; text-transform: uppercase; letter-spacing: 0.5px;">~ ${gameText("GAME_TROOPS", { count: estLabel })}</div>
                 </div>

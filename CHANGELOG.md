@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-10-29
+
+### 0.29.0-experimental.3 (experimental, unreleased)
+
+- Wrap long HUD menu actions and constrain their width, keeping vertical scrolling without a horizontal scrollbar.
+- Give the country inspector its own bounded, content-sized layout, wrapping action rows and a reachable close button. Preserve editor action-grid layout when reopening the inspector.
+- Keep active tutorial navigation inside the Forces & economy dialog, preserve its page when returning to the map, and make recruitment/production instructions explicit in English, Ukrainian and Russian. Add guide shortcuts to the relevant campaign controls.
+- Publish experimental.3 to the isolated port 4180 preview without restarting the simulation server; retain older assets for open sessions.
+
+### 0.29.0-experimental.2 (experimental, unreleased)
+
+- Keep conflict sides within the setup panel, wrap long translated country names, and stack cards on narrow screens. Additional sides wrap without horizontal scrolling.
+- Extend the English, Ukrainian and Russian tutorial with forces, economy, city construction, mobilization, missions, the event journal and session limits. Keep navigation reachable on small screens and show a localized step counter.
+- Make manually opened game help a reference that preserves the current scenario and selected countries; retain the guided setup handlers and the separate editor guide.
+- Publish the UI update on the isolated port 4180 preview without restarting its server, retaining older assets for open sessions.
+
+- Move the isolated `0.29.0-experimental.1` campaign preview to port 4180, replacing the older server prototype there, and stop the duplicate listener on 4182. Keep the public Docker release unchanged.
+
 ## 2026-10-28
 
 ### 0.29.0-experimental.1 (experimental, unreleased)

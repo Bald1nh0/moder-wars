@@ -1,5 +1,15 @@
 /** Keep each player-facing message aligned across the three supported languages. */
 const messages = {
+	CAMPAIGN_GUIDE_OPEN_SECTION: [
+		"Open: {section}",
+		"Відкрити: {section}",
+		"Открыть: {section}",
+	],
+	CAMPAIGN_GUIDE_TITLE: [
+		"How to play · expand / collapse",
+		"Як грати · розгорнути / згорнути",
+		"Как играть · развернуть / свернуть",
+	],
 	CAMPAIGN_TITLE: [
 		"Forces & economy",
 		"Війська та економіка",

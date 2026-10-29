@@ -80,6 +80,50 @@ export function campaignOrdersReady(runtime) {
 	return status === undefined || status === "ready";
 }
 
+export function campaignTutorialAction(runtime) {
+	if (!runtime.tutorialActive || !campaignPanelState(runtime).visible)
+		return null;
+	const step = runtime.activeTutorialSet?.[runtime.currentTutorialStep];
+	const actions = {
+		GAME_TUTORIAL_5_CONTENT: {
+			tab: "overview",
+			label: "CAMPAIGN_TITLE",
+			controlId: "campaign-country",
+		},
+		GAME_TUTORIAL_FORCES_CONTENT: {
+			tab: "overview",
+			label: "CAMPAIGN_TITLE",
+			controlId: "campaign-country",
+		},
+		GAME_TUTORIAL_ECONOMY_CONTENT: {
+			tab: "management",
+			label: "CAMPAIGN_MANAGEMENT",
+			controlId: "campaign-training-role",
+		},
+		GAME_TUTORIAL_CITIES_CONTENT: {
+			tab: "management",
+			label: "CAMPAIGN_CITY_BUILD",
+			controlId: "campaign-city",
+		},
+		GAME_TUTORIAL_MOBILIZATION_CONTENT: {
+			tab: "management",
+			label: "CAMPAIGN_MOBILIZATION",
+			controlId: "campaign-mobilization",
+		},
+		GAME_TUTORIAL_MISSIONS_CONTENT: {
+			tab: "operations",
+			label: "CAMPAIGN_OPERATIONS",
+			controlId: "campaign-mission",
+		},
+		GAME_TUTORIAL_JOURNAL_CONTENT: {
+			tab: "journal",
+			label: "CAMPAIGN_JOURNAL",
+			controlId: "campaign-event-country",
+		},
+	};
+	return actions[step?.content] || null;
+}
+
 /** Count the current mirror, rather than a previous logistics-cycle estimate. */
 export function campaignForceTotals(units, countryId) {
 	const totals = {
@@ -262,6 +306,100 @@ export function campaignOrderError(reason, translate = gameText) {
 	});
 }
 
+/** Move the existing guide into the native dialog's top layer without duplicating it. */
+export function createCampaignTutorialGuide({
+	panel,
+	anchor,
+	documentRef,
+	isActive,
+	getAction = () => null,
+	onAction = () => null,
+}) {
+	const overlay = documentRef.getElementById("tutorial-overlay");
+	const tutorial = overlay?.querySelector(".tutorial-content");
+	if (!tutorial) return { refresh() {}, restore() {}, destroy() {} };
+	const originalParent = tutorial.parentNode;
+	const originalNext = tutorial.nextSibling;
+	const guide = documentRef.createElement("details");
+	guide.id = "campaign-tutorial-guide";
+	guide.className = "campaign-tutorial-guide";
+	guide.hidden = true;
+	const summary = documentRef.createElement("summary");
+	summary.textContent = gameText("CAMPAIGN_GUIDE_TITLE");
+	guide.append(summary);
+	panel.insertBefore(guide, anchor.nextSibling);
+	const action = documentRef.createElement("button");
+	action.id = "campaign-tutorial-action";
+	action.type = "button";
+	action.className = "campaign-button campaign-tutorial-action";
+	action.hidden = true;
+	tutorial.insertBefore(action, tutorial.querySelector(".tutorial-navigation"));
+	const activate = () => {
+		const target = getAction();
+		if (!isActive() || !target) return;
+		const control = onAction(target);
+		if (panel.open) guide.open = false;
+		control?.focus();
+	};
+	action.addEventListener("click", activate);
+	const restore = () => {
+		const hadFocus = tutorial.contains(documentRef.activeElement);
+		if (tutorial.parentNode === guide)
+			originalParent.insertBefore(
+				tutorial,
+				originalNext?.parentNode === originalParent ? originalNext : null,
+			);
+		guide.hidden = true;
+		guide.open = false;
+		if (hadFocus && panel.open && !isActive())
+			panel.querySelector("#campaign-country")?.focus();
+	};
+	const refresh = () => {
+		summary.textContent = gameText("CAMPAIGN_GUIDE_TITLE");
+		const target = getAction();
+		action.hidden = !isActive() || !target;
+		if (target)
+			action.textContent = gameText("CAMPAIGN_GUIDE_OPEN_SECTION", {
+				section: gameText(target.label),
+			});
+		if (!panel.open || !isActive()) {
+			restore();
+			return;
+		}
+		if (tutorial.parentNode !== guide) {
+			guide.append(tutorial);
+			guide.open = true;
+		}
+		guide.hidden = false;
+	};
+	const onToggle = () => {
+		if (!guide.open && tutorial.contains(documentRef.activeElement))
+			summary.focus();
+	};
+	const onClose = () => {
+		// A queued close event may arrive after the same dialog has reopened.
+		if (!panel.open) restore();
+	};
+	documentRef.addEventListener("tutorialchange", refresh);
+	documentRef.addEventListener("languagechange", refresh);
+	panel.addEventListener("close", onClose);
+	guide.addEventListener("toggle", onToggle);
+	return {
+		refresh,
+		restore,
+		destroy() {
+			restore();
+			documentRef.removeEventListener("tutorialchange", refresh);
+			documentRef.removeEventListener("languagechange", refresh);
+			panel.removeEventListener("close", onClose);
+			guide.removeEventListener("toggle", onToggle);
+			action.removeEventListener("click", activate);
+			action.remove();
+			guide.remove();
+		},
+	};
+}
+
 /** All scenario-provided text is rendered as text nodes, including journal entries. */
 export function installCampaignUI(
 	runtime,
@@ -343,6 +481,20 @@ export function installCampaignUI(
 	const closeButton = button("CAMPAIGN_CLOSE", "close");
 	header.append(title, closeButton);
 	panel.append(header);
+	const tutorialGuide = createCampaignTutorialGuide({
+		panel,
+		anchor: header,
+		documentRef,
+		isActive: () => Boolean(runtime.tutorialActive),
+		getAction: () => campaignTutorialAction(runtime),
+		onAction: (target) => {
+			if (!available() || destroyed) return null;
+			currentTab = target.tab;
+			open();
+			const control = documentRef.getElementById(target.controlId);
+			return control && !control.disabled ? control : tabButtons[target.tab];
+		},
+	});
 	const introduction = paragraph(panel, "CAMPAIGN_INTRO");
 	const toolbar = create("div", "campaign-toolbar");
 	const countrySelect = select("country");
@@ -834,12 +986,14 @@ export function installCampaignUI(
 		if (destroyed) return;
 		entry.hidden = !available();
 		if (!available()) {
+			tutorialGuide.restore();
 			if (panel.open) panel.close();
 			toast.hidden = true;
 			lastEventId = null;
 			return;
 		}
 		if (!panel.open) return;
+		tutorialGuide.refresh();
 		const readOnly = !campaignPanelState(runtime).editable;
 		const ownerReady = campaignOrdersReady(runtime);
 		introduction.dataset.campaignI18n = readOnly
@@ -1232,6 +1386,7 @@ export function installCampaignUI(
 	};
 	const close = () => {
 		if (panel.open) panel.close();
+		tutorialGuide.restore();
 	};
 	entry.addEventListener("click", open);
 	closeButton.addEventListener("click", close);
@@ -1248,6 +1403,7 @@ export function installCampaignUI(
 	panel.addEventListener("keyup", blockGameKeys);
 	const refresh = () => {
 		render();
+		tutorialGuide.refresh();
 		updateNotifications();
 	};
 	const languageChanged = () => {
@@ -1264,6 +1420,7 @@ export function installCampaignUI(
 		panel.removeEventListener("keydown", blockGameKeys);
 		panel.removeEventListener("keyup", blockGameKeys);
 		windowRef.removeEventListener("pagehide", destroy);
+		tutorialGuide.destroy();
 		panel.remove();
 		entry.remove();
 		toast.remove();

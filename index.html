@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://esm.sh; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.websim.ai https://*.websim.com wss:; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self';">
-    <title>MW-V0.29.0-experimental.1</title>
+    <title>MW-V0.29.0-experimental.3</title>
     <link rel="stylesheet" href="styles/style.css">
     <link rel="stylesheet" href="styles/campaign.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
@@ -1190,7 +1190,7 @@
                 <button id="tutorial-skip-btn" class="mini-btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1);" data-i18n="UI_SKIP_TUTORIAL">Skip Tutorial</button>
                 <button id="tutorial-prev-btn" class="mini-btn" data-i18n="UI_BACK_2">Back</button>
                 <div id="tutorial-dots"></div>
-                <button id="tutorial-next-btn" class="start-btn" style="width: auto; padding: 10px 30px;" data-i18n="UI_NEXT">Next</button>
+                <button id="tutorial-next-btn" class="start-btn" data-i18n="UI_NEXT">Next</button>
             </div>
         </div>
     </div>
@@ -1200,16 +1200,16 @@
 
 
     <!-- Country Inspector -->
-    <div id="country-inspector" class="setup-panel" style="display:none; position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 1010; max-width: 300px; padding: 15px;">
+    <div id="country-inspector" class="country-inspector hud-surface hud-surface--interactive" style="display:none;">
         <div style="margin-bottom: 15px;">
-            <label style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;" data-i18n="UI_NATION_NAME">Nation Name</label>
+            <label style="font-size: 12px; color: var(--hud-color-muted); text-transform: uppercase; letter-spacing: 1px;" data-i18n="UI_NATION_NAME">Nation Name</label>
             <input type="text" id="inspect-name-input" placeholder="Nation Name" style="width: 100%; background: transparent; border: none; border-bottom: 1px solid #444; color: white; font-size: 18px; font-weight: bold; outline: none; padding: 5px 0;" data-i18n-placeholder="UI_NATION_NAME">
         </div>
 
 
 
         <div id="mid-war-recruitment" style="display:none; margin-bottom: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-            <label style="font-size: 12px; color: #888; text-transform: uppercase; display: block; margin-bottom: 8px; text-align: center; letter-spacing: 1px;" data-i18n="UI_MOBILIZE_INTO_CONFLICT">Mobilize Into Conflict</label>
+            <label style="font-size: 12px; color: var(--hud-color-muted); text-transform: uppercase; display: block; margin-bottom: 8px; text-align: center; letter-spacing: 1px;" data-i18n="UI_MOBILIZE_INTO_CONFLICT">Mobilize Into Conflict</label>
             <div id="recruit-sides-btns" style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px;">
                 <!-- Join Side buttons injected here -->
             </div>
@@ -1221,15 +1221,15 @@
             <div id="inspect-color-swatch" style="width: 100%; height: 6px; border-radius: 3px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.2);"></div>
 
             <div class="editor-only" style="margin-bottom: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; text-align: left;">
-                <label style="font-size: 12px; color: #888; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;" data-i18n="UI_NATIONAL_IDENTITY">National Identity</label>
+                <label style="font-size: 12px; color: var(--hud-color-muted); display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;" data-i18n="UI_NATIONAL_IDENTITY">National Identity</label>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <input type="color" id="inspect-color-picker" style="width: 40px; height: 30px; border: none; background: none; cursor: pointer; padding: 0;">
                     <div style="flex: 1; display: flex; align-items: center; gap: 10px;">
                         <img id="inspect-flag-preview" alt="" loading="lazy" decoding="async" style="width: 40px; height: 25px; object-fit: cover; background: #000; border: 1px solid #444; border-radius: 2px; display: none;">
                         <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
-                            <label style="font-size: 12px; color: #555; text-transform: uppercase; display: block;" data-i18n="UI_UPDATE_FLAG">Update Flag</label>
-                            <input type="file" id="inspect-flag-input" accept="image/*" style="font-size: 12px; color: #777; width: 100%;">
-                            <div style="display: flex; gap: 4px;">
+                            <label style="font-size: 12px; color: var(--hud-color-muted); text-transform: uppercase; display: block;" data-i18n="UI_UPDATE_FLAG">Update Flag</label>
+                            <input type="file" id="inspect-flag-input" accept="image/*" style="font-size: 12px; color: var(--hud-color-muted); width: 100%;">
+                            <div class="country-inspector-actions">
                                 <button id="inspect-fetch-flag-btn" class="mini-btn" style="background: #34495e; font-size: 12px; padding: 2px 4px; flex: 1;" data-i18n="UI_FETCH_MODERN">Fetch Modern</button>
                                 <button id="inspect-hub-flag-btn" class="mini-btn" style="background: #2e86de; font-size: 12px; padding: 2px 4px; flex: 1;" data-i18n="UI_HUB_LIBRARY">Hub Library</button>
                             </div>
@@ -1238,17 +1238,17 @@
                 </div>
             </div>
 
-            <div class="editor-only" style="display: flex; gap: 5px; margin-bottom: 10px;">
+            <div class="editor-only country-inspector-actions" style="margin-bottom: 10px;">
                 <button id="inspect-paint-btn" class="start-btn" style="flex: 1; background: #2e86de; font-size: 12px; padding: 10px;" data-i18n="UI_PAINT">PAINT</button>
                 <button id="inspect-annex-click-btn" class="start-btn" style="flex: 1; background: #d35400; font-size: 12px; padding: 10px;" data-i18n="UI_ANNEX_CLICK">ANNEX CLICK</button>
             </div>
-            <div class="editor-only" style="display: flex; gap: 5px; margin-bottom: 10px;">
+            <div class="editor-only country-inspector-actions" style="margin-bottom: 10px;">
                 <button id="share-country-btn" class="start-btn" style="flex: 1; background: #8e44ad; font-size: 12px; padding: 8px;" data-i18n="UI_SHARE_COUNTRY">Share Country</button>
                 <button id="share-flag-btn" class="start-btn" style="flex: 1; background: #34495e; font-size: 12px; padding: 8px;" data-i18n="UI_SHARE_FLAG">Share Flag</button>
             </div>
 
             <div id="buff-editor-section" class="editor-only" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 5px;">
-                <label style="font-size: 12px; color: #888; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px;" data-i18n="UI_COMBAT_BUFF">Combat Buff</label>
+                <label style="font-size: 12px; color: var(--hud-color-muted); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px;" data-i18n="UI_COMBAT_BUFF">Combat Buff</label>
                 <button id="inspect-buff-btn" class="mini-btn" style="width: 100%; margin-bottom: 10px; background:#444; font-size: 12px; padding:6px 8px;">
                     BUFF: NONE
                 </button>
@@ -1259,35 +1259,35 @@
                 <div id="inspector-release-container" style="display: none; margin-bottom: 10px;">
                     <button id="inspect-release-btn" class="start-btn" style="background: #27ae60; font-size: 12px; padding: 10px; width: 100%;" data-i18n="UI_RELEASE_NATION_2">RELEASE NATION...</button>
                 </div>
-                <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                <div class="country-inspector-actions" style="margin-bottom: 10px;">
                     <button id="set-overlord-btn" class="mini-btn" style="flex: 1; background: #8e44ad;" title="Set as puppet vassal" data-i18n-title="UI_SET_AS_PUPPET_VASSAL" data-i18n="UI_VASSALIZE">Vassalize</button>
                     <button id="set-releasable-btn" class="mini-btn" style="flex: 1; background: #27ae60;" title="Absorb into another nation as a releasable core" data-i18n-title="UI_ABSORB_INTO_ANOTHER_NATION_AS_A_RELEASABLE_CORE" data-i18n="UI_SET_RELEASABLE">Set Releasable</button>
                     <button id="clear-overlord-btn" class="mini-btn" style="flex: 0.5; background: #444;" data-i18n="UI_CLEAR">Clear</button>
                 </div>
 
                 <div id="ally-controls" style="margin-bottom: 10px; padding: 8px; border-radius: 6px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06);">
-                    <label style="font-size: 12px; color: #888; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;" data-i18n="UI_ALLIANCES">Alliances</label>
+                    <label style="font-size: 12px; color: var(--hud-color-muted); display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;" data-i18n="UI_ALLIANCES">Alliances</label>
                     <div id="ally-list" style="font-size: 12px; color: #ccc; margin-bottom: 6px; max-height: 80px; overflow-y: auto;">
-                        <span style="font-size: 12px; color: #666;" data-i18n="UI_NO_ALLIES_SET">No allies set.</span>
+                        <span style="font-size: 12px; color: var(--hud-color-muted);" data-i18n="UI_NO_ALLIES_SET">No allies set.</span>
                     </div>
-                    <div style="display: flex; gap: 5px;">
+                    <div class="country-inspector-actions">
                         <button id="add-ally-btn" class="mini-btn" style="flex: 1; background: #16a085;" title="Click to enter ally-select mode, then click another country on the map to form a mutual alliance." data-i18n-title="UI_CLICK_TO_ENTER_ALLY_SELECT_MODE_THEN_CLICK_ANOTHER_COUNTRY_ON_THE_MAP_TO_FORM_A_" data-i18n="UI_ADD_ALLY_CLICK_MAP">Add Ally (Click Map)</button>
                         <button id="clear-allies-btn" class="mini-btn" style="flex: 1; background: #444;" title="Remove all alliances for this country." data-i18n-title="UI_REMOVE_ALL_ALLIANCES_FOR_THIS_COUNTRY" data-i18n="UI_CLEAR_ALLIES">Clear Allies</button>
                     </div>
                     <div style="margin-top:6px; display:flex; flex-direction:column; gap:4px;">
-                        <label style="font-size: 12px; color:#888; text-transform:uppercase; letter-spacing:1px;" data-i18n="UI_ALLIANCE_FLAG">Alliance Flag</label>
-                        <input type="file" id="alliance-flag-input" accept="image/*" style="font-size: 12px; color:#777;">
+                        <label style="font-size: 12px; color:var(--hud-color-muted); text-transform:uppercase; letter-spacing:1px;" data-i18n="UI_ALLIANCE_FLAG">Alliance Flag</label>
+                        <input type="file" id="alliance-flag-input" accept="image/*" style="font-size: 12px; color:var(--hud-color-muted);">
                     </div>
                 </div>
-                <label style="font-size: 12px; color: #888; display: block; margin-bottom: 5px; text-transform: uppercase;" data-i18n="UI_ANNEX_MODERN_TERRITORY">Annex Modern Territory</label>
-                <div style="display: flex; gap: 5px;">
+                <label style="font-size: 12px; color: var(--hud-color-muted); display: block; margin-bottom: 5px; text-transform: uppercase;" data-i18n="UI_ANNEX_MODERN_TERRITORY">Annex Modern Territory</label>
+                <div class="country-inspector-actions">
                     <input type="text" id="annex-country-input" placeholder="e.g. Poland, France..." style="flex: 1; padding: 6px; font-size: 12px; background: #2a2a30; border: 1px solid #444; color: white; border-radius: 4px;" data-i18n-placeholder="UI_E_G_POLAND_FRANCE">
                     <button id="annex-country-btn" class="mini-btn" style="background: #e67e22;" data-i18n="UI_ANNEX">Annex</button>
                 </div>
-                <small style="font-size: 12px; color: #666; display: block; margin-top: 4px;" data-i18n="UI_THIS_ADDS_THE_TERRITORY_OF_A_REAL_COUNTRY_TO_YOUR_SELECTION">This adds the territory of a real country to your selection.</small>
+                <small style="font-size: 12px; color: var(--hud-color-muted); display: block; margin-top: 4px;" data-i18n="UI_THIS_ADDS_THE_TERRITORY_OF_A_REAL_COUNTRY_TO_YOUR_SELECTION">This adds the territory of a real country to your selection.</small>
             </div>
         </div>
-        <button id="close-inspector-btn" class="mini-btn" style="width: 100%;" data-i18n="UI_CLOSE">Close</button>
+        <div class="country-inspector-footer"><button id="close-inspector-btn" class="mini-btn" style="width: 100%;" data-i18n="UI_CLOSE">Close</button></div>
     </div>
 
     <!-- City Inspector -->

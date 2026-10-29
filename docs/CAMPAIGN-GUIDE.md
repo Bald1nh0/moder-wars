@@ -1,11 +1,20 @@
 # Experimental campaign: forces, economy and events
 
-Version: `0.29.0-experimental.1`. Branch: `feature/forces-economy-events`.
+Version: `0.29.0-experimental.3`. Branch: `feature/forces-economy-events`.
 
 Start a normal scenario, choose opposing countries and start the war. Open the
 map menu and choose **Forces & economy**. The browser worker remains the default;
 the Advanced settings server-simulation flag still opts into an isolated server
 owner. Both owners execute the same campaign rules.
+
+Open **Menu → How to play** for the in-game guide, available in English, Ukrainian and
+Russian. It covers setup and the campaign controls below. Opening help preserves
+the selected scenario and countries; during a battle it starts at the combat
+section. Campaign pages include a shortcut to the relevant controls. When Forces
+& economy is open, the same guide appears inside it and can be collapsed; closing
+the panel restores the guide on the map at the same page. Opening a section does
+not place an order. Help does not pause the simulation, so use Pause first to read
+at leisure.
 
 ## Playing
 
@@ -95,15 +104,36 @@ npm run lint
 npm run smoke
 npm run build -- --outDir /tmp/moder-wars-campaign/dist
 MW_BUILD_DIR=/tmp/moder-wars-campaign/dist node scripts/build-output-smoke.mjs
-MW_STATIC_DIR=/tmp/moder-wars-campaign/dist MW_HOST=192.168.31.224 MW_PORT=4182 npm run prototype:server
+MW_STATIC_DIR=/tmp/moder-wars-campaign/dist MW_HOST=192.168.31.224 MW_PORT=4180 npm run prototype:server
 ```
 
 Use an unused port and an isolated output directory. The public Docker playtest
-is deliberately unchanged. The prior server prototype is frozen at `3dad5ea`
+is deliberately unchanged. As of 2026-10-29, the campaign preview uses port 4180;
+port 4182 is stopped. The prior server prototype is retained at `3dad5ea`
 with its own source snapshot and static build; do not mix protocol versions.
 
 Component CPU measurements and their limits are recorded in
 [the campaign performance report](PERFORMANCE-CAMPAIGN-0.29.0.md).
+
+### Verification recorded on 2026-10-29
+
+- TypeScript, Biome, tutorial, FFA setup, UI, i18n, module-graph and isolated
+  build/output checks passed.
+- Chromium reproduced the Ukrainian setup overflow (505 px of content in a
+  458 px panel) and verified the corrected layout at 1280, 970, 480, 390 and
+  320 px viewport widths, including expanded country controls, four sides and FFA.
+- All 13 help pages were navigable in English, Ukrainian and Russian. Narrow
+  viewports down to 320 × 480 kept the navigation visible and scrolled the body.
+  Help preserved the selected Ukraine/Russia scenario and a paused live campaign.
+- For experimental.3, Chromium checked the HUD menu and country inspector in
+  narrow viewports and editor mode. Menu actions stayed within the viewport;
+  country action rows wrapped and the close control remained reachable.
+- The native campaign dialog kept the actual tutorial controls accessible. At
+  320 × 480, the finance shortcut opened Recruitment & cities, focused the role
+  selector and preserved step 8; the expanded guide retained 164 px for its text.
+  Keyboard navigation, Escape restoration and Finish focus passed in the tested
+  English, Ukrainian and Russian flows.
+- These are automated viewport checks, not measurements on Mac or Android hardware.
 
 ### Verification recorded on 2026-10-28
 
@@ -120,4 +150,5 @@ Component CPU measurements and their limits are recorded in
   were still present in the preview console; no campaign runtime exception was
   observed in these flows.
 
-Local screenshots are under `output/playwright/campaign-*` (ignored by Git).
+Local screenshots are under `output/playwright/campaign-*` and
+`output/playwright/panels-*` (ignored by Git).

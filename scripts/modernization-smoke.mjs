@@ -57,6 +57,7 @@ const checks = [
 	"war-desk",
 	"ui-modules",
 	"ui-modernization",
+	"tutorial",
 	"i18n",
 ];
 // Keep the focused integration suite explicit. No browser or game entry is evaluated.

@@ -568,9 +568,20 @@ export function createMenuControls(runtime) {
 
 	function bindHelpBtnClick() {
 		document.getElementById("help-btn")?.addEventListener("click", () => {
+			if (runtime.gameMode === "EDITOR") {
+				runtime.startTutorial(
+					runtime.editorTutorialSteps,
+					"mw_editor_tutorial_finished",
+				);
+				return;
+			}
+			const battleStarted =
+				Boolean(runtime.campaign?.enabled) ||
+				["SIMULATING", "WAR_OVER"].includes(runtime.gameState);
 			runtime.startTutorial(
 				runtime.conquestTutorialSteps,
 				"mw_tutorial_finished",
+				{ reference: true, startAt: battleStarted ? 5 : 0 },
 			);
 		});
 	}
@@ -589,9 +600,26 @@ export function createMenuControls(runtime) {
 	}
 
 	function bindHudMenuClick() {
-		document.getElementById("hud-menu")?.addEventListener("click", (event) => {
-			if (event.target.closest("button")) event.currentTarget.open = false;
+		const menu = document.getElementById("hud-menu");
+		const panel = menu?.querySelector(".hud-menu-content");
+		const header = document.getElementById("game-status");
+		if (!menu || !panel || !header) return;
+		const fitMenu = () => {
+			if (!menu.open) return;
+			const bounds = header.getBoundingClientRect();
+			const height = document.documentElement.clientHeight;
+			// Keep a usable scroll area when the editor or mobile controls push the HUD down.
+			const top = Math.min(bounds.bottom + 8, Math.max(8, height - 160));
+			panel.style.top = `${top - bounds.top - header.clientTop}px`;
+			panel.style.maxHeight = `${Math.min(560, Math.max(0, height - top - 16))}px`;
+		};
+		menu.addEventListener("click", (event) => {
+			if (event.target.closest("button")) menu.open = false;
 		});
+		menu.addEventListener("toggle", fitMenu);
+		window.addEventListener("resize", fitMenu);
+		if (typeof ResizeObserver !== "undefined")
+			new ResizeObserver(fitMenu).observe(header);
 	}
 
 	function bindMainMenuBtnClick() {

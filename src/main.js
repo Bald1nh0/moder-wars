@@ -3526,6 +3526,48 @@ export const conquestTutorialSteps = [
 		icon: "🛡️",
 		title: "GAME_TUTORIAL_5_TITLE",
 		content: "GAME_TUTORIAL_5_CONTENT",
+		actionRequired: "CLICK_NEXT",
+	},
+	{
+		icon: "🚩",
+		title: "GAME_TUTORIAL_FORCES_TITLE",
+		content: "GAME_TUTORIAL_FORCES_CONTENT",
+		actionRequired: "CLICK_NEXT",
+	},
+	{
+		icon: "🏭",
+		title: "GAME_TUTORIAL_ECONOMY_TITLE",
+		content: "GAME_TUTORIAL_ECONOMY_CONTENT",
+		actionRequired: "CLICK_NEXT",
+	},
+	{
+		icon: "🏙️",
+		title: "GAME_TUTORIAL_CITIES_TITLE",
+		content: "GAME_TUTORIAL_CITIES_CONTENT",
+		actionRequired: "CLICK_NEXT",
+	},
+	{
+		icon: "📋",
+		title: "GAME_TUTORIAL_MOBILIZATION_TITLE",
+		content: "GAME_TUTORIAL_MOBILIZATION_CONTENT",
+		actionRequired: "CLICK_NEXT",
+	},
+	{
+		icon: "✈️",
+		title: "GAME_TUTORIAL_MISSIONS_TITLE",
+		content: "GAME_TUTORIAL_MISSIONS_CONTENT",
+		actionRequired: "CLICK_NEXT",
+	},
+	{
+		icon: "🗞️",
+		title: "GAME_TUTORIAL_JOURNAL_TITLE",
+		content: "GAME_TUTORIAL_JOURNAL_CONTENT",
+		actionRequired: "CLICK_NEXT",
+	},
+	{
+		icon: "💻",
+		title: "GAME_TUTORIAL_SESSION_TITLE",
+		content: "GAME_TUTORIAL_SESSION_CONTENT",
 		actionRequired: "CLICK_FINISH",
 	},
 ];
@@ -3580,12 +3622,8 @@ export function updateTutorialUI() {
 		currentTutorialStep === 3
 	) {
 		tutorialOverlay.style.justifyContent = "flex-end";
-		tutorialOverlay.style.paddingLeft = "0";
-		tutorialOverlay.style.paddingRight = "5%";
 	} else {
 		tutorialOverlay.style.justifyContent = "flex-start";
-		tutorialOverlay.style.paddingLeft = "5%";
-		tutorialOverlay.style.paddingRight = "0";
 	}
 
 	tutorialStepContainer.innerHTML = `
@@ -3597,6 +3635,8 @@ export function updateTutorialUI() {
             <div class="tutorial-body">${gameText(step.content)}</div>
         </div>
     `;
+
+	tutorialStepContainer.scrollTop = 0;
 
 	tutorialPrevBtn.style.visibility =
 		currentTutorialStep === 0 ? "hidden" : "visible";
@@ -3612,12 +3652,12 @@ export function updateTutorialUI() {
 	tutorialNextBtn.disabled = needsAction;
 	tutorialNextBtn.style.opacity = needsAction ? "0.5" : "1";
 
-	tutorialDotsContainer.innerHTML = activeTutorialSet
-		.map(
-			(_, i) =>
-				`<div class="dot ${i === currentTutorialStep ? "active" : ""}"></div>`,
-		)
-		.join("");
+	tutorialDotsContainer.textContent = gameText("GAME_TUTORIAL_PROGRESS", {
+		current: currentTutorialStep + 1,
+		total: activeTutorialSet.length,
+	});
+	tutorialDotsContainer.setAttribute("role", "status");
+	tutorialDotsContainer.setAttribute("aria-live", "polite");
 
 	if (step.actionRequired === "LOAD_MAP") {
 		tutorialNextBtn.onclick = () => {
@@ -3635,6 +3675,12 @@ export function updateTutorialUI() {
 			}
 		};
 	}
+	notifyTutorialChanged();
+}
+
+function notifyTutorialChanged() {
+	if (typeof CustomEvent !== "undefined")
+		document.dispatchEvent(new CustomEvent("tutorialchange"));
 }
 
 export function advanceTutorial() {
@@ -3648,12 +3694,27 @@ export function endTutorial() {
 	tutorialOverlay.style.display = "none";
 	tutorialActive = false;
 	setCookie(activeTutorialKey, "true");
+	notifyTutorialChanged();
 }
 
-export function startTutorial(set, key) {
-	activeTutorialSet = set;
+export function startTutorial(
+	set,
+	key,
+	{ reference = false, startAt = 0 } = {},
+) {
+	// Reading help during a battle must not reload its map or wait for setup actions.
+	activeTutorialSet = reference
+		? set.map((step, index) => ({
+				...step,
+				actionRequired:
+					index === set.length - 1 ? "CLICK_FINISH" : "CLICK_NEXT",
+			}))
+		: set;
 	activeTutorialKey = key;
-	currentTutorialStep = 0;
+	currentTutorialStep = Math.max(
+		0,
+		Math.min(set.length - 1, Math.floor(startAt)),
+	);
 	tutorialActive = true;
 	updateTutorialUI();
 	tutorialOverlay.style.display = "flex";
