@@ -2,6 +2,13 @@
 
 ## 2026-10-29
 
+### 0.29.0
+
+- Release the campaign tested in experimental.1–3: country economies, formation roles, training and production, mobilization, aggregate missions and the event journal, with English, Ukrainian and Russian controls and help.
+- Include responsive conflict setup, HUD menu and country inspector fixes, plus tutorial navigation inside the campaign dialog and shortcuts to its controls.
+- Advance the application and service-worker cache versions together. Package the public Docker playtest as `moder-wars:0.29.0-playtest`, retaining 0.28.6 for rollback and keeping the port 4180 preview independent.
+- Keep browser simulation as the default. The static Docker release does not deploy the optional server prototype or add persistent game saves.
+
 ### 0.29.0-experimental.3 (experimental, unreleased)
 
 - Wrap long HUD menu actions and constrain their width, keeping vertical scrolling without a horizontal scrollbar.

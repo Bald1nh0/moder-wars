@@ -33,7 +33,7 @@ Node or rebuild the game. There are no workspace mounts, so subsequent source
 edits and local builds cannot change the running container. Docker Engine with
 Compose v2 and a completed `dist/` build are required.
 
-Current published image: `moder-wars:0.28.6-playtest`. To publish a later tested
+Current published image: `moder-wars:0.29.0-playtest`. To publish a later tested
 build, replace `<NEW_VERSION>` below with a new version and start it:
 
 ```sh
@@ -73,9 +73,9 @@ The **Choose scenario** menu exposes:
 - **2026 Modern Day** - political geography rebuilt from the Overture Maps 2026-10-21 release, with a separate administrative-region overlay. No live frontlines; forces and economic values are game parameters. See [source and reproduction](assets/scenarios/modern-2026/README.md).
 - **Ukraine 2023 · Eurasia** - a regional theater with approximate control on 2023-01-01 based on attributed DeepState visual contours, with fictional game armies. See [source, reproduction and limitations](assets/scenarios/ukraine-2023/README.md).
 
-The frozen 0.28.6 Docker release includes these scenarios. The previous 0.28.5 image remains available for rollback. Backend and performance proposals are tracked in [the backlog](docs/BACKLOG.md); no backend or database has been added.
+The frozen 0.29.0 Docker release includes these scenarios and the campaign mechanics below. The previous 0.28.6 image remains available for rollback. The Docker release runs simulation in the browser and stores no server-side game state; the optional server prototype remains a separate deployment. Further proposals are tracked in [the backlog](docs/BACKLOG.md).
 
-Current measurements: [0.28.6 CPU baseline](docs/PERFORMANCE-0.28.6.md) and
+Earlier baseline measurements: [0.28.6 CPU baseline](docs/PERFORMANCE-0.28.6.md) and
 [released-build browser observations](docs/PERFORMANCE-BROWSER-0.28.6.md).
 The headless browser uses software graphics; its FPS is not a real-device result.
 
@@ -251,11 +251,14 @@ game keeps its mode. Explicit `?simulation=browser` or `?simulation=server` link
 override the saved preference. Server mode requires the prototype backend at the
 same origin; a static Docker image alone does not provide it.
 
-## Experimental campaign
+## Campaign gameplay
 
-The `feature/forces-economy-events` branch adds country economies, formation roles,
+Version 0.29.0 adds country economies, formation roles,
 production, mobilization, aggregate missions and an event journal. Open the map
 menu → **Forces & economy** after starting a war. See
 [the campaign guide](docs/CAMPAIGN-GUIDE.md) for controls, data provenance and
-limitations. Browser simulation remains the default; the public Docker image is
-updated separately from this experimental preview.
+limitations. Browser simulation remains the default. The public Docker release
+is independent of the development preview on port 4180.
+
+[Campaign CPU measurements](docs/PERFORMANCE-CAMPAIGN-0.29.0.md) describe component
+costs and their limits; they do not establish real-device frame rates.

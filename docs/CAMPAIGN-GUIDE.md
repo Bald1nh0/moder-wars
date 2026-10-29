@@ -1,11 +1,12 @@
-# Experimental campaign: forces, economy and events
+# Campaign: forces, economy and events
 
-Version: `0.29.0-experimental.3`. Branch: `feature/forces-economy-events`.
+Version: `0.29.0`. Branch: `feature/forces-economy-events`.
 
 Start a normal scenario, choose opposing countries and start the war. Open the
 map menu and choose **Forces & economy**. The browser worker remains the default;
-the Advanced settings server-simulation flag still opts into an isolated server
-owner. Both owners execute the same campaign rules.
+the Advanced settings server-simulation flag opts into an isolated server
+owner only on a deployment that provides the prototype backend. The public
+Docker release is browser-only. Both owners execute the same campaign rules.
 
 Open **Menu → How to play** for the in-game guide, available in English, Ukrainian and
 Russian. It covers setup and the campaign controls below. Opening help preserves
@@ -108,9 +109,10 @@ MW_STATIC_DIR=/tmp/moder-wars-campaign/dist MW_HOST=192.168.31.224 MW_PORT=4180 
 ```
 
 Use an unused port and an isolated output directory. The public Docker playtest
-is deliberately unchanged. As of 2026-10-29, the campaign preview uses port 4180;
-port 4182 is stopped. The prior server prototype is retained at `3dad5ea`
-with its own source snapshot and static build; do not mix protocol versions.
+packages version 0.29.0 independently. As of 2026-10-29, the experimental.3
+campaign preview continues on port 4180; port 4182 is stopped. The prior server
+prototype is retained at `3dad5ea` with its own source snapshot and static build;
+do not mix protocol versions.
 
 Component CPU measurements and their limits are recorded in
 [the campaign performance report](PERFORMANCE-CAMPAIGN-0.29.0.md).
