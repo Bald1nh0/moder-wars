@@ -1789,7 +1789,7 @@ export function createSimulationTick(runtime) {
 		for (let i = 0; i < runtime.units.length; i++) {
 			const u = runtime.units[i];
 			const si = u.sideIndex;
-			if (si >= 0 && si < numSides) {
+			if (Number.isInteger(si) && si >= 0 && si < numSides) {
 				unitCounts[si]++;
 				soldierEsts[si] += runtime.getLiveFormationPersonnel(u);
 			}

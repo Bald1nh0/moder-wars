@@ -1,0 +1,316 @@
+name: Check and deploy Modern Wars
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  # Re-check existing code against newly disclosed advisories without publishing.
+  schedule:
+    - cron: '23 5 * * 1'
+
+permissions:
+  contents: read
+
+# Do not cancel a deployment halfway through container replacement.
+concurrency:
+  group: modern-wars-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '26'
+          cache: npm
+      - name: Verify synchronized SemVer
+        id: version
+        run: node scripts/release-version.mjs check --github-output
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+      - name: Check deployment and rollback
+        run: |
+          bash -n scripts/deploy-production.sh scripts/deploy-production-smoke.sh
+          bash scripts/deploy-production-smoke.sh
+          node scripts/release-version-smoke.mjs
+          node scripts/github-release-smoke.mjs
+          node scripts/registry-cleanup-smoke.mjs
+      - name: Build and exercise the production container
+        env:
+          IMAGE: modern-wars-ci:${{ github.sha }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          docker build --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+            --label "org.opencontainers.image.version=$VERSION" --tag "$IMAGE" .
+          docker run --detach --name modern-wars-ci --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL \
+            --security-opt no-new-privileges:true "$IMAGE"
+          trap 'docker logs modern-wars-ci; docker rm -f modern-wars-ci' EXIT
+          for attempt in $(seq 1 30); do
+            if [ "$(docker inspect --format '{{.State.Health.Status}}' modern-wars-ci)" = healthy ]; then
+              docker exec modern-wars-ci wget -q -O /dev/null http://127.0.0.1:8080/service-worker.js
+              node scripts/security-headers-smoke.mjs modern-wars-ci
+              docker save --output image.tar "$IMAGE"
+              exit 0
+            fi
+            sleep 3
+          done
+          exit 1
+      - name: Scan the image for vulnerabilities and secrets
+        run: |
+          docker run --rm -v "$PWD:/scan:ro" \
+            aquasec/trivy:0.76.1@sha256:790fd66d1697395d8693d1acaa1ea702406a20f109b6fc7bac8db623eca6c06c \
+            image --input /scan/image.tar --scanners vuln,secret \
+            --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          name: production-image
+          path: image.tar
+          if-no-files-found: error
+          compression-level: 1
+          retention-days: 3
+
+  source-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '26'
+      - name: Check locked production and build dependencies
+        run: npm audit --package-lock-only --ignore-scripts --audit-level=high
+      - name: Scan complete Git history for secrets without exposing values
+        run: |
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges:true -v "$PWD:/repo:ro" \
+            ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+            git /repo --redact=100 --no-banner --gitleaks-ignore-path /repo/.gitleaksignore --log-opts='--all --full-history -m'
+      - name: Scan the checked-out source including merge results
+        run: |
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges:true -v "$PWD:/repo:ro" \
+            ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+            dir /repo --redact=100 --no-banner
+      - name: Check the source-analysis gate
+        run: node scripts/codeql-gate-smoke.mjs
+
+  codeql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '26'
+      - name: Initialize JavaScript and TypeScript analysis
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          queries: security-extended
+      - name: Analyze source and upload code scanning results
+        id: analyze
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          category: /language:javascript-typescript
+          output: codeql-results
+          upload-database: false
+      # A successful analysis can still contain findings; publication must wait for triage.
+      - name: Reject source security findings
+        env:
+          SARIF_DIR: ${{ steps.analyze.outputs.sarif-output }}
+        run: node scripts/codeql-gate.mjs "$SARIF_DIR"
+
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'Bald1nh0/moder-wars' && vars.RELEASE_PUBLISHING_ENABLED == 'true'
+    needs: [check, source-security, codeql]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      packages: write
+    outputs:
+      image: ${{ steps.publish.outputs.image }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '26'
+      - name: Reject reused release versions
+        id: preflight
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.check.outputs.version }}
+        run: node scripts/github-release.mjs preflight --version "$VERSION" --sha "$GITHUB_SHA" --github-output
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        if: steps.preflight.outputs.existing_image == ''
+        with:
+          name: production-image
+      - name: Publish the checked image to GHCR
+        id: publish
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.check.outputs.version }}
+          EXISTING_IMAGE: ${{ steps.preflight.outputs.existing_image }}
+        run: |
+          export DOCKER_CONFIG
+          DOCKER_CONFIG=$(mktemp -d)
+          trap 'rm -rf -- "$DOCKER_CONFIG"' EXIT
+          repository="ghcr.io/${GITHUB_REPOSITORY,,}"
+          tag="$repository:sha-$GITHUB_SHA"
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          if [ -n "$EXISTING_IMAGE" ]; then
+            image="$EXISTING_IMAGE"
+            docker pull "$image"
+          else
+            docker load --input image.tar
+            docker tag "modern-wars-ci:$GITHUB_SHA" "$tag"
+            docker push "$tag"
+            image=$(docker inspect --format '{{index .RepoDigests 0}}' "$tag")
+          fi
+          [[ "$image" =~ ^ghcr\.io/bald1nh0/moder-wars@sha256:[a-f0-9]{64}$ ]]
+          [ "$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$image")" = "$GITHUB_SHA" ]
+          [ "$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.version"}}' "$image")" = "$VERSION" ]
+          # New images were scanned in check; retries reuse and re-scan the original digest.
+          if [ -n "$EXISTING_IMAGE" ]; then
+            docker save --output release-image.tar "$image"
+            docker run --rm -v "$PWD:/scan:ro" \
+              aquasec/trivy:0.76.1@sha256:790fd66d1697395d8693d1acaa1ea702406a20f109b6fc7bac8db623eca6c06c \
+              image --input /scan/release-image.tar --scanners vuln,secret \
+              --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1
+          fi
+          node scripts/github-release.mjs draft --version "$VERSION" --sha "$GITHUB_SHA" --image "$image"
+          version_tag="$repository:v$VERSION"
+          if docker buildx imagetools inspect --format '{{json .Manifest}}' "$version_tag" > version-manifest.json 2> manifest-error.txt; then
+            existing_digest=$(jq -er '.digest' version-manifest.json)
+            if [ "$repository@$existing_digest" != "$image" ]; then
+              echo 'Refusing to overwrite an existing Docker release tag.' >&2
+              exit 1
+            fi
+          else
+            if ! grep -Eq 'manifest unknown|no such manifest|: not found$' manifest-error.txt; then
+              cat manifest-error.txt >&2
+              exit 1
+            fi
+            docker tag "$image" "$version_tag"
+            docker push "$version_tag"
+          fi
+          printf 'image=%s\n' "$image" >> "$GITHUB_OUTPUT"
+          printf 'Published `%s`\n' "$image" >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'Bald1nh0/moder-wars'
+    needs: publish
+    outputs:
+      current: ${{ steps.deploy.outputs.current }}
+      previous: ${{ steps.deploy.outputs.previous }}
+    runs-on: [self-hosted, linux, x64, mw]
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://modern-wars.bald1nh0.net/
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            scripts/deploy-production.sh
+            docker/compose.production.yaml
+          sparse-checkout-cone-mode: false
+      - name: Pull, deploy and verify health
+        id: deploy
+        env:
+          IMAGE: ${{ needs.publish.outputs.image }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXPECTED_HOST: ${{ vars.PRODUCTION_HOSTNAME }}
+        run: |
+          if [ -z "$EXPECTED_HOST" ] || [ "$(hostname -s)" != "$EXPECTED_HOST" ]; then
+            echo 'Set production environment variable PRODUCTION_HOSTNAME to the deployment machine hostname.' >&2
+            exit 1
+          fi
+          export DOCKER_CONFIG
+          DOCKER_CONFIG=$(mktemp -d)
+          trap 'rm -rf -- "$DOCKER_CONFIG"' EXIT
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          bash scripts/deploy-production.sh "$IMAGE"
+          deployed=$(sed -n 's/^MW_IMAGE=//p' "$HOME/moder-wars-production/.env")
+          [ "$deployed" = "$IMAGE" ]
+          previous=''
+          if [ -f "$HOME/moder-wars-production/previous.env" ]; then
+            previous=$(sed -n 's/^MW_IMAGE=//p' "$HOME/moder-wars-production/previous.env")
+            [[ "$previous" =~ ^ghcr\.io/bald1nh0/moder-wars@sha256:[a-f0-9]{64}$ ]]
+          fi
+          printf 'current=%s\nprevious=%s\n' "$deployed" "$previous" >> "$GITHUB_OUTPUT"
+          printf 'Healthy deployment: `%s`\n' "$IMAGE" >> "$GITHUB_STEP_SUMMARY"
+
+
+  release:
+    needs: [check, publish, deploy]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '26'
+      - name: Publish the deployed GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.check.outputs.version }}
+          IMAGE: ${{ needs.publish.outputs.image }}
+        run: node scripts/github-release.mjs publish --version "$VERSION" --sha "$GITHUB_SHA" --image "$IMAGE"
+
+  registry-cleanup:
+    needs: [release, deploy]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '26'
+      - name: Plan or apply GHCR retention
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURRENT_IMAGE: ${{ needs.deploy.outputs.current }}
+          PREVIOUS_IMAGE: ${{ needs.deploy.outputs.previous }}
+          CLEANUP_ENABLED: ${{ vars.REGISTRY_CLEANUP_ENABLED }}
+        run: |
+          args=(--current "$CURRENT_IMAGE")
+          if [ -n "$PREVIOUS_IMAGE" ]; then args+=(--previous "$PREVIOUS_IMAGE"); fi
+          if [ "$CLEANUP_ENABLED" = true ]; then args+=(--apply); fi
+          node scripts/registry-cleanup.mjs "${args[@]}"

@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
-import { captureSimulationState } from "../src/simulation-protocol.js";
+import {
+	applySimulationState,
+	captureSimulationState,
+	cloneSimulationData,
+} from "../src/simulation-protocol.js";
 import {
 	decodeSimulationMessage,
 	encodeSimulationMessage,
@@ -45,10 +49,6 @@ const graph = {
 };
 graph.self = graph;
 graph.map.set(graph.map, graph);
-Object.defineProperty(graph, "__proto__", {
-	value: { polluted: true },
-	enumerable: true,
-});
 const restored = roundtrip(graph);
 assert.deepEqual(restored, graph);
 assert.strictEqual(restored.self, restored);
@@ -67,6 +67,62 @@ assert.equal({}.polluted, undefined);
 assert.equal(Object.getPrototypeOf(restored.nullPrototype), null);
 bytes[0] = 99;
 assert.equal(restored.bytes[0], 10, "decoded buffers own their storage");
+
+// Reserved property names may survive JSON parsing but must not cross state merges.
+for (const key of [
+	"__proto__",
+	"constructor",
+	"prototype",
+	"toString",
+	"valueOf",
+	"hasOwnProperty",
+]) {
+	const hostile = JSON.parse(
+		`{"${key}":{"polluted":true},"customScenarioField":{"kept":true}}`,
+	);
+	assert.throws(() => roundtrip(hostile), /reserved property/);
+	const cloned = cloneSimulationData(hostile);
+	assert.equal(Object.hasOwn(cloned, key), false);
+	assert.deepEqual(cloned.customScenarioField, { kept: true });
+	assert.equal(Object.getPrototypeOf(cloned), Object.prototype);
+
+	const runtime = createTinySimulationState();
+	const originalPrototype = Object.getPrototypeOf(runtime);
+	applySimulationState(runtime, hostile);
+	assert.equal(Object.getPrototypeOf(runtime), originalPrototype);
+	assert.equal(
+		Object.hasOwn(runtime, "customScenarioField"),
+		false,
+		"unexpected root state fields are ignored",
+	);
+	applySimulationState(runtime, { CONFIG: hostile });
+	assert.equal(Object.hasOwn(runtime.CONFIG, key), false);
+	assert.deepEqual(runtime.CONFIG.customScenarioField, { kept: true });
+	applySimulationState(runtime, { countryMetadata: [{ id: 1, ...hostile }] });
+	assert.equal(Object.hasOwn(runtime.countryMetadata[0], key), false);
+	assert.deepEqual(runtime.countryMetadata[0].customScenarioField, {
+		kept: true,
+	});
+	assert.equal({}.polluted, undefined);
+}
+for (const key of ["map", "filter", "splice", "push"]) {
+	const hostileArray = [1, 2];
+	hostileArray[key] = "not a function";
+	assert.throws(() => roundtrip(hostileArray), /reserved property/);
+	const cloned = cloneSimulationData(hostileArray);
+	assert.deepEqual(cloned, [1, 2]);
+	assert.equal(Object.hasOwn(cloned, key), false);
+}
+const forgedView = new Uint16Array([5, 9]);
+let constructed = false;
+Object.defineProperty(forgedView, "constructor", {
+	value: () => {
+		constructed = true;
+	},
+});
+assert.deepEqual(roundtrip(forgedView), new Uint16Array([5, 9]));
+assert.deepEqual(cloneSimulationData(forgedView), new Uint16Array([5, 9]));
+assert.equal(constructed, false, "view constructor properties never execute");
 
 for (const Type of [
 	Int8Array,

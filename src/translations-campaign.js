@@ -1,5 +1,172 @@
 /** Keep each player-facing message aligned across the three supported languages. */
 const messages = {
+	CAMPAIGN_AI_TITLE: ["AI decisions", "Рішення ШІ", "Решения ИИ"],
+	CAMPAIGN_AI_ON: [
+		"Automation is on. The last decision is shown below.",
+		"Автоматизацію ввімкнено. Нижче показано останнє рішення.",
+		"Автоматизация включена. Ниже показано последнее решение.",
+	],
+	CAMPAIGN_AI_OFF: [
+		"Automation is off. Existing orders continue; new orders are yours to place.",
+		"Автоматизацію вимкнено. Наявні замовлення виконуються; нові ви розміщуєте самостійно.",
+		"Автоматизация выключена. Текущие заказы выполняются; новые вы размещаете самостоятельно.",
+	],
+	CAMPAIGN_AI_FINISHED: [
+		"The campaign has ended. This is the last recorded AI decision.",
+		"Кампанію завершено. Це останнє зафіксоване рішення ШІ.",
+		"Кампания завершена. Это последнее зафиксированное решение ИИ.",
+	],
+	CAMPAIGN_AI_PENDING: [
+		"Waiting for the first AI decision.",
+		"Очікуємо першого рішення ШІ.",
+		"Ожидаем первого решения ИИ.",
+	],
+	CAMPAIGN_AI_NONE: [
+		"No AI decision was recorded.",
+		"Рішення ШІ не зафіксовано.",
+		"Решение ИИ не зафиксировано.",
+	],
+	CAMPAIGN_AI_LAST_CYCLE: [
+		"Last decision: logistics cycle {count}.",
+		"Останнє рішення: цикл забезпечення {count}.",
+		"Последнее решение: цикл снабжения {count}.",
+	],
+	CAMPAIGN_AI_TARGET: [
+		"Target: {country}",
+		"Ціль: {country}",
+		"Цель: {country}",
+	],
+	CAMPAIGN_AI_CITY: ["City: {city}", "Місто: {city}", "Город: {city}"],
+	CAMPAIGN_AI_BUDGET_TITLE: [
+		"Budget estimate at the time of the decision",
+		"Оцінка бюджету на момент рішення",
+		"Оценка бюджета на момент решения",
+	],
+	CAMPAIGN_AI_BUDGET: [
+		"Target cash buffer: {reserve} credits. Recovery construction may use this buffer. Estimated balance after 8 cycles: {balance} credits. The estimate includes planned upkeep and this decision; income, losses and later orders can change it.",
+		"Цільовий запас коштів: {reserve} кредитів. Будівництво для виходу з дефіциту може використовувати цей запас. Очікуваний баланс через 8 циклів: {balance} кредитів. Оцінка враховує заплановане утримання й це рішення; дохід, втрати та наступні замовлення можуть її змінити.",
+		"Целевой запас средств: {reserve} кредитов. Строительство для выхода из дефицита может использовать этот запас. Ожидаемый баланс через 8 циклов: {balance} кредитов. Оценка учитывает запланированное содержание и это решение; доход, потери и следующие заказы могут её изменить.",
+	],
+	CAMPAIGN_AI_ACTION_wait: [
+		"No new order placed",
+		"Нового замовлення не розміщено",
+		"Новый заказ не размещён",
+	],
+	CAMPAIGN_AI_ACTION_build: [
+		"Construction ordered",
+		"Замовлено будівництво",
+		"Заказано строительство",
+	],
+	CAMPAIGN_AI_ACTION_train: [
+		"Formation training ordered",
+		"Замовлено навчання підрозділу",
+		"Заказано обучение подразделения",
+	],
+	CAMPAIGN_AI_ACTION_production: [
+		"Equipment production ordered",
+		"Замовлено виробництво техніки",
+		"Заказано производство техники",
+	],
+	CAMPAIGN_AI_ACTION_mobilize: [
+		"Mobilization ordered",
+		"Оголошено мобілізацію",
+		"Объявлена мобилизация",
+	],
+	CAMPAIGN_AI_ACTION_mission: [
+		"Operation launched",
+		"Розпочато операцію",
+		"Начата операция",
+	],
+	CAMPAIGN_AI_ACTION_UNKNOWN: [
+		"A decision was recorded",
+		"Рішення зафіксовано",
+		"Решение зафиксировано",
+	],
+	CAMPAIGN_AI_REASON_UNKNOWN: [
+		"Details are unavailable for this decision.",
+		"Подробиці цього рішення недоступні.",
+		"Подробности этого решения недоступны.",
+	],
+	CAMPAIGN_AI_REASON_automation_off: [
+		"Automatic spending is disabled for this country.",
+		"Автоматичні витрати для цієї країни вимкнено.",
+		"Автоматические расходы для этой страны выключены.",
+	],
+	CAMPAIGN_AI_REASON_no_city: [
+		"No controlled city is available to support new orders.",
+		"Немає підконтрольного міста для виконання нових замовлень.",
+		"Нет подконтрольного города для выполнения новых заказов.",
+	],
+	CAMPAIGN_AI_REASON_no_enemy: [
+		"There is no hostile participant to plan a war against.",
+		"Немає ворожого учасника, проти якого потрібно планувати війну.",
+		"Нет враждебного участника, против которого нужно планировать войну.",
+	],
+	CAMPAIGN_AI_REASON_queue_busy: [
+		"Existing orders take priority until the queue frees up.",
+		"Наявні замовлення мають пріоритет, доки черга не звільниться.",
+		"Текущие заказы имеют приоритет, пока очередь не освободится.",
+	],
+	CAMPAIGN_AI_REASON_formation_cap: [
+		"The side has reached its formation limit, including queued training.",
+		"Сторона досягла ліміту підрозділів з урахуванням замовленого навчання.",
+		"Сторона достигла лимита подразделений с учётом заказанного обучения.",
+	],
+	CAMPAIGN_AI_REASON_supply_shortage: [
+		"Supply reserves or replenishment are too low to support further expansion.",
+		"Запасів забезпечення або їх поповнення замало для подальшого розширення армії.",
+		"Запасов снабжения или их пополнения недостаточно для дальнейшего расширения армии.",
+	],
+	CAMPAIGN_AI_REASON_funds_shortage: [
+		"The budget needs recovery before additional military spending.",
+		"Бюджет потребує відновлення перед додатковими військовими витратами.",
+		"Бюджету необходимо восстановление перед дополнительными военными расходами.",
+	],
+	CAMPAIGN_AI_REASON_saving_buffer: [
+		"Saving credits for planned upkeep and a cash reserve.",
+		"Накопичує кошти на заплановане утримання та фінансовий резерв.",
+		"Накапливает средства на запланированное содержание и финансовый резерв.",
+	],
+	CAMPAIGN_AI_REASON_economy_growth: [
+		"Higher recurring income can support future army spending.",
+		"Більший регулярний дохід допоможе фінансувати армію надалі.",
+		"Больший регулярный доход поможет финансировать армию в дальнейшем.",
+	],
+	CAMPAIGN_AI_REASON_replace_losses: [
+		"Replacing lost formations while keeping the budget sustainable.",
+		"Відновлює втрачені підрозділи з урахуванням можливостей бюджету.",
+		"Восстанавливает потерянные подразделения с учётом возможностей бюджета.",
+	],
+	CAMPAIGN_AI_REASON_role_balance: [
+		"Filling a gap in the army composition for the selected priority.",
+		"Поповнює склад армії відповідно до вибраного пріоритету.",
+		"Пополняет состав армии в соответствии с выбранным приоритетом.",
+	],
+	CAMPAIGN_AI_REASON_air_threat: [
+		"Enemy air capabilities or operations increase the need for air defense.",
+		"Повітряні можливості або операції ворога підвищують потребу в ППО.",
+		"Воздушные возможности или операции противника повышают потребность в ПВО.",
+	],
+	CAMPAIGN_AI_REASON_equipment_shortage: [
+		"Producing missing equipment for the planned formation.",
+		"Виробляє техніку, якої бракує для запланованого підрозділу.",
+		"Производит технику, которой не хватает для запланированного подразделения.",
+	],
+	CAMPAIGN_AI_REASON_reserve_shortage: [
+		"The personnel reserve needs replenishment before further recruitment.",
+		"Перед подальшим набором потрібно поповнити резерв особового складу.",
+		"Перед дальнейшим набором нужно пополнить резерв личного состава.",
+	],
+	CAMPAIGN_AI_REASON_mission_opportunity: [
+		"This operation was selected for its expected benefit against an active enemy.",
+		"Цю операцію обрано за очікуваною користю проти активного ворога.",
+		"Эта операция выбрана по ожидаемой пользе против активного противника.",
+	],
+	CAMPAIGN_AI_REASON_no_viable_mission: [
+		"No suitable operation is available with the current resources and threats.",
+		"За поточних ресурсів і загроз немає придатної операції.",
+		"При текущих ресурсах и угрозах нет подходящей операции.",
+	],
 	CAMPAIGN_GUIDE_OPEN_SECTION: [
 		"Open: {section}",
 		"Відкрити: {section}",

@@ -13,7 +13,14 @@ export function createAiPlanner(context) {
 			BLITZ: 0,
 		};
 		for (const country of sideCountries) {
-			const strategy = (country.strategy || "BALANCED").toUpperCase();
+			const requestedStrategy =
+				typeof country.strategy === "string"
+					? country.strategy.toUpperCase()
+					: "BALANCED";
+			// Imported strategies may only select the existing gameplay roles.
+			const strategy = Object.hasOwn(weights, requestedStrategy)
+				? requestedStrategy
+				: "BALANCED";
 			const stats = context.latestCountryStats.get(country.id);
 			const weight = Math.max(1, stats?.units || country.initialCells || 1);
 			weights[strategy] = (weights[strategy] || 0) + weight;
@@ -230,7 +237,13 @@ export function createAiPlanner(context) {
 					continue;
 				}
 				const ni = cur + off;
-				if (ni < 0 || ni >= total || seen[ni] === generation) continue;
+				if (
+					!Number.isInteger(ni) ||
+					ni < 0 ||
+					ni >= total ||
+					seen[ni] === generation
+				)
+					continue;
 				if (!canTraverseLandForPlan(ni, sideIdx, targetIdx)) continue;
 				seen[ni] = generation;
 				parent[ni] = cur;
@@ -306,6 +319,7 @@ export function createAiPlanner(context) {
 					}
 					const ni = cur + off;
 					if (
+						!Number.isInteger(ni) ||
 						ni < 0 ||
 						ni >= total ||
 						seen[ni] === generation ||

@@ -279,6 +279,22 @@
 	background: #142231;
 }
 
+.campaign-ai-decision {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.campaign-ai-action {
+	font-weight: 700;
+	color: #b8e8c9;
+}
+
+.campaign-ai-budget > summary {
+	padding: 8px 0;
+	cursor: pointer;
+	color: #a9d8ef;
+}
+
 .campaign-card-grid .campaign-card {
 	margin: 0;
 }

@@ -70,6 +70,73 @@ function fixture({ allied = false, maxUnits = 8 } = {}) {
 	return runtime;
 }
 
+// Imported identities and equipment must never address prototype properties.
+{
+	const runtime = fixture();
+	const country = runtime.campaign.countries[1];
+	for (const countryId of [
+		"__proto__",
+		"constructor",
+		"prototype",
+		"1",
+		-1,
+		65536,
+		1.5,
+	]) {
+		assert.equal(
+			commandCampaign(runtime, {
+				type: "campaign",
+				action: "policy",
+				countryId,
+				policy: "offense",
+			}).reason,
+			"invalid_country",
+		);
+	}
+	runtime.sides[0].push({ id: "__proto__", troops: 1000 });
+	assert.equal(reconcileCampaignMembership(runtime), true);
+	assert.equal(Object.hasOwn(runtime.campaign.countries, "__proto__"), false);
+	assert.equal(Object.hasOwn(Object.prototype, "sideIndex"), false);
+	runtime.units[0].campaignEquipment = JSON.parse(
+		'{"armor":10,"__proto__":99,"constructor":99,"prototype":99,"missile":-10}',
+	);
+	const armor = country.equipment.armor;
+	const missiles = country.equipment.missile;
+	assert.equal(
+		commandCampaign(runtime, {
+			type: "campaign",
+			action: "demobilize",
+			countryId: 1,
+		}).ok,
+		true,
+	);
+	assert.equal(country.equipment.armor, armor + 8);
+	assert.equal(country.equipment.missile, missiles);
+	for (const key of ["__proto__", "constructor", "prototype"])
+		assert.equal(Object.hasOwn(country.equipment, key), false);
+	assert.equal(Object.getPrototypeOf(country.equipment), Object.prototype);
+}
+
+{
+	const runtime = fixture();
+	runtime.units[0].campaignEquipment = JSON.parse(
+		'{"armor":10,"__proto__":99,"constructor":99,"prototype":99,"missile":-10}',
+	);
+	periods(runtime, 1);
+	const equipment = runtime.campaign.countries[1].assignedEquipment;
+	assert.equal(equipment.armor, 10);
+	assert.equal(equipment.missile, 0);
+	for (const key of ["__proto__", "constructor", "prototype"])
+		assert.equal(Object.hasOwn(equipment, key), false);
+	runtime.sides[0].push({ id: "__proto__", troops: 1000 });
+	initializeCampaign(runtime);
+	assert.deepEqual(Object.keys(runtime.campaign.countries).sort(), ["1", "2"]);
+	assert.equal(
+		Object.getPrototypeOf(runtime.campaign.countries),
+		Object.prototype,
+	);
+}
+
 // Fictional stocks vary by force size, while source observations do not become inventory.
 {
 	const runtime = fixture();

@@ -1,4 +1,5 @@
 import { createArmyFormation } from "./army-formation.js";
+import { advanceCampaignAI, initializeCampaignAI } from "./campaign-ai.js";
 import { emitCampaignEvent } from "./campaign-events.js";
 import {
 	getCountryForceProfile,
@@ -74,6 +75,13 @@ export const CAMPAIGN_MISSIONS = Object.freeze({
 });
 
 const POLICIES = new Set(["balanced", "offense", "defense", "economy"]);
+// Country identities are uint16 map owners, never inherited object properties.
+const validCountryId = (id) => Number.isInteger(id) && id > 0 && id <= 65535;
+const getCountry = (countries, id) =>
+	validCountryId(id) && Object.hasOwn(countries, id)
+		? countries[id >>> 0]
+		: undefined;
+
 const NEUTRAL_MODIFIERS = Object.freeze({ attack: 1, defense: 1, speed: 1 });
 const ok = () => ({ ok: true, reason: "ok" });
 const fail = (reason) => ({ ok: false, reason });
@@ -155,7 +163,8 @@ export function reconcileCampaignMembership(runtime) {
 	for (const [sideIndex, members] of runtime.sides.entries())
 		for (const member of members) {
 			const id = member.id ?? member;
-			const country = campaign.countries[id];
+			if (!validCountryId(id)) continue;
+			const country = getCountry(campaign.countries, id);
 			if (country) {
 				country.sideIndex = sideIndex;
 				country.active = true;
@@ -199,7 +208,7 @@ export function reconcileCampaignMembership(runtime) {
 		Object.assign(campaign.countries, newcomers.countries);
 	}
 	for (const unit of runtime.units) {
-		const country = campaign.countries[unit.sovereignId];
+		const country = getCountry(campaign.countries, unit.sovereignId);
 		if (country?.active) unit.sideIndex = country.sideIndex;
 	}
 	campaign.membershipKey = membershipKey(runtime);
@@ -250,7 +259,8 @@ function refreshCities(runtime) {
 	for (const city of cities) {
 		city.controllerId = cityController(runtime, city);
 		const holder =
-			countries[city.controllerId] || countries[city.originalCountryId];
+			getCountry(countries, city.controllerId) ||
+			getCountry(countries, city.originalCountryId);
 		if (holder) holder.cities.push(city);
 	}
 }
@@ -265,7 +275,7 @@ function refreshForces(runtime) {
 		);
 	}
 	for (const unit of runtime.units) {
-		const country = runtime.campaign.countries[unit.sovereignId];
+		const country = getCountry(runtime.campaign.countries, unit.sovereignId);
 		if (!country || !living(unit)) continue;
 		country.deployed += personnelOf(runtime, unit);
 		country.formations++;
@@ -274,7 +284,12 @@ function refreshForces(runtime) {
 		for (const [key, quantity] of Object.entries(
 			unit.campaignEquipment || {},
 		)) {
-			country.assignedEquipment[key] += quantity;
+			if (
+				Object.hasOwn(CAMPAIGN_EQUIPMENT, key) &&
+				Number.isFinite(quantity) &&
+				quantity >= 0
+			)
+				country.assignedEquipment[key] += quantity;
 		}
 	}
 }
@@ -297,7 +312,10 @@ function refreshEffects(runtime) {
 	}
 	for (const country of countries)
 		for (const mission of country.missions) {
-			const target = runtime.campaign.countries[mission.targetCountryId];
+			const target = getCountry(
+				runtime.campaign.countries,
+				mission.targetCountryId,
+			);
 			if (
 				country.active === false ||
 				!target ||
@@ -384,9 +402,9 @@ export function initializeCampaign(
 	runtime.campaign = campaign;
 	if (!enabled) return campaign;
 	for (const [sideIndex, members] of runtime.sides.entries()) {
-		const identities = members.map((member) =>
-			typeof member === "object" ? member : { id: member },
-		);
+		const identities = members
+			.map((member) => (typeof member === "object" ? member : { id: member }))
+			.filter((member) => member && validCountryId(member.id));
 		const totalWeight = identities.reduce(
 			(sum, member) => sum + Math.max(1, count(member.troops)),
 			0,
@@ -411,7 +429,7 @@ export function initializeCampaign(
 							entry?.countryId === member.id || entry?.id === member.id,
 					)
 				: profiles[member.id];
-			campaign.countries[member.id] = {
+			campaign.countries[member.id >>> 0] = {
 				id: member.id,
 				active: true,
 				sideIndex,
@@ -447,6 +465,8 @@ export function initializeCampaign(
 				assignedEquipment: {},
 				supplies: 0,
 				supplyRatio: 1,
+				supplyStockRatio: 1,
+				fundingRatio: 1,
 				baseIncome: 0,
 				initialCityCount: 0,
 				profile: profile || null,
@@ -460,7 +480,7 @@ export function initializeCampaign(
 	sourceCities.forEach((city, index) => {
 		const originalCountryId =
 			city.sovereignId || city.countryId || city.ownerId;
-		const original = campaign.countries[originalCountryId];
+		const original = getCountry(campaign.countries, originalCountryId);
 		if (!original) return;
 		const record = {
 			id: city.id ?? `city-${index}`,
@@ -472,7 +492,9 @@ export function initializeCampaign(
 			buildings: { economy: 0, industry: 0, training: 0, supply: 0 },
 		};
 		record.controllerId = cityController(runtime, record);
-		(campaign.countries[record.controllerId] || original).cities.push(record);
+		(
+			getCountry(campaign.countries, record.controllerId) || original
+		).cities.push(record);
 	});
 	const roles = [
 		"infantry",
@@ -486,11 +508,12 @@ export function initializeCampaign(
 		"infantry",
 		"airDefense",
 	];
-	const countryIndices = {};
+	const countryIndices = new Map();
 	for (const unit of runtime.units) {
-		if (!campaign.countries[unit.sovereignId] || !living(unit)) continue;
-		const ordinal = countryIndices[unit.sovereignId] || 0;
-		countryIndices[unit.sovereignId] = ordinal + 1;
+		if (!getCountry(campaign.countries, unit.sovereignId) || !living(unit))
+			continue;
+		const ordinal = countryIndices.get(unit.sovereignId) || 0;
+		countryIndices.set(unit.sovereignId, ordinal + 1);
 		unit.campaignRole = roles[ordinal % roles.length];
 		unit.campaignEquipment = { ...CAMPAIGN_ROLES[unit.campaignRole].equipment };
 	}
@@ -537,6 +560,7 @@ export function initializeCampaign(
 				1_000_000_000,
 				Math.floor(assumptions.treasury),
 			);
+		initializeCampaignAI(country);
 	}
 	refreshEffects(runtime);
 	return campaign;
@@ -679,7 +703,10 @@ function mission(runtime, country, command) {
 	const definition = CAMPAIGN_MISSIONS[command.mission];
 	if (!definition || !Object.hasOwn(CAMPAIGN_MISSIONS, command.mission))
 		return fail("invalid_mission");
-	const target = runtime.campaign.countries[command.targetCountryId];
+	const target = getCountry(
+		runtime.campaign.countries,
+		command.targetCountryId,
+	);
 	if (
 		!target ||
 		!activeCountries(runtime).includes(target) ||
@@ -749,9 +776,21 @@ function demobilize(runtime, country, command) {
 		1,
 		personnel / Math.max(1, unit.personnelCapacity || personnel),
 	);
-	for (const [key, quantity] of Object.entries(unit.campaignEquipment || {}))
-		country.equipment[key] += Math.floor(quantity * surviving * 0.8);
+	for (const [key, quantity] of Object.entries(unit.campaignEquipment || {})) {
+		if (
+			Object.hasOwn(CAMPAIGN_EQUIPMENT, key) &&
+			Number.isFinite(quantity) &&
+			quantity >= 0
+		)
+			country.equipment[key] += Math.floor(quantity * surviving * 0.8);
+	}
 	const role = roleOf(unit);
+	// A player-requested demobilization is not a combat loss to replace.
+	if (country.aiState?.previousRoles)
+		country.aiState.previousRoles[role] = Math.max(
+			0,
+			(country.aiState.previousRoles[role] || 0) - 1,
+		);
 	runtime.units.splice(runtime.units.indexOf(unit), 1);
 	refreshForces(runtime);
 	emitCampaignEvent(runtime, "demobilized", {
@@ -796,7 +835,7 @@ export function commandCampaign(runtime, command) {
 	)
 		return fail("inactive_game");
 	reconcileCampaignMembership(runtime);
-	const country = runtime.campaign.countries[command.countryId];
+	const country = getCountry(runtime.campaign.countries, command.countryId);
 	if (!country || !activeCountries(runtime).includes(country))
 		return fail("invalid_country");
 	refreshCities(runtime);
@@ -944,86 +983,6 @@ function processQueue(runtime, country) {
 	country.queue = country.queue.filter((order) => !completed.has(order.id));
 }
 
-function automate(runtime, country) {
-	if (!country.automation) return;
-	const issue = (command) =>
-		commandCampaign(runtime, {
-			type: "campaign",
-			countryId: country.id,
-			...command,
-		});
-	const period = runtime.campaign.period;
-	const supplyDemand = Math.max(1, Math.ceil(country.formations / 5));
-	if (country.supplies < supplyDemand * 4 || country.supplyRatio < 0.8) {
-		const supplyCity = ownedCities(country).find(
-			(entry) => entry.buildings.supply < CAMPAIGN_BUILDINGS.supply.maxLevel,
-		);
-		if (
-			supplyCity &&
-			!country.queue.some(
-				(order) => order.type === "build" && order.building === "supply",
-			)
-		) {
-			if (
-				issue({ action: "build", cityId: supplyCity.id, building: "supply" }).ok
-			)
-				return;
-		}
-	}
-	if (country.queue.length > 3) return;
-	const city = ownedCities(country).find(
-		(entry) => entry.buildings.economy < 2,
-	);
-	if (
-		city &&
-		(period % 12 === 0 || country.policy === "economy") &&
-		country.treasury > 600
-	) {
-		if (issue({ action: "build", cityId: city.id, building: "economy" }).ok)
-			return;
-	}
-	if (
-		country.reserve < 2000 &&
-		country.mobilization === 0 &&
-		country.civilianPool > 0
-	) {
-		issue({ action: "mobilize", level: 1 });
-		return;
-	}
-	const target = activeCountries(runtime).find((entry) =>
-		isHostile(runtime, country.sideIndex, entry.sideIndex),
-	);
-	if (target && period % 12 === 4) {
-		const missionType =
-			country.policy === "defense" ? "reconDrone" : "aircraft";
-		if (
-			issue({
-				action: "mission",
-				mission: missionType,
-				targetCountryId: target.id,
-			}).ok
-		)
-			return;
-	}
-	const roles =
-		country.policy === "defense"
-			? ["infantry", "airDefense", "artillery"]
-			: ["infantry", "armor", "artillery", "infantry"];
-	const role = roles[(Math.floor(period / 4) + country.id) % roles.length];
-	const shortage = Object.entries(CAMPAIGN_ROLES[role].equipment).find(
-		([key, quantity]) => country.equipment[key] < quantity,
-	);
-	if (shortage && country.reserve >= 1000) {
-		issue({
-			action: "production",
-			equipment: shortage[0],
-			quantity: Math.min(10, shortage[1]),
-		});
-	} else if (country.policy !== "economy" || period % 12 === 0) {
-		issue({ action: "train", role });
-	}
-}
-
 /** Coarse bounded updates: never run economy or AI for each rendering frame. */
 export function advanceCampaign(runtime) {
 	const campaign = runtime.campaign;
@@ -1054,10 +1013,14 @@ export function advanceCampaign(runtime) {
 				ownedCities(country).length * 2 +
 				buildings(country, "supply") * 20,
 		);
-		country.supplyRatio = Math.min(
+		country.supplyStockRatio = Math.min(1, country.supplies / demand);
+		country.fundingRatio = Math.min(
 			1,
-			country.supplies / demand,
 			(before + country.income) / Math.max(1, country.upkeep),
+		);
+		country.supplyRatio = Math.min(
+			country.supplyStockRatio,
+			country.fundingRatio,
 		);
 		country.supplies = Math.max(0, country.supplies - demand);
 		if (country.supplyRatio < 1 && campaign.period % 6 === 0)
@@ -1091,17 +1054,23 @@ export function advanceCampaign(runtime) {
 		);
 		processQueue(runtime, country);
 	}
-	if (campaign.period % 4 === 0 && countries.length) {
-		// Round-robin country budgets bound AI bursts even in global free-for-all.
-		const budget = Math.min(8, countries.length);
-		for (let index = 0; index < budget; index++)
-			automate(
-				runtime,
-				countries[(campaign.aiCursor + index) % countries.length],
-			);
-		campaign.aiCursor = (campaign.aiCursor + budget) % countries.length;
-	}
+	// Completed queues change formations and income before new AI commitments.
 	refreshForces(runtime);
+	for (const country of countries) refreshEconomy(country);
+	advanceCampaignAI(runtime, countries, {
+		roles: CAMPAIGN_ROLES,
+		equipment: CAMPAIGN_EQUIPMENT,
+		buildings: CAMPAIGN_BUILDINGS,
+		missions: CAMPAIGN_MISSIONS,
+		isHostile: (first, second) => isHostile(runtime, first, second),
+		formationSlots: (country) => formationSlots(runtime, country),
+		issue: (countryId, command) =>
+			commandCampaign(runtime, {
+				type: "campaign",
+				countryId,
+				...command,
+			}),
+	});
 	rebuildSideTotals(runtime);
 	refreshEffects(runtime);
 	refreshRelationships(runtime);
@@ -1111,6 +1080,7 @@ export function advanceCampaign(runtime) {
 /** Abstract combined-arms effects, independent of real weapon performance. */
 export function roleModifiers(unit, runtime) {
 	const country =
-		runtime.campaign?.enabled && runtime.campaign.countries[unit.sovereignId];
+		runtime.campaign?.enabled &&
+		getCountry(runtime.campaign.countries, unit.sovereignId);
 	return country?.roleModifiers?.[roleOf(unit)] || NEUTRAL_MODIFIERS;
 }

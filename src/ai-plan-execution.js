@@ -138,7 +138,10 @@ export function createAiPlanExecutor(context) {
 			// The world or side changed under the job: restart from current state.
 			if (
 				proposalJob.pending === context._pendingProposalSides &&
-				proposalJob.generation === context._simulationWorldGeneration
+				proposalJob.generation === context._simulationWorldGeneration &&
+				Number.isInteger(proposalJob.sideIdx) &&
+				proposalJob.sideIdx >= 0 &&
+				proposalJob.sideIdx < context.sides.length
 			)
 				context._planReassessNeeded[proposalJob.sideIdx] ||=
 					proposalJob.forceReplace;
@@ -147,7 +150,13 @@ export function createAiPlanExecutor(context) {
 		if (!proposalJob) {
 			while (context._pendingProposalSides.length > 0) {
 				const si = context._pendingProposalSides[0];
-				if (context.sides[si] && context.sides[si].length > 0) break;
+				if (
+					Number.isInteger(si) &&
+					si >= 0 &&
+					si < context.sides.length &&
+					context.sides[si]?.length > 0
+				)
+					break;
 				context._pendingProposalSides.shift();
 				context._pendingProposalSideSet.delete(si);
 			}
@@ -208,7 +217,12 @@ export function createAiPlanExecutor(context) {
 		}
 
 		const finished = advanceProposalJob();
-		if (finished) {
+		if (
+			finished &&
+			Number.isInteger(finished.sideIdx) &&
+			finished.sideIdx >= 0 &&
+			finished.sideIdx < context.sides.length
+		) {
 			const { sideIdx: si, forceReplace, proposals } = finished;
 			// Score each proposal
 			const scoringBatch = {};

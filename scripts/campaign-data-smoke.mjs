@@ -274,6 +274,10 @@ const geometry = [
 ];
 regional.campaign.regions = buildCampaignRegionIndex(regional, geometry);
 assert.equal(regional.campaign.regions.regions[0].cells.length, 8);
+// Restored cursors are numeric indices, not inherited properties on the array.
+regional.campaign.regions.cursor = "__proto__";
+regional.campaign.regions.regions[0].cursor = "constructor";
+
 updateCampaignEvents(regional);
 assert.equal(regional.campaign.events.length, 0);
 regional.primaryOccupierMap[capitalIndex] = 2;

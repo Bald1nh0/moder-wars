@@ -60,7 +60,7 @@ const tickOf = (runtime) =>
 		? runtime._simTickCount
 		: 0;
 const owner = (value) =>
-	Number.isInteger(value) && value > 0 && value <= 65535 ? value : 0;
+	Number.isInteger(value) && value > 0 && value <= 65535 ? value >>> 0 : 0;
 
 /** A bounded journal belongs to the simulation owner and survives ownership handoffs. */
 export function emitCampaignEvent(runtime, type, payload = {}) {
@@ -192,14 +192,15 @@ function updateCountries(runtime, baseline) {
 			.map((country) => country.id),
 	);
 	for (const country of runtime.countryMetadata || []) {
-		if (!country || !owner(country.id)) continue;
-		const previous = baseline.countries[country.id];
+		const countryId = owner(country?.id);
+		if (!countryId) continue;
+		const previous = baseline.countries[countryId];
 		const current = {
 			active: active.has(country.id),
 			overlordId: owner(country.overlordId),
 			releasableBy: owner(country.releasableBy),
 		};
-		const campaignCountry = runtime.campaign.countries?.[country.id];
+		const campaignCountry = runtime.campaign.countries?.[countryId];
 		if (
 			campaignCountry &&
 			(!previous || previous.overlordId !== current.overlordId)
@@ -228,7 +229,7 @@ function updateCountries(runtime, baseline) {
 					controllerId: current.releasableBy,
 				});
 		}
-		baseline.countries[country.id] = current;
+		baseline.countries[countryId] = current;
 	}
 }
 
@@ -406,16 +407,30 @@ function finishRegion(runtime, region) {
 function updateRegions(runtime) {
 	const state = runtime.campaign.regions;
 	if (
-		!state?.regions?.length ||
+		!Array.isArray(state?.regions) ||
+		!state.regions.length ||
 		state.gridWidth !== runtime.gridWidth ||
 		state.gridHeight !== runtime.gridHeight
 	)
 		return;
+	// Imported handoff cursors must not select inherited array properties.
+	if (
+		!Number.isInteger(state.cursor) ||
+		state.cursor < 0 ||
+		state.cursor >= state.regions.length
+	)
+		state.cursor = 0;
 	let budget = REGION_CELL_BUDGET;
 	let completed = 0;
 	while (budget > 0 && completed < state.regions.length) {
-		const region = state.regions[state.cursor];
+		const region = state.regions[state.cursor >>> 0];
 		if (!region?.cells?.length) break;
+		if (
+			!Number.isInteger(region.cursor) ||
+			region.cursor < 0 ||
+			region.cursor > region.cells.length
+		)
+			region.cursor = 0;
 		while (budget > 0 && region.cursor < region.cells.length) {
 			const controller = cellController(runtime, region.cells[region.cursor++]);
 			region.counts[controller] = (region.counts[controller] || 0) + 1;

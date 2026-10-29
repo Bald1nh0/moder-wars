@@ -2,6 +2,33 @@
 
 ## 2026-10-29
 
+### 0.30.0-experimental.1 (unreleased)
+
+- Harden CI with hosted npm advisory, redacted full-history secret and CodeQL security checks that gate publication, plus reviewed dependency update proposals. Add owner review coverage and document required GitHub settings and the remaining public-runner trust boundary.
+- Deliver anti-framing policy through HTTP headers, add MIME-sniffing/referrer protections, and preserve index/service-worker caching and binary asset decoding. Verify headers across success, redirect, conditional and error responses in an isolated container; existing production is unchanged.
+- Harden simulation state/transport against prototype and method-shadowing keys, use explicit typed-array constructors, and validate country/equipment/side/cell keys. Restrict worker downloads to same-origin packaged assets while preserving local scenario blobs. Add malicious-input regressions and verify built scenario loading/reloading in Chromium.
+- Keep scanner findings visible and require explicit, source-bound review for false positives. Record one exact historical SVG-flag false positive for the secret scanner without excluding the file, detection rule or Git history.
+
+- Record a focused deployment security review: production-runner trust boundary, source/dependency scanning gaps, HTTP anti-framing policy and network verification requirements. Document existing controls and a clean point-in-time npm audit; no production security configuration is changed by the review.
+
+- Add synchronized SemVer checking/bumping, versioned GHCR tags and GitHub Releases with a commit/image manifest. Publish releases only after healthy deployment and protect version identity on retries. Keep publication disabled pending upstream licensing clarification.
+- Add opt-in GHCR retention with a dry-run default, bounded deletion batches and protection for recent, pinned, current and rollback images. Retain GitHub release metadata even when old registry images expire.
+
+- Remove private development addresses from the README. Prepare GitHub-hosted checks, container verification/security scanning and GHCR publishing, followed by main-only deployment on the dedicated Docker runner. Replace the Pages workflow, add health-gated deployment with rollback regression checks, and document runner/environment setup and the initial production cutover. Existing production is not migrated by this change.
+- Refresh the Nginx base image and pin targeted Alpine Brotli/curl fixes so the production image passes the new fixable HIGH/CRITICAL vulnerability gate. Validate the image under production filesystem/capability restrictions; the currently running release remains unchanged.
+
+- Refresh the README around actual production/test versions, scenarios, campaign controls, AI planning, session storage, validation and Docker releases. Correct outdated modernization/deployment guidance.
+
+- Standardize the sole development/test endpoint on port 4180, including strict Vite defaults. Stop the older game previews, serve the new build with matching server code, and keep Docker as independent production.
+
+- Replace fixed campaign recruitment rotation with resource-aware planning, desired role composition and responses to losses and abstract air threats.
+- Separate financial shortfalls from physical supply needs; account for queued upkeep, cash reserves and economic investment when choosing orders.
+- Schedule countries with independent decision and action deadlines, retaining a bounded shared work budget without global-period starvation.
+- Rank hostile mission targets and available mission types using their game effects, cost and enemy air defense.
+- Show the last AI action, reason and decision cycle in English, Ukrainian and Russian, including manual-control and waiting states.
+- Keep internal planner history in full ownership handoffs while publishing only its bounded explanation to the interface. Advance the simulation protocol to 4 so older server owners cannot silently run the previous rules.
+- Keep the public 0.29.0 Docker production release independent of this development build.
+
 ### 0.29.0
 
 - Release the campaign tested in experimental.1–3: country economies, formation roles, training and production, mobilization, aggregate missions and the event journal, with English, Ukrainian and Russian controls and help.

@@ -4,8 +4,9 @@ import {
 	PERF_COUNTER_DEFAULTS,
 } from "./simulation-metrics.js";
 import { createSimulationState } from "./simulation-state.js";
+import { createSimulationView, simulationViewType } from "./simulation-wire.js";
 
-export const SIMULATION_PROTOCOL_VERSION = 3;
+export const SIMULATION_PROTOCOL_VERSION = 4;
 export const CONTROL_TILE_SIZE = 32;
 export const CONTROL_MAP_FIELDS = [
 	"worldControlMap",
@@ -55,10 +56,12 @@ export function cloneSimulationData(value, seen = new Map()) {
 	}
 	if (ArrayBuffer.isView(value)) {
 		const buffer = cloneSimulationData(value.buffer, seen);
-		const result =
-			value instanceof DataView
-				? new DataView(buffer, value.byteOffset, value.byteLength)
-				: new value.constructor(buffer, value.byteOffset, value.length);
+		const result = createSimulationView(
+			simulationViewType(value),
+			buffer,
+			value.byteOffset,
+			value instanceof DataView ? value.byteLength : value.length,
+		);
 		seen.set(value, result);
 		return result;
 	}
@@ -90,6 +93,15 @@ export function cloneSimulationData(value, seen = new Map()) {
 	const result = Array.isArray(value) ? new Array(value.length) : {};
 	seen.set(value, result);
 	for (const key of Object.keys(value)) {
+		// Imported state must not introduce prototype setters or constructor chains.
+		if (
+			key === "__proto__" ||
+			key === "constructor" ||
+			key === "prototype" ||
+			Object.hasOwn(Object.prototype, key) ||
+			(Array.isArray(value) && Object.hasOwn(Array.prototype, key))
+		)
+			continue;
 		if (assetKeys.has(key)) continue;
 		const item = cloneSimulationData(value[key], seen);
 		if (item !== undefined) result[key] = item;
@@ -124,6 +136,19 @@ export function captureSimulationState(
 	return result;
 }
 
+function assignStateFields(target, source) {
+	for (const [key, value] of Object.entries(source)) {
+		if (
+			key === "__proto__" ||
+			key === "constructor" ||
+			key === "prototype" ||
+			Object.hasOwn(Object.prototype, key)
+		)
+			continue;
+		target[key] = value;
+	}
+}
+
 export function applySimulationState(
 	runtime,
 	incoming,
@@ -131,13 +156,21 @@ export function applySimulationState(
 ) {
 	for (const [key, value] of Object.entries(incoming)) {
 		if (
+			key === "__proto__" ||
+			key === "constructor" ||
+			key === "prototype" ||
+			Object.hasOwn(Object.prototype, key)
+		)
+			continue;
+		if (!stateKeys.includes(key)) continue;
+		if (
 			key === "gameState" &&
 			value === "SIMULATING" &&
 			runtime.gameState?.startsWith("PEACE_SELECT_")
 		)
 			continue;
 		if (key === "CONFIG") {
-			Object.assign(runtime.CONFIG, value);
+			assignStateFields(runtime.CONFIG, value);
 			continue;
 		}
 		if (key === "perf") continue;
@@ -163,7 +196,8 @@ export function applySimulationState(
 						"color",
 					])
 						if (Object.hasOwn(old, field)) controls[field] = old[field];
-				Object.assign(old, country, controls);
+				assignStateFields(old, country);
+				assignStateFields(old, controls);
 				// Localized labels belong to the UI, including when an older owner
 				// returns a payload captured before the player changed language.
 				if (old.name === previousName && typeof displayName === "string")
@@ -805,21 +839,33 @@ export function createPresentationSnapshot(
 	} = {},
 ) {
 	const campaign = state.campaign;
-	const visibleCampaign = campaign
-		? {
-				...campaign,
-				eventBaseline: undefined,
-				regions: campaign.regions
-					? {
-							regions: campaign.regions.regions.map(
-								({ id, names, summary }) => ({ id, names, summary }),
-							),
-						}
-					: null,
-			}
-		: null;
-	const readValue = (key) =>
-		key === "campaign" ? visibleCampaign : state[key];
+	let visibleCampaign;
+	const readValue = (key) => {
+		if (key !== "campaign") return state[key];
+		if (!campaign) return null;
+		// Build the display projection only when publication is due. Planner
+		// history/timers belong to the owner and survive full handoffs instead.
+		visibleCampaign ??= {
+			...campaign,
+			countries: Object.fromEntries(
+				Object.entries(campaign.countries || {}).map(([id, country]) => {
+					const { aiState: _aiState, ...visibleCountry } = country;
+					return [id, visibleCountry];
+				}),
+			),
+			eventBaseline: undefined,
+			regions: campaign.regions
+				? {
+						regions: campaign.regions.regions.map(({ id, names, summary }) => ({
+							id,
+							names,
+							summary,
+						})),
+					}
+				: null,
+		};
+		return visibleCampaign;
+	};
 	const values = {};
 	const valueCache = cache?.values instanceof Map ? cache.values : null;
 	const wireSeen = new Map();

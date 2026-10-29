@@ -98,7 +98,11 @@ export function createInfluenceRuntime(runtime) {
 	}
 
 	function enqueueInfluenceFrontierIndex(index, priority = false) {
-		if (index < 0 || index >= runtime._influenceFrontierQueued.length)
+		if (
+			!Number.isInteger(index) ||
+			index < 0 ||
+			index >= runtime._influenceFrontierQueued.length
+		)
 			return false;
 		const queuedState = runtime._influenceFrontierQueued[index];
 		if (priority) {
@@ -131,7 +135,12 @@ export function createInfluenceRuntime(runtime) {
 
 	function queueInfluenceFrontierCell(index, priority = false) {
 		ensureInfluenceFrontierQueue();
-		if (index < 0 || index >= runtime._influenceFrontierQueued.length) return;
+		if (
+			!Number.isInteger(index) ||
+			index < 0 ||
+			index >= runtime._influenceFrontierQueued.length
+		)
+			return;
 		const x = index % runtime.gridWidth;
 		enqueueInfluenceFrontierIndex(index, priority);
 		if (x > 0) enqueueInfluenceFrontierIndex(index - 1, priority);
@@ -193,7 +202,13 @@ export function createInfluenceRuntime(runtime) {
 			} else {
 				break;
 			}
-			if (runtime._influenceFrontierQueued[index] !== expectedState) continue;
+			if (
+				!Number.isInteger(index) ||
+				index < 0 ||
+				index >= runtime._influenceFrontierQueued.length ||
+				runtime._influenceFrontierQueued[index] !== expectedState
+			)
+				continue;
 			runtime._influenceFrontierQueued[index] = 0;
 			processed++;
 			if (runtime.landMask[index] !== 2) continue;

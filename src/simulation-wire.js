@@ -37,6 +37,54 @@ function isBuffer(value) {
 	);
 }
 
+// Never invoke a constructor supplied through a decoded object or view property.
+export function simulationViewType(value) {
+	if (value instanceof Int8Array) return "Int8Array";
+	if (value instanceof Uint8Array) return "Uint8Array";
+	if (value instanceof Uint8ClampedArray) return "Uint8ClampedArray";
+	if (value instanceof Int16Array) return "Int16Array";
+	if (value instanceof Uint16Array) return "Uint16Array";
+	if (value instanceof Int32Array) return "Int32Array";
+	if (value instanceof Uint32Array) return "Uint32Array";
+	if (value instanceof Float32Array) return "Float32Array";
+	if (value instanceof Float64Array) return "Float64Array";
+	if (value instanceof BigInt64Array) return "BigInt64Array";
+	if (value instanceof BigUint64Array) return "BigUint64Array";
+	if (value instanceof DataView) return "DataView";
+	invalid("unsupported view type");
+}
+
+export function createSimulationView(type, buffer, offset, length) {
+	switch (type) {
+		case "Int8Array":
+			return new Int8Array(buffer, offset, length);
+		case "Uint8Array":
+			return new Uint8Array(buffer, offset, length);
+		case "Uint8ClampedArray":
+			return new Uint8ClampedArray(buffer, offset, length);
+		case "Int16Array":
+			return new Int16Array(buffer, offset, length);
+		case "Uint16Array":
+			return new Uint16Array(buffer, offset, length);
+		case "Int32Array":
+			return new Int32Array(buffer, offset, length);
+		case "Uint32Array":
+			return new Uint32Array(buffer, offset, length);
+		case "Float32Array":
+			return new Float32Array(buffer, offset, length);
+		case "Float64Array":
+			return new Float64Array(buffer, offset, length);
+		case "BigInt64Array":
+			return new BigInt64Array(buffer, offset, length);
+		case "BigUint64Array":
+			return new BigUint64Array(buffer, offset, length);
+		case "DataView":
+			return new DataView(buffer, offset, length);
+		default:
+			invalid("unsupported view type");
+	}
+}
+
 export function encodeSimulationMessage(value) {
 	const ids = new Map();
 	const objects = [];
@@ -77,8 +125,7 @@ export function encodeSimulationMessage(value) {
 			buffers.push(new Uint8Array(item));
 			rawBytes += item.byteLength;
 		} else if (ArrayBuffer.isView(item)) {
-			const type =
-				item instanceof DataView ? "DataView" : item.constructor.name;
+			const type = simulationViewType(item);
 			if (!VIEW_TYPES.has(type)) invalid("unsupported view type");
 			node = [
 				"v",
@@ -271,7 +318,7 @@ export function decodeSimulationMessage(input) {
 		const size = Type.BYTES_PER_ELEMENT || 1;
 		if (node[3] % size !== 0 || node[3] + node[4] * size > buffer.byteLength)
 			invalid("view bounds");
-		values[index] = new Type(buffer, node[3], node[4]);
+		values[index] = createSimulationView(node[1], buffer, node[3], node[4]);
 	}
 	for (let index = 0; index < nodes.length; index++) {
 		const node = nodes[index],
@@ -288,6 +335,15 @@ export function decodeSimulationMessage(input) {
 				)
 					invalid("property");
 				const [key, item] = entry;
+				// Reject keys that could become prototype setters in a later state merge.
+				if (
+					key === "__proto__" ||
+					key === "constructor" ||
+					key === "prototype" ||
+					Object.hasOwn(Object.prototype, key) ||
+					(node[0] === "a" && Object.hasOwn(Array.prototype, key))
+				)
+					invalid("reserved property");
 				if (
 					node[0] === "a" &&
 					(key === "length" ||

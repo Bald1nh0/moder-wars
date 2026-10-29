@@ -21,6 +21,18 @@ coverage; game defaults remain explicitly fictional and editable through scenari
 metadata. Detailed vehicle simulation, complete country inventories and full
 campaign save/resume are still future work.
 
+## Campaign AI development iteration
+
+Implemented on `feature/campaign-ai-planning` for `0.30.0-experimental.1`;
+see [the planner guide](CAMPAIGN-AI.md). The public Docker game stays on 0.29.0.
+
+- [x] Distinguish financial trouble from physical supply shortages.
+- [x] Forecast upkeep for new and queued formations, preserve a cash target and evaluate economic investment.
+- [x] Adapt formation recruitment to composition deficits, losses and hostile air capabilities.
+- [x] Give countries independent deadlines under a bounded rotating scheduler.
+- [x] Rank hostile targets and available aggregate mission types.
+- [x] Explain the last AI decision and its budget estimate in English, Ukrainian and Russian.
+
 ## Decision baseline
 
 - [x] Measure the released 0.28.6 build: scenario loading, simulation startup and execution mode, main-thread stalls, rendering, simulation tick distributions, and memory. See the [CPU baseline](PERFORMANCE-0.28.6.md) and [browser observations](PERFORMANCE-BROWSER-0.28.6.md) for measurement limits.

@@ -370,6 +370,12 @@ export function createAiRuntime(context) {
 	}
 
 	function discardNonHostileOperationalPlans(sideIndex) {
+		if (
+			!Number.isInteger(sideIndex) ||
+			sideIndex < 0 ||
+			sideIndex >= context.sides.length
+		)
+			return;
 		for (const slot of [sideIndex, sideIndex + context.sides.length]) {
 			const plan = context._warPlan[slot];
 			if (
@@ -666,6 +672,12 @@ export function createAiRuntime(context) {
 	}
 
 	function clearOperationalPlanForTaskForce(sideIndex, taskForce) {
+		if (
+			!Number.isInteger(sideIndex) ||
+			sideIndex < 0 ||
+			sideIndex >= context.sides.length
+		)
+			return;
 		const slots = [sideIndex, sideIndex + context.sides.length];
 		for (const slot of slots) {
 			if (context._warPlan[slot]?.signature === taskForce.planSignature) {

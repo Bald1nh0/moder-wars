@@ -50,6 +50,15 @@ function campaignFixture() {
 	return state;
 }
 const state = campaignFixture();
+state.campaign.countries[1].aiState = {
+	nextDecisionPeriod: 12,
+	previousRoles: { infantry: 2 },
+};
+state.campaign.countries[1].aiDecision = {
+	period: 4,
+	action: "wait",
+	reason: "saving_buffer",
+};
 state.units.forEach((unit, index) => {
 	unit.campaignRole = ["infantry", "armor", "artillery", "airDefense"][index];
 });
@@ -64,6 +73,17 @@ const snapshot = createPresentationSnapshot(
 	createControlDeltaTracker(state),
 );
 assert.equal(snapshot.values.campaign.eventBaseline, undefined);
+assert.equal(snapshot.values.campaign.countries[1].aiState, undefined);
+assert.deepEqual(
+	snapshot.values.campaign.countries[1].aiDecision,
+	state.campaign.countries[1].aiDecision,
+	"the last AI decision is visible without internal planner history",
+);
+assert.deepEqual(
+	captureSimulationState(state).campaign.countries[1].aiState,
+	state.campaign.countries[1].aiState,
+	"full ownership handoffs retain AI timers and history",
+);
 assert.equal(
 	snapshot.values.campaign.regions.regions[0].cells,
 	undefined,
@@ -95,6 +115,11 @@ assert.ok(
 	"commands bypass the periodic presentation budget",
 );
 const core = createSimulationCore(captureSimulationState(state));
+assert.deepEqual(
+	core.state.campaign.countries[1].aiState,
+	state.campaign.countries[1].aiState,
+	"the receiving owner restores the existing planner state",
+);
 const before = core.state.campaign.countries[1].treasury;
 assert.deepEqual(
 	core.command({

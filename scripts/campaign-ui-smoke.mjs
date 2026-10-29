@@ -7,6 +7,7 @@ import {
 	campaignOrdersReady,
 	campaignPanelState,
 	campaignTutorialAction,
+	createCampaignDecisionSummary,
 	createCampaignTutorialGuide,
 	formatCampaignEvent,
 	selectCampaignEvents,
@@ -406,6 +407,159 @@ for (const language of ["uk", "ru"]) {
 			`${language} ${key} must preserve parameters`,
 		);
 	}
+}
+
+// Render the production summary nodes across country, language and lifecycle changes.
+{
+	let language = "en";
+	const documentRef = {
+		createElement() {
+			const node = new GuideNode(documentRef);
+			Object.defineProperty(node, "innerHTML", {
+				set() {
+					assert.fail(
+						"AI decision rendering must never parse scenario text as HTML",
+					);
+				},
+			});
+			return node;
+		},
+	};
+	const summary = createCampaignDecisionSummary({
+		documentRef,
+		translate: (key, params) => renderText(language)(key, params),
+	});
+	const field = (key) => summary.node.querySelector(`#campaign-ai-${key}`);
+	const state = {
+		gameState: "SIMULATING",
+		campaign: { enabled: true, period: 40 },
+		countryMetadata: [{ id: 2, displayName: '<img src=x onerror="alert(1)">' }],
+	};
+	const country = {
+		id: 1,
+		automation: true,
+		cities: [{ id: 7, name: "<script>test</script>" }],
+		aiDecision: {
+			period: 12,
+			action: "train",
+			reason: "air_threat",
+			role: "airDefense",
+			targetCountryId: 2,
+			cityId: 7,
+			reserveTarget: 120,
+			projectedBalance: -20,
+		},
+	};
+	for (const nextLanguage of ["en", "uk", "ru"]) {
+		language = nextLanguage;
+		summary.render(country, state);
+		const translate = renderText(language);
+		assert.equal(
+			field("action").textContent,
+			translate("CAMPAIGN_AI_ACTION_train"),
+		);
+		assert.equal(
+			field("reason").textContent,
+			translate("CAMPAIGN_AI_REASON_air_threat"),
+		);
+		assert.equal(
+			field("period").textContent,
+			translate("CAMPAIGN_AI_LAST_CYCLE", { count: 12 }),
+		);
+		assert.match(
+			field("context").textContent,
+			/<img src=x onerror="alert\(1\)">/,
+		);
+		assert.match(field("context").textContent, /<script>test<\/script>/);
+		assert.equal(field("context").children.length, 0);
+		assert.equal(field("budget").hidden, false);
+		assert.match(field("budget").children[1].textContent, /-20/);
+		assert.doesNotMatch(
+			field("budget").children[1].textContent,
+			/CAMPAIGN_|\{\w+\}/,
+		);
+		for (const key of Object.keys(CAMPAIGN_TRANSLATIONS.en).filter((key) =>
+			key.startsWith("CAMPAIGN_AI_REASON_"),
+		)) {
+			country.aiDecision.reason = key.slice("CAMPAIGN_AI_REASON_".length);
+			summary.render(country, state);
+			assert.doesNotMatch(field("reason").textContent, /CAMPAIGN_|\{\w+\}/);
+		}
+		for (const action of [
+			"wait",
+			"build",
+			"train",
+			"production",
+			"mobilize",
+			"mission",
+		]) {
+			country.aiDecision.action = action;
+			summary.render(country, state);
+			assert.equal(
+				field("action").textContent,
+				translate(`CAMPAIGN_AI_ACTION_${action}`),
+			);
+		}
+		country.aiDecision.reason = "air_threat";
+		country.aiDecision.action = "train";
+	}
+	language = "en";
+	summary.render({ ...country, automation: false }, state);
+	assert.equal(field("state").textContent, renderText("en")("CAMPAIGN_AI_OFF"));
+	for (const key of ["action", "reason", "context", "period", "budget"]) {
+		assert.equal(
+			field(key).hidden,
+			true,
+			"Disabling automation clears stale intent",
+		);
+	}
+	summary.render({ id: 3, automation: true }, state);
+	assert.equal(
+		field("action").textContent,
+		renderText("en")("CAMPAIGN_AI_PENDING"),
+	);
+	assert.equal(
+		field("context").textContent,
+		"",
+		"Country changes cannot retain the previous target",
+	);
+	assert.equal(field("period").hidden, true);
+	assert.equal(field("budget").hidden, true);
+	country.aiDecision = {
+		period: 20,
+		action: "future_action",
+		reason: "untrusted_reason",
+		role: "<script>",
+	};
+	summary.render(country, state);
+	assert.equal(
+		field("action").textContent,
+		renderText("en")("CAMPAIGN_AI_ACTION_UNKNOWN"),
+	);
+	assert.equal(
+		field("reason").textContent,
+		renderText("en")("CAMPAIGN_AI_REASON_UNKNOWN"),
+	);
+	assert.equal(field("context").textContent, "");
+	state.campaign.finished = true;
+	summary.render({ ...country, automation: false }, state);
+	assert.equal(
+		field("state").textContent,
+		renderText("en")("CAMPAIGN_AI_FINISHED"),
+	);
+	assert.equal(
+		field("period").hidden,
+		false,
+		"Completed campaigns retain the last recorded decision",
+	);
+	summary.render({ id: 3, automation: true }, state);
+	assert.equal(
+		field("action").textContent,
+		renderText("en")("CAMPAIGN_AI_NONE"),
+	);
+	summary.render(null, state);
+	assert.equal(summary.node.hidden, true);
+	assert.equal(field("reason").textContent, "");
 }
 
 const units = [

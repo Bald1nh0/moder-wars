@@ -124,6 +124,167 @@ export function campaignTutorialAction(runtime) {
 	return actions[step?.content] || null;
 }
 
+const AI_ACTIONS = new Set([
+	"wait",
+	"build",
+	"train",
+	"production",
+	"mobilize",
+	"mission",
+]);
+const AI_REASONS = new Set([
+	"automation_off",
+	"no_city",
+	"no_enemy",
+	"queue_busy",
+	"formation_cap",
+	"supply_shortage",
+	"funds_shortage",
+	"saving_buffer",
+	"economy_growth",
+	"replace_losses",
+	"role_balance",
+	"air_threat",
+	"equipment_shortage",
+	"reserve_shortage",
+	"mission_opportunity",
+	"no_viable_mission",
+]);
+
+/** Render one bounded owner decision; user-provided country/city names stay text. */
+export function createCampaignDecisionSummary({
+	documentRef = document,
+	translate = gameText,
+} = {}) {
+	const node = documentRef.createElement("section");
+	node.id = "campaign-ai-decision";
+	node.className = "campaign-card campaign-ai-decision";
+	const fields = {};
+	for (const [key, tag, className] of [
+		["title", "h3", ""],
+		["state", "p", "campaign-note"],
+		["action", "p", "campaign-ai-action"],
+		["reason", "p", ""],
+		["context", "p", "campaign-note"],
+		["period", "p", "campaign-note"],
+	]) {
+		const field = documentRef.createElement(tag);
+		field.id = `campaign-ai-${key}`;
+		field.className = className;
+		node.append(field);
+		fields[key] = field;
+	}
+	const budget = documentRef.createElement("details");
+	budget.className = "campaign-ai-budget";
+	budget.id = "campaign-ai-budget";
+	const budgetTitle = documentRef.createElement("summary");
+	const budgetText = documentRef.createElement("p");
+	budgetText.className = "campaign-note";
+	budget.append(budgetTitle);
+	budget.append(budgetText);
+	node.append(budget);
+	return {
+		node,
+		render(country, runtime) {
+			node.hidden = !country;
+			for (const field of Object.values(fields)) {
+				field.textContent = "";
+				field.hidden = true;
+			}
+			budget.hidden = true;
+			budgetText.textContent = "";
+			budgetTitle.textContent = translate("CAMPAIGN_AI_BUDGET_TITLE");
+			if (!country) return;
+			const set = (key, text) => {
+				fields[key].textContent = text;
+				fields[key].hidden = !text;
+			};
+			set("title", translate("CAMPAIGN_AI_TITLE"));
+			const finished = !campaignPanelState(runtime).editable;
+			const disabled = !finished && !country.automation;
+			set(
+				"state",
+				translate(
+					finished
+						? "CAMPAIGN_AI_FINISHED"
+						: disabled
+							? "CAMPAIGN_AI_OFF"
+							: "CAMPAIGN_AI_ON",
+				),
+			);
+			if (disabled) return;
+			const decision = country.aiDecision;
+			if (
+				!decision ||
+				!Number.isInteger(decision.period) ||
+				decision.period < 0
+			) {
+				set(
+					"action",
+					translate(finished ? "CAMPAIGN_AI_NONE" : "CAMPAIGN_AI_PENDING"),
+				);
+				return;
+			}
+			set(
+				"action",
+				translate(
+					AI_ACTIONS.has(decision.action)
+						? `CAMPAIGN_AI_ACTION_${decision.action}`
+						: "CAMPAIGN_AI_ACTION_UNKNOWN",
+				),
+			);
+			set(
+				"reason",
+				translate(
+					AI_REASONS.has(decision.reason)
+						? `CAMPAIGN_AI_REASON_${decision.reason}`
+						: "CAMPAIGN_AI_REASON_UNKNOWN",
+				),
+			);
+			set(
+				"period",
+				translate("CAMPAIGN_AI_LAST_CYCLE", { count: number(decision.period) }),
+			);
+			const context = [];
+			for (const [field, values, prefix] of [
+				["role", ROLE_KEYS, "CAMPAIGN_ROLE_"],
+				["equipment", EQUIPMENT_KEYS, "CAMPAIGN_EQUIPMENT_"],
+				["mission", MISSION_KEYS, "CAMPAIGN_MISSION_"],
+			]) {
+				if (values.includes(decision[field]))
+					context.push(translate(prefix + decision[field]));
+			}
+			if (decision.targetCountryId != null)
+				context.push(
+					translate("CAMPAIGN_AI_TARGET", {
+						country: countryName(runtime, decision.targetCountryId, translate),
+					}),
+				);
+			if (decision.cityId != null) {
+				const city = (country.cities || []).find(
+					(entry) => String(entry.id) === String(decision.cityId),
+				);
+				context.push(
+					translate("CAMPAIGN_AI_CITY", {
+						city: city?.name || translate("CAMPAIGN_SOURCE_UNKNOWN"),
+					}),
+				);
+			}
+			set("context", context.join(" · "));
+			if (
+				Number.isFinite(decision.reserveTarget) &&
+				Number.isFinite(decision.projectedBalance)
+			) {
+				budget.hidden = false;
+				budgetText.textContent = translate("CAMPAIGN_AI_BUDGET", {
+					reserve: number(decision.reserveTarget),
+					balance: number(decision.projectedBalance),
+				});
+			}
+		},
+	};
+}
+
 /** Count the current mirror, rather than a previous logistics-cycle estimate. */
 export function campaignForceTotals(units, countryId) {
 	const totals = {
@@ -564,6 +725,8 @@ export function installCampaignUI(
 		metrics.append(wrapper);
 	}
 	views.overview.append(metrics);
+	const aiDecision = createCampaignDecisionSummary({ documentRef });
+	views.overview.append(aiDecision.node);
 	const forcesNote = paragraph(views.overview, "CAMPAIGN_FORCES_NOTE");
 	const forces = card(views.overview, "CAMPAIGN_ROLE");
 	const roleList = create("dl", "campaign-stock-list");
@@ -1104,6 +1267,7 @@ export function installCampaignUI(
 			control.disabled = pending || !country || readOnly || !ownerReady;
 		}
 		if (currentTab === "journal") renderJournal();
+		aiDecision.render(country, runtime);
 		if (!country) return;
 		const controlledCities = (country.cities || []).filter(
 			(city) => Number(city.controllerId) === country.id,

@@ -1,6 +1,6 @@
 // Service Worker — versioned offline shell plus persistent runtime data cache
 
-const CACHE_VERSION = "mw-v0.29.0";
+const CACHE_VERSION = "mw-v0.30.0-experimental.1";
 const APP_SHELL_PREFIX = "mw-app-shell-";
 const RUNTIME_PREFIX = "mw-runtime-";
 const LEGACY_CACHE_PREFIX = "mw-cache-";
@@ -10,7 +10,9 @@ const APP_SHELL_CACHE = `${APP_SHELL_PREFIX}${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${RUNTIME_PREFIX}v1`;
 
 const APP_SHELL_PATHS = [
+	"src/worker-asset-url.js",
 	"src/campaign-core.js",
+	"src/campaign-ai.js",
 	"src/campaign-events.js",
 	"src/campaign-ui.js",
 	"src/translations-campaign.js",

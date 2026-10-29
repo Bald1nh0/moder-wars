@@ -19,6 +19,8 @@ function paths(directory: string, prefix = ""): string[] {
 	);
 }
 export default defineConfig({
+	server: { port: 4180, strictPort: true },
+	preview: { port: 4180, strictPort: true },
 	base: "./",
 	publicDir: false,
 	worker: { format: "es" },

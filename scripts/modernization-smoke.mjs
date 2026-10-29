@@ -1,7 +1,10 @@
 import { spawnSync } from "node:child_process";
 
 const checks = [
+	"worker-asset-security",
+	"simulation-key-safety",
 	"campaign-core",
+	"campaign-ai",
 	"campaign-data",
 	"campaign-ui",
 	"campaign-integration",

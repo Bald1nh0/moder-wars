@@ -1,6 +1,7 @@
 # Campaign: forces, economy and events
 
-Version: `0.29.0`. Branch: `feature/forces-economy-events`.
+Published version: `0.29.0`. Development: `0.30.0-experimental.1` on
+`feature/campaign-ai-planning`; see [campaign AI planning](CAMPAIGN-AI.md).
 
 Start a normal scenario, choose opposing countries and start the war. Open the
 map menu and choose **Forces & economy**. The browser worker remains the default;
@@ -49,6 +50,19 @@ at leisure.
 
 The simulation continues while the campaign panel is open unless paused using
 the normal controls. A game period is 120 logical ticks, not a calendar month.
+
+## Country automation in the development build
+
+Country automation plans spending, training and operations from game resources.
+The Overview tab shows its **last decision**, the reason and the cycle when it
+was made. A waiting state can mean saving funds, a full queue, missing equipment,
+a formation limit or no suitable hostile target. This explanation is historical;
+it is not a promise that the same action remains appropriate after the map changes.
+
+Turn off the automation checkbox in Recruitment & cities and press **Apply**
+under Country strategy to manage new orders yourself. Existing paid orders and missions keep progressing. The planner respects
+the selected policy and uses the same command validation and resources as the
+player. It does not learn between games or consult an external AI service.
 
 ## Public observations versus game balance
 
@@ -108,11 +122,12 @@ MW_BUILD_DIR=/tmp/moder-wars-campaign/dist node scripts/build-output-smoke.mjs
 MW_STATIC_DIR=/tmp/moder-wars-campaign/dist MW_HOST=192.168.31.224 MW_PORT=4180 npm run prototype:server
 ```
 
-Use an unused port and an isolated output directory. The public Docker playtest
-packages version 0.29.0 independently. As of 2026-10-29, the experimental.3
-campaign preview continues on port 4180; port 4182 is stopped. The prior server
-prototype is retained at `3dad5ea` with its own source snapshot and static build;
-do not mix protocol versions.
+Use an isolated output directory and **port 4180** for the single test server.
+As of 2026-10-29 it serves 0.30.0-experimental.1 from
+`/tmp/moder-wars-test-4180/dist`, using matching protocol-4 server code under
+`/tmp/moder-wars-test-4180/source`. Other persistent game previews are stopped.
+Docker is production and stays on 0.29.0 until an explicit release. Do not mix
+server/client protocol versions.
 
 Component CPU measurements and their limits are recorded in
 [the campaign performance report](PERFORMANCE-CAMPAIGN-0.29.0.md).

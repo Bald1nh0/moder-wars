@@ -1,7 +1,13 @@
 # Server simulation prototype
 
-Branch: `experiment/server-simulation`. Development version: `0.28.7-server.3`.
-The frozen Docker playtest remains on `0.28.6`.
+Original prototype branch: `experiment/server-simulation`. Recorded version: `0.28.7-server.3`.
+
+The later `feature/campaign-ai-planning` client uses simulation protocol 4. Run
+it with server/worker code from the same branch/build; the frozen older prototype
+cannot execute its new AI rules. The public Docker release remains independent.
+Docker is production, currently `0.29.0`. The sole test port is **4180**; it
+now serves `0.30.0-experimental.1` with matching protocol-4 server code. Historical
+measurements below describe the earlier prototype builds.
 
 This experiment moves the existing simulation owner to Node.js. The browser still
 loads the map, prepares initial state, renders it, and applies presentation updates.
@@ -10,7 +16,7 @@ whether removing ongoing simulation CPU work helps actual Mac and Android client
 
 ## Run separately from the released game
 
-Requirements: Node.js 24+, npm, and a free port. Run from the repository root:
+Requirements: Node.js 24+, npm, and port **4180** available for replacing the test server. Run from the repository root:
 
 ```sh
 npm ci --ignore-scripts
