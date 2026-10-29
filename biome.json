@@ -13,6 +13,8 @@
 			"scripts/modernization-smoke.mjs",
 			"scripts/worker-asset-security-smoke.mjs",
 			"scripts/simulation-key-safety-smoke.mjs",
+			"scripts/simulation-index-boundaries-smoke.mjs",
+			"scripts/ai-index-safety-smoke.mjs",
 			"scripts/release-version*.mjs",
 			"scripts/github-release*.mjs",
 			"scripts/registry-cleanup*.mjs",

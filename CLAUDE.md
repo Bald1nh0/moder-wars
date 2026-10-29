@@ -11,7 +11,7 @@ Shared guidance for Claude Code, Codex, and other coding agents working in this 
 - Discuss work in Ukrainian by default. Write code comments, configuration comments, documentation, and README content in English. Player-facing text must support English, Ukrainian, and Russian through the existing translation dictionaries.
 - Keep changes focused, preserve project conventions, and verify behavior instead of inferring it from button labels or comments. Use browser checks for visual changes and user flows; Node smoke checks alone do not establish browser behavior.
 - Preserve existing staged and unstaged work. Work on a feature branch and do not commit or push unless requested.
-- Current integration branch: `feature/campaign-ai-planning`, which includes the preceding stability, server-simulation and forces/economy branches. Keep subsequent work here. The user authorized committing/pushing the accumulated changes to this feature branch on 2026-10-29. Main merges and releases remain on hold pending review and explicit authorization. Do not bypass that review with a direct main push.
+- Current integration branch: `feature/campaign-ai-planning`, which includes the preceding stability, server-simulation and forces/economy branches. Keep subsequent work here. The user authorized committing and pushing the reviewed CodeQL remediation to this feature branch on 2026-10-29. Main merges and releases remain on hold pending review and explicit authorization. Do not bypass that review with a direct main push.
 - Keep `CHANGELOG.md` current under the appropriate date and development version. Update these shared instructions when architecture, commands, or deployment practices change.
 
 ## Project

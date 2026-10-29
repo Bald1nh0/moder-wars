@@ -237,6 +237,9 @@ These entries do not disable any query or hide results from GitHub code scanning
 Do not regenerate hashes or approve a baseline without repeating the relevant
 security review. Scan findings can remain visible in GitHub despite a passing
 local gate; dismiss them individually there only after the same review.
+The [2026-10-29 remediation review](CODEQL-REMEDIATION.md) records the local
+47-to-13 full-scan reduction and distinguishes remaining reviewed findings from
+the PR's open-alert count. It does not authorize publication or alert dismissal.
 
 ### Network and HTTP verification
 

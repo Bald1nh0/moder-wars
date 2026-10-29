@@ -3,6 +3,8 @@ import { spawnSync } from "node:child_process";
 const checks = [
 	"worker-asset-security",
 	"simulation-key-safety",
+	"simulation-index-boundaries",
+	"ai-index-safety",
 	"campaign-core",
 	"campaign-ai",
 	"campaign-data",

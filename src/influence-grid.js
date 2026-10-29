@@ -32,6 +32,8 @@ export function writeInfluence(map, index, value) {
 	index >>>= 0;
 	const pages = map.pages;
 	if (!pages) {
+		// Dense storage is a numeric buffer, never an arbitrary imported record.
+		if (!(map instanceof Float32Array)) return undefined;
 		map[index] = value;
 		return map[index];
 	}

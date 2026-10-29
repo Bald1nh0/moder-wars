@@ -43,6 +43,17 @@ const invalidIndexes = [
 	0.5,
 	-1,
 	99,
+	Infinity,
+	-Infinity,
+	null,
+	true,
+	0n,
+	Symbol("cell"),
+	{
+		valueOf() {
+			throw new Error("Untrusted index coercion");
+		},
+	},
 ];
 const runtime = createSimulationState({
 	gridWidth: 3,
@@ -87,6 +98,11 @@ assert.equal(runtime._planReassessNeeded[0], true);
 
 const influence = createInfluenceRuntime(runtime);
 influence.ensureInfluenceFrontierQueue();
+const savedQueue = runtime._influenceFrontierQueued;
+runtime._influenceFrontierQueued = { length: 9 };
+influence.ensureInfluenceFrontierQueue();
+assert.ok(runtime._influenceFrontierQueued instanceof Uint8Array);
+assert.notEqual(runtime._influenceFrontierQueued, savedQueue);
 for (const index of invalidIndexes) {
 	assert.equal(influence.enqueueInfluenceFrontierIndex(index, true), false);
 	influence.queueInfluenceFrontierCell(index, true);

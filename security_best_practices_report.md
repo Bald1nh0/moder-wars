@@ -2,6 +2,14 @@
 
 Date: 2026-10-29. Branch: `feature/campaign-ai-planning`.
 
+Follow-up: [local CodeQL remediation](docs/CODEQL-REMEDIATION.md) reduced the
+full security-extended scan from 47 findings to 13. It also corrected an
+incomplete earlier rationale for the dense influence write: validating a
+numeric index did not establish that the destination was a numeric buffer.
+The new Float32Array target check and regression coverage address that gap.
+The owner authorized a feature-branch commit/push after local review; main
+merges, release publication and deployment remain on hold.
+
 ## Remediation status (2026-10-29, local changes)
 
 The findings below preserve the initial audit evidence. The following status

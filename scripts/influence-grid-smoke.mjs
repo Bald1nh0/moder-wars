@@ -17,6 +17,12 @@ for (const map of [dense, sparse]) {
 }
 
 assert.equal(sparse.pageCount,0);writeInfluence(sparse,1,0);assert.equal(sparse.pageCount,0,'zero writes do not allocate pages');
+// Array-like records must not be mutated as dense numeric storage.
+for (const map of [Object.prototype, {length: 3}, [0, 0, 0], new Uint8Array(3)]) {
+ const before=Object.getOwnPropertyDescriptors(map);
+ assert.equal(writeInfluence(map,1,7),undefined);
+ assert.deepEqual(Object.getOwnPropertyDescriptors(map),before);
+}
 for(const index of [-1,length,NaN,Infinity,.5]){assert.equal(readInfluence(sparse,index),dense[index]);writeInfluence(sparse,index,1);assert.equal(sparse.pageCount,0);}
 const values=[0,-0,1,.1,-.7,Infinity,-Infinity,NaN,1e-40,1e-50];let random=42;
 function next(){random=(Math.imul(random,1664525)+1013904223)>>>0;return random;}

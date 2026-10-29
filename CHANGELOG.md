@@ -4,6 +4,9 @@
 
 ### 0.30.0-experimental.1 (unreleased)
 
+- Harden numeric simulation boundaries: require actual typed scratch buffers, validate route endpoints/grid dimensions and live side slots, reject non-Float32 dense influence targets, and use a Map for neighboring-country counts. Preserve valid routes, formation accounting and state handoffs; add malformed-input regressions.
+- Reduce full local CodeQL findings from 47 to 13 with the unchanged security-extended suite; remove 34 stale review entries and document the remaining findings in `docs/CODEQL-REMEDIATION.md`. Owner authorized a feature-branch push after local review; production remains unchanged.
+
 - Run full CodeQL analysis on pull requests so exact reviewed findings match local and main-branch scans. Reject diff-filtered reports explicitly instead of reporting unchanged findings as stale exceptions.
 - Harden CI with hosted npm advisory, redacted full-history secret and CodeQL security checks that gate publication, plus reviewed dependency update proposals. Add owner review coverage and document required GitHub settings and the remaining public-runner trust boundary.
 - Deliver anti-framing policy through HTTP headers, add MIME-sniffing/referrer protections, and preserve index/service-worker caching and binary asset decoding. Verify headers across success, redirect, conditional and error responses in an isolated container; existing production is unchanged.
