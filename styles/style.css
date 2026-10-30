@@ -4251,6 +4251,29 @@ input:focus-visible {
 	font: 12px var(--hud-font-mono);
 	pointer-events: none;
 }
+.title-screen-community {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 24px;
+	margin-top: 12px;
+}
+.title-screen-community a {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 44px;
+	color: #a9d9f3;
+	font: 14px / 1.4 var(--hud-font-body);
+	text-underline-offset: 4px;
+}
+.title-screen-community a:hover {
+	color: #fff3df;
+}
+.title-screen-community a:focus-visible {
+	outline: 2px solid #efc47f;
+	outline-offset: 4px;
+	border-radius: 2px;
+}
 #main-menu .scenario-selection-container {
 	height: auto;
 	max-height: none;

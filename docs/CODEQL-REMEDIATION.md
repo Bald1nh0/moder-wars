@@ -201,3 +201,21 @@ The isolated production build and build-output checks passed. A raw HTTP crawler
 check verified matching OG/Twitter descriptions and HTTPS image URLs, a served
 PNG with HTTP 200 and `image/png`, and its actual 1200 × 630 dimensions. The
 artwork was also inspected in Chromium. No deployment or push was performed.
+
+## 2026-10-30 — Community links review
+
+The only analysis-input changes are four static HTML lines linking to this
+fork's GitHub repository/issue form and three literal translated labels.
+Removing those additions reconstructs the previously reviewed files exactly;
+the full 293-file normalized identity then matches the prior review. The links
+use fixed HTTPS destinations and `noopener noreferrer`; there are no new message
+handlers, request paths, input processing or executable functions. Styling and
+documentation changes do not affect the analyzed logic.
+
+Rebound the unchanged 13 exact reviews to
+`78dde778683a149e87e45bec7bf1a67e9a346207c7223eb063dea9f70058274a`.
+The existing full SARIF passes the gate. This is a focused static UI/data review;
+CI must still analyze the pushed revision. Translation checks, lint and the
+isolated build passed. Chromium checks covered English at 1280 px, Ukrainian
+at 360 px and Russian at 320 px, including visible/clickable links, destinations
+and safe new-tab attributes. No push or deployment was performed.

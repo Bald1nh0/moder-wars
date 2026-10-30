@@ -4,6 +4,7 @@
 
 ### 0.30.1 (unreleased)
 
+- Add GitHub and localized bug-report links to the main menu, with keyboard focus styling and wrapping for small screens; document where to report issues.
 - Add static Open Graph/Twitter Card metadata and a 1200 × 630 PNG share image using the game's map and compass branding, with an editable SVG source and the canonical production URL.
 - Keep the CodeQL review valid across application-version-only bumps by normalizing the three validated root package/lockfile version fields and JSON formatting. Continue rejecting changed dependencies, scripts, code, invalid SemVer and mismatched lockfile metadata; cover patch/minor/major bumps and dependency tampering with regression tests.
 

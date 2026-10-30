@@ -1,6 +1,7 @@
 // Static interface labels, help text and accessibility strings.
 export const UI_TRANSLATIONS = {
 	en: {
+		UI_REPORT_BUG: "Report a bug",
 		UI_MODERN_2026: "2026 MODERN DAY",
 		UI_MODERN_2026_DESC:
 			"Political world map from the October 2026 Overture release, with regions. Game-balanced forces; no live frontlines.",
@@ -423,6 +424,7 @@ export const UI_TRANSLATIONS = {
 			"Map Design (1914 & 1974) & Second Thumbnail Editing",
 	},
 	ru: {
+		UI_REPORT_BUG: "Сообщить об ошибке",
 		UI_MODERN_2026: "2026 СОВРЕМЕННОСТЬ",
 		UI_MODERN_2026_DESC:
 			"Политическая карта мира из выпуска Overture за октябрь 2026, с регионами. Игровые армии; без текущих фронтов.",
@@ -843,6 +845,7 @@ export const UI_TRANSLATIONS = {
 			"Дизайн карт (1914 и 1974) и обработка миниатюр",
 	},
 	uk: {
+		UI_REPORT_BUG: "Повідомити про помилку",
 		UI_MODERN_2026: "2026 СУЧАСНІСТЬ",
 		UI_MODERN_2026_DESC:
 			"Політична мапа світу з випуску Overture за жовтень 2026, з областями. Ігрові армії; без поточних фронтів.",

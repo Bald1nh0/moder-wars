@@ -14,6 +14,11 @@ do not represent complete current military inventories.
 Play at **[modern-wars.bald1nh0.net](https://modern-wars.bald1nh0.net/)**.
 Production uses a packaged Docker/Nginx image with browser simulation.
 
+Find the project on [GitHub](https://github.com/Bald1nh0/moder-wars) or
+[report a bug](https://github.com/Bald1nh0/moder-wars/issues/new). Include the game
+version, browser/device, reproduction steps and a screenshot when useful. Both
+links are also available from the game's main menu.
+
 **4180 is the only local game test port.** Run the local preview when needed
 for development checks. Shared testing uses the separate internal Docker
 deployment: a successful push to `dev` updates it automatically. Editing source
