@@ -4,6 +4,11 @@ Development starts on branch `dev`, created from `origin/main` at `a06d943`
 after PR #2 was merged. Use feature branches targeting `dev` when useful, and
 promote reviewed changes from `dev` to `main` through a pull request.
 
+The application uses the same numeric `X.Y.Z` version in dev and production.
+Do not add experimental/RC suffixes or bump solely to promote tested changes.
+Commit/run image tags distinguish dev builds; a published production version
+must not be reused for different contents.
+
 ## Independent deployments on one host
 
 | Setting | Production | Development |
@@ -146,8 +151,9 @@ describe the underlying configuration mechanisms.
 - The full CodeQL security-extended scan retained the same 13 reviewed findings
   with no new findings. The exact review gate and all 21 gate tests passed.
   Analysis input digest:
-  `d2d23c72928611a9caaedb0928cefe241297b9545882eb5c72b7e33e265f86b4`.
-  Local analysis artifacts: `/tmp/mw-codeql-auto-deploy-final-had49oo3/`.
+  `4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda`.
+  Repeated after the single-source version/favicon change; local analysis
+  artifacts: `output/playwright/version-branding/codeql/` (locally ignored by Git).
 - Provider YAML and router/service/middleware references passed local validation;
   the hostname resolved to `192.168.31.181` from the development machine.
 

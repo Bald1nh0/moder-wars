@@ -29,11 +29,11 @@ function fixture(version = "0.30.0-experimental.1") {
 	);
 	writeFileSync(
 		join(root, "index.html"),
-		`<html><title>MW-V${version}</title></html>\n`,
+		"<html><title>Modern Wars</title></html>\n",
 	);
 	writeFileSync(
 		join(root, "workers/service-worker.js"),
-		`const CACHE_VERSION = "mw-v${version}";\nconst unrelated = "9.9.9";\n`,
+		'const CACHE_VERSION = "generated-at-build-time";\nconst unrelated = "9.9.9";\n',
 	);
 }
 try {
@@ -62,8 +62,15 @@ try {
 	assert.equal(nextVersion("1.2.3", "minor"), "1.3.0");
 	assert.equal(nextVersion("1.2.3", "major"), "2.0.0");
 	assert.equal(nextVersion("2.0.0-rc.1", "major"), "2.0.0");
+	const html = readFileSync(join(root, "index.html"), "utf8");
+	const worker = readFileSync(join(root, "workers/service-worker.js"), "utf8");
 	bumpVersion("patch", root);
 	assert.equal(checkVersion(root).version, "0.30.0");
+	assert.equal(readFileSync(join(root, "index.html"), "utf8"), html);
+	assert.equal(
+		readFileSync(join(root, "workers/service-worker.js"), "utf8"),
+		worker,
+	);
 	assert.equal(
 		JSON.parse(readFileSync(join(root, "package-lock.json"))).packages
 			.dependency.version,
@@ -77,37 +84,43 @@ try {
 	assert.equal(compareVersions("0.31.0-rc.2", "0.31.0-rc.10"), -1);
 	assert.equal(compareVersions("0.31.0-rc.1", "0.31.0"), -1);
 	assert.equal(compareVersions("0.31.0-alpha", "0.31.0-2"), 1);
-	for (const file of [
-		"index.html",
-		"workers/service-worker.js",
-		"package-lock.json",
-	]) {
-		fixture();
-		writeFileSync(
-			join(root, file),
-			readFileSync(join(root, file), "utf8").replace(
-				"0.30.0-experimental.1",
-				"0.30.9",
-			),
-		);
-		const before = readFileSync(join(root, "package.json"), "utf8");
-		assert.throws(() => checkVersion(root));
-		assert.throws(() => bumpVersion("minor", root));
-		assert.equal(readFileSync(join(root, "package.json"), "utf8"), before);
-	}
+	fixture();
+	writeFileSync(
+		join(root, "package-lock.json"),
+		readFileSync(join(root, "package-lock.json"), "utf8").replace(
+			"0.30.0-experimental.1",
+			"0.30.9",
+		),
+	);
+	const before = readFileSync(join(root, "package.json"), "utf8");
+	assert.throws(() => checkVersion(root));
+	assert.throws(() => bumpVersion("minor", root));
+	assert.equal(readFileSync(join(root, "package.json"), "utf8"), before);
 	fixture();
 	const lock = JSON.parse(readFileSync(join(root, "package-lock.json")));
 	lock.packages[""].version = "0.0.1";
 	writeFileSync(join(root, "package-lock.json"), JSON.stringify(lock));
 	assert.throws(() => checkVersion(root));
+	// Versioning must not depend on source templates or generated build outputs.
 	fixture();
-	writeFileSync(
-		join(root, "index.html"),
-		"<title>MW-V0.30.0-experimental.1</title><title>MW-V0.30.0-experimental.1</title>",
+	rmSync(join(root, "index.html"));
+	rmSync(join(root, "workers/service-worker.js"));
+	assert.equal(bumpVersion("patch", root).version, "0.30.0");
+
+	// A preparation failure must leave both metadata files unchanged.
+	fixture();
+	const originals = ["package.json", "package-lock.json"].map((file) =>
+		readFileSync(join(root, file), "utf8"),
 	);
-	assert.throws(() => checkVersion(root));
+	const collision = join(root, `package-lock.json.version-${process.pid}.tmp`);
+	writeFileSync(collision, "existing file");
+	assert.throws(() => bumpVersion("patch", root), /EEXIST/);
+	assert.equal(readFileSync(collision, "utf8"), "existing file");
+	for (const [index, file] of ["package.json", "package-lock.json"].entries())
+		assert.equal(readFileSync(join(root, file), "utf8"), originals[index]);
+	rmSync(collision);
 	console.log(
-		"Release version smoke checks passed: SemVer, promotion, all markers, mismatch rejection, format/dependency preservation.",
+		"Release version smoke checks passed: SemVer, promotion, package metadata synchronization, untouched templates, mismatch rejection and atomic preparation.",
 	);
 } finally {
 	rmSync(root, { recursive: true, force: true });

@@ -2,17 +2,24 @@
 
 ## 2026-10-30
 
-### Automatic branch deployments (unreleased)
+### 0.30.0 (unreleased)
+
+- Document copyable patch/minor/major version-bump commands, expected version changes and pre-1.0 policy in the README.
+- Promote the campaign build from `0.30.0-experimental.1` to numeric version `0.30.0`.
+- Use `package.json` as the only version source, with generated lockfile metadata, UI/report metadata and offline-cache identifiers. Keep the browser title `Modern Wars` and add an offline-ready shield-and-compass SVG favicon. Different dev builds at one version receive distinct shell caches.
+- Use suffix-free `X.Y.Z` versions for dev and production. Preserve the tested application version on promotion; use commit/run tags to distinguish development images.
+
+#### Automatic branch deployments
 
 - Remove mandatory publication switches and hostname variables: successful pushes to `dev` and `main` automatically publish/deploy their respective environments on runner `mw`. Preserve repository/branch/event restrictions, all security checks, immutable images and environment protections.
 - Initialize missing deployment runtime configuration automatically for the existing host and each environment's port; preserve existing host configuration. Remove the corresponding manual setup steps from deployment guidance.
 
-### Registry publication fix (unreleased)
+#### Registry publication fix
 
 - Select the unique GHCR repository digest after publishing instead of assuming the first Docker `RepoDigests` entry belongs to GHCR. Preserve commit/version checks and digest-only deployments for production and development; reject absent or ambiguous matches.
 - Add regression coverage for CI/local aliases, reordered and duplicate digests, another package, and missing or ambiguous registry references.
 
-### Development deployment (unreleased)
+#### Development deployment
 
 - Create `dev` from the merged main integration and prepare gated development image publication/deployment on the same Docker host, using a separate package, project, directory, port and GitHub environment. Keep production release tagging and cleanup independent.
 - Document internal Traefik/DNS setup, development activation and rollback; preserve the sole local preview on port 4180.

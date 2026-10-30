@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { getAppBuildLabel, getAppVersion, getAppVersionLabel } from "../src/app-version.js";
 import { gameText } from "../src/i18n.js";
 
 const main = readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
@@ -54,11 +55,20 @@ for (const id of ['quick-restart-btn', 'restart-scenario-btn', 'god-mode-btn', '
 const versionStart = main.indexOf('const titleScreenVersion =');
 const versionEnd = main.indexOf(';', main.indexOf('titleScreenVersion.textContent', versionStart)) + 1;
 const versionNode = {};
-const versionContext = vm.createContext({ document: {
-	title: "MW-V0.27.99", getElementById: () => versionNode,
-} });
+const versionDocument = {
+	title: "Modern Wars", getElementById: () => versionNode,
+	querySelector: (selector) => selector === 'meta[name="application-version"]' ? { content: "0.30.0" } : null,
+};
+const versionContext = vm.createContext({ document: versionDocument, getAppVersionLabel: () => getAppVersionLabel(versionDocument) });
 vm.runInContext(main.slice(versionStart, versionEnd), versionContext);
-assert.equal(versionNode.textContent, "v0.27.99", "footer follows the authoritative title version without a third version constant");
+assert.equal(versionNode.textContent, "v0.30.0", "footer follows build metadata while the browser title stays constant");
+assert.equal(getAppBuildLabel(versionDocument), "Modern Wars v0.30.0", "performance reports retain versioned build identity");
+assert.equal(getAppVersion(), "development", "Node imports need no document");
+for (const content of ["__MW_APP_VERSION__", "", undefined, "Modern Wars"]) {
+	const documentLike = { querySelector: () => ({ content }) };
+	assert.equal(getAppVersionLabel(documentLike), "development");
+	assert.equal(getAppBuildLabel(documentLike), "Modern Wars development");
+}
 const constants = readFileSync(new URL("../src/constants.js", import.meta.url), "utf8");
 const worker = readFileSync(new URL("../workers/service-worker.js", import.meta.url), "utf8");
 const backdrop = readFileSync(new URL("../assets/images/title-map.svg", import.meta.url), "utf8");

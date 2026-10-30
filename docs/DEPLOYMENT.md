@@ -33,9 +33,8 @@ below remains specific to `main`.
 5. Compose waits up to 120 seconds for container health. A failed upgrade
    restores the previous image, Compose configuration and runtime settings;
    the workflow still fails so the failed release remains visible.
-6. After healthy deployment, publish GitHub Release `v<VERSION>`. Versions with
-   a suffix such as `-rc.1` are marked as prereleases. Failed deployments leave
-   a draft, not a public announcement of a successful release.
+6. After healthy deployment, publish GitHub Release `vX.Y.Z` as a normal release.
+   Failed deployments leave a draft, not a public announcement of a successful release.
 7. Plan registry retention. Deletion requires the separate repository variable
    `REGISTRY_CLEANUP_ENABLED=true`; otherwise the job logs a dry-run plan.
 
@@ -48,20 +47,27 @@ MINOR for breaking changes and documents migration; 1.0 marks the first supporte
 stable contract. Relevant contracts include scenario import/export, settings
 and the simulation protocol. A large code diff alone is not a major release.
 
-Use one helper to update package metadata, both lockfile version fields, the
-page title and service-worker cache version together:
+`package.json` is the only version source. Use the helper to bump it and update
+generated lockfile metadata automatically:
 
 ```sh
 npm run version:bump -- patch
-# Alternatives: minor, major, or an explicit version, e.g. 0.30.0-rc.1.
+# Alternatives: minor, major, or an explicit numeric version, e.g. 0.30.0.
 npm run version:check
 ```
 
 Run only the bump appropriate to the change, then update `CHANGELOG.md` under
 the release version and current date. The helper does not commit, push or tag.
-As with npm, `patch` promotes `0.30.0-rc.1` to `0.30.0`; use an explicit version
-to advance a prerelease counter. Build metadata (`+...`) is rejected because
-Docker tags cannot represent it directly. CI rejects mismatched version markers.
+Use only numeric `X.Y.Z` application versions, without experimental/RC suffixes,
+on both branches. Keep the tested dev version when promoting changes to `main`;
+dev image tags already identify each commit/run independently. The parser still
+understands historical prereleases. Build metadata (`+...`) is rejected because
+Docker tags cannot represent it directly. CI rejects mismatched package/lockfile metadata.
+
+Vite derives application-version metadata and the service-worker cache from the
+package version during build; the browser title remains `Modern Wars`. A content
+fingerprint also separates offline shell caches for different dev builds sharing
+one version. Neither HTML nor worker source needs a manual version edit.
 
 The same version identifies the application, OCI version label, Docker tag
 `v<VERSION>` and GitHub tag/release `v<VERSION>`. Every new releasable commit needs

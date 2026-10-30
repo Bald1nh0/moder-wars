@@ -221,11 +221,36 @@ registration, environment settings and reverse-proxy cutover. The pipeline must
 be configured and merged before it can deploy; preparing these files does not
 move the currently running production release.
 
-`Dockerfile` copies an existing `dist/`; it does not compile the app. Keep the
-version in `package.json`, `package-lock.json`, `index.html` and
-`workers/service-worker.js` synchronized with `npm run version:bump -- patch`
-(or `minor`, `major`, an explicit prerelease/version), then update the changelog.
-`npm run version:check` validates all markers. GitHub Release `vX.Y.Z` includes
+`Dockerfile` copies an existing `dist/`; it does not compile the app.
+`package.json` is the single source of the application version. Choose one bump
+command for the release; the examples below each start from `0.30.0`:
+
+```sh
+# PATCH: compatible fixes, performance or security improvements (0.30.0 -> 0.30.1)
+npm run version:bump -- patch
+
+# MINOR: new features (0.30.0 -> 0.31.0)
+npm run version:bump -- minor
+
+# MAJOR: first stable release, then breaking public-contract changes (0.30.0 -> 1.0.0)
+npm run version:bump -- major
+```
+
+Before `1.0.0`, use a minor bump for breaking changes and document migration.
+The helper updates lockfile metadata automatically without committing or creating
+Git tags. After the chosen bump, validate the synchronized metadata:
+
+```sh
+npm run version:check
+```
+
+Vite injects the version
+into the menu/reports and generates the service-worker cache identifier.
+The browser tab stays **Modern Wars**, with a shield-and-compass favicon.
+Use numeric versions without prerelease suffixes on both branches; keep the same
+application version when promoting tested dev changes to production. Dev images
+are distinguished by commit/run tags. Update the changelog after a version bump.
+`npm run version:check` validates package metadata. GitHub Release `vX.Y.Z` includes
 a small image manifest; the Docker image itself is stored in GHCR. Registry
 cleanup defaults to dry-run and preserves current/rollback images. Keep previous images
 for rollback and do not restart production during ordinary development.

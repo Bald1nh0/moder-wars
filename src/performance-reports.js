@@ -1,4 +1,6 @@
-// Dependencies are supplied by the application; this module does not import it.
+import { getAppBuildLabel } from "./app-version.js";
+
+// Application services are supplied by the runtime; this module does not import it.
 export function createPerformanceReports(runtime) {
 	function percentile(sortedValues, ratio) {
 		if (!sortedValues.length) return 0;
@@ -35,7 +37,7 @@ export function createPerformanceReports(runtime) {
 
 	function getPerfConfigSnapshot() {
 		return {
-			build: document.title || null,
+			build: getAppBuildLabel(),
 			gridRes: runtime.CONFIG.GRID_RES,
 			mapResolution: runtime.mapResSelect?.value || null,
 			maxUnitsPerSide: runtime.CONFIG.MAX_UNITS_PER_SIDE,
@@ -724,7 +726,7 @@ export function createPerformanceReports(runtime) {
 		runtime._lastPerfSuiteRuns = runs;
 		runtime._lastPerfSuite = runtime.summarizePerfSuiteRuns(runs, {
 			id: options.id,
-			build: document.title,
+			build: getAppBuildLabel(),
 			environment: getPerfEnvironmentSnapshot(),
 			repetitions,
 		});

@@ -1,3 +1,4 @@
+import { getAppBuildLabel } from "./app-version.js";
 import { createFeatureFlags, getSimulationMode } from "./feature-flags.js";
 import { gameText } from "./i18n.js";
 import { COMPILED_SCENARIO_URLS } from "./scenario-codec.js";
@@ -402,7 +403,7 @@ export function installDevicePerformanceTest(runtime) {
 	};
 	runner = createDeviceTestRunner({
 		mode,
-		build: document.title,
+		build: getAppBuildLabel(),
 		stop,
 		readOwner: () => runtime.simulationClient.diagnostics,
 		readRemote: () =>

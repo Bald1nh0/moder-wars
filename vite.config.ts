@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
 	cpSync,
 	existsSync,
@@ -10,6 +11,9 @@ import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
 const root = import.meta.dirname;
+const appVersion: string = JSON.parse(
+	readFileSync(resolve(root, "package.json"), "utf8"),
+).version;
 let outputDirectory = resolve(root, "dist");
 function paths(directory: string, prefix = ""): string[] {
 	return readdirSync(directory, { withFileTypes: true }).flatMap((entry) =>
@@ -34,6 +38,9 @@ export default defineConfig({
 	plugins: [
 		{
 			name: "modern-wars-static-assets",
+			transformIndexHtml(html) {
+				return html.replace("__MW_APP_VERSION__", appVersion);
+			},
 			configResolved(config) {
 				outputDirectory = resolve(config.root, config.build.outDir);
 			},
@@ -46,7 +53,7 @@ export default defineConfig({
 				const files = paths(out).filter(
 					(path) =>
 						/\.(?:js|css)$/.test(path) ||
-						/^assets\/(?:coast-110m\.bin-|rivers-50m\.bin-|title-map-|2022-)/.test(
+						/^assets\/(?:favicon-|coast-110m\.bin-|rivers-50m\.bin-|title-map-|2022-)/.test(
 							path,
 						),
 				);
@@ -54,6 +61,7 @@ export default defineConfig({
 					"index.html",
 					...files,
 					"assets/images/title-map.svg",
+					"assets/images/favicon.svg",
 					"assets/atlas/coast-110m.bin.gz",
 				];
 				let worker = readFileSync(
@@ -63,6 +71,16 @@ export default defineConfig({
 				worker = worker.replace(
 					/const APP_SHELL_PATHS\s*=\s*\[[\s\S]*?\];/,
 					`const APP_SHELL_PATHS = ${JSON.stringify(shell, null, 2)};`,
+				);
+				// Different dev builds need separate shell caches even at the same version.
+				const fingerprint = createHash("sha256").update(worker);
+				for (const entry of [...shell].sort())
+					fingerprint.update(entry).update(readFileSync(resolve(out, entry)));
+				if (worker.split("__MW_CACHE_VERSION__").length !== 2)
+					throw new Error("Expected one service-worker cache placeholder");
+				worker = worker.replace(
+					"__MW_CACHE_VERSION__",
+					`mw-v${appVersion}-${fingerprint.digest("hex").slice(0, 12)}`,
 				);
 				writeFileSync(resolve(out, "service-worker.js"), worker);
 				writeFileSync(

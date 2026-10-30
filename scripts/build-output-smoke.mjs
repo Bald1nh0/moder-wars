@@ -15,6 +15,24 @@ for (const path of shell)
 assert.ok(shell.some((path) => path.includes("war-simulation-worker-")));
 assert.ok(shell.every((path) => !path.startsWith("src/")));
 const html = read("index.html");
+const appVersion = JSON.parse(
+	readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+).version;
+assert.match(html, /<title>Modern Wars<\/title>/);
+assert.ok(html.includes(`name="application-version" content="${appVersion}"`));
+assert.doesNotMatch(html, /__MW_APP_VERSION__/);
+const favicon = html.match(/<link rel="icon"[^>]*href="([^"]+)"/)?.[1];
+assert.ok(favicon, "Browser tab has a favicon");
+assert.ok(
+	shell.includes(favicon.replace(/^\.\//, "")),
+	"Favicon is available offline",
+);
+const cacheVersion = read("service-worker.js").match(
+	/const CACHE_VERSION = "([^"]+)"/,
+)?.[1];
+assert.ok(cacheVersion?.startsWith(`mw-v${appVersion}-`));
+assert.match(cacheVersion, /-[a-f0-9]{12}$/);
+assert.doesNotMatch(read("service-worker.js"), /__MW_CACHE_VERSION__/);
 assert.doesNotMatch(html, /leaflet|imagery-select|src\/main\.js|\.ts["']/i);
 for (const match of html.matchAll(/(?:src|href)="(\.\/assets\/[^"#]+)"/g))
 	assert.ok(existsSync(new URL(match[1], root)), match[1]);

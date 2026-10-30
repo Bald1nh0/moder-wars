@@ -116,3 +116,39 @@ GitHub's existing count remains unchanged until an authorized push and new scan.
 Local full-scan results and PR-visible open alerts are different counts: the
 previous full report contained 47 findings, the PR check had 44 annotations,
 and four PR alerts had already been dismissed by the owner, leaving 40 open.
+
+## 2026-10-30 — Numeric version metadata review
+
+The `0.30.0` promotion changes only five version-string occurrences across
+`package.json`, `package-lock.json`, `index.html` and
+`workers/service-worker.js` among analysis inputs. Verified each entire file
+against HEAD with only `0.30.0-experimental.1` replaced by `0.30.0`; dependency
+versions, scripts, CSP and worker logic are unchanged. All 13 reviewed finding
+source hashes remain identical, so their existing rationales and exact locations
+remain applicable. No exceptions were added or broadened.
+
+The review input digest is
+`b9fc695e80ca5e7415d5b0c588b0f573319ad2bf9153e40d9c8015679cbfa45c`.
+Version/release regressions, lint and all 21 CodeQL gate tests passed. This was a
+focused metadata review, not a new full local CodeQL scan; CI still requires the
+full scan and rejects any new or changed findings before publishing.
+
+## 2026-10-30 — Single-source version and browser branding review
+
+Repeated the full security-extended analysis with CodeQL CLI 2.27.3 and
+JavaScript queries 2.4.8 after deriving UI/report versions and offline-cache
+identifiers from package metadata. The scan still contains exactly the same
+13 reviewed findings, including identical rule IDs, source ranges, counts and
+source-file hashes. No exceptions were added or broadened. The version helper
+still validates package metadata; its narrower write scope removes HTML/worker
+edits. The browser reads a numeric version from build-generated metadata, and
+the cache fingerprint hashes local build assets. These changes introduce no
+new untrusted input to the previously reviewed sinks.
+
+Verified all 293 current analysis-input files against the isolated scan source
+snapshot before rebinding the existing reviews to digest
+`4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda`.
+The exact review gate and all 21 gate regression tests passed. Local SARIF and
+logs are retained in `output/playwright/version-branding/codeql/` (locally
+ignored by Git). This full scan supersedes the focused numeric-metadata review
+above for the current working tree; CI must still scan the pushed revision.
