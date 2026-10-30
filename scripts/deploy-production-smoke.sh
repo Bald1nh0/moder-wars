@@ -11,15 +11,19 @@ set -euo pipefail
 printf '%s\n' "$*" >> "$MOCK_STATE/commands"
 case "$1" in
   info) exit 0 ;;
-  ps) [[ ${MOCK_ORPHAN:-0} == 0 ]] || echo orphan-container; exit 0 ;;
+  ps)
+    [[ ${MOCK_ORPHAN:-0} == 0 ]] || echo orphan-container
+    if [[ -n ${MOCK_ORPHAN_PROJECT:-} && "$*" == *"label=com.docker.compose.project=$MOCK_ORPHAN_PROJECT"* ]]; then echo orphan-container; fi
+    exit 0 ;;
   compose) shift ;;
   *) exit 99 ;;
 esac
 [[ ${1:-} != version ]] || exit 0
 image=''
+project=''
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --project-name) [[ $2 == modern-wars-production ]]; shift 2 ;;
+    --project-name) [[ $2 == modern-wars-production || $2 == modern-wars-dev ]]; project=$2; shift 2 ;;
     --env-file)
       value=$(sed -n 's/^MW_IMAGE=//p' "$2")
       [[ -z $value ]] || image=$value
@@ -28,15 +32,17 @@ while [[ $# -gt 0 ]]; do
     *) break ;;
   esac
 done
+active="$MOCK_STATE/active"
+[[ $project != modern-wars-dev ]] || active="$MOCK_STATE/active-dev"
 case "$1" in
   config) [[ -n $image ]] ;;
   pull) [[ ${MOCK_PULL_FAIL:-0} == 0 ]] ;;
   up)
     [[ "$*" == *'--wait --wait-timeout 120'* ]]
     [[ "$*" == *'--no-build --pull never'* ]]
-    printf '%s\n' "$image" > "$MOCK_STATE/active"
+    printf '%s\n' "$image" > "$active"
     [[ ${MOCK_FAIL_IMAGE:-} != "$image" && ${MOCK_ALL_UP_FAIL:-0} == 0 ]] ;;
-  down) rm -f "$MOCK_STATE/active" ;;
+  down) rm -f "$active" ;;
   *) exit 98 ;;
 esac
 MOCK
@@ -66,7 +72,7 @@ new_case() {
   export MOCK_STATE="$fixture/case-$count"
   mkdir -p "$MOCK_STATE"
   destination="$MOCK_STATE/production deployment"
-  unset MOCK_FAIL_IMAGE MOCK_PULL_FAIL MOCK_ALL_UP_FAIL MOCK_ORPHAN MOCK_RESTORE_FAIL
+  unset MOCK_FAIL_IMAGE MOCK_PULL_FAIL MOCK_ALL_UP_FAIL MOCK_ORPHAN MOCK_RESTORE_FAIL MOCK_ORPHAN_PROJECT
 }
 deploy() { bash "$root/scripts/deploy-production.sh" "$@" > "$MOCK_STATE/output" 2>&1; }
 fail_deploy() { if deploy "$@"; then cat "$MOCK_STATE/output" >&2; echo 'Expected deployment failure.' >&2; exit 1; fi; }
@@ -213,5 +219,93 @@ check grep -Fq 'Another deployment is already running' "$MOCK_STATE/output"
 flock -u 8
 exec 8>&-
 echo 'PASS: concurrent deployment is rejected'
+
+# Both profiles share a host but never share projects, metadata or rollback state.
+printf -v dev_old 'ghcr.io/bald1nh0/moder-wars-dev@sha256:%064d' 3
+printf -v dev_new 'ghcr.io/bald1nh0/moder-wars-dev@sha256:%064d' 4
+
+new_case
+seed
+prod_metadata=$(sha256sum "$destination/.env" "$destination/compose.yaml" "$destination/deployed.runtime.env")
+dev_destination="$MOCK_STATE/dev deployment"
+MW_PORT=4174 COMPOSE_PROJECT_NAME=modern-wars-production deploy "$dev_old" "$dev_destination" dev
+check grep -Fxq "$old" "$MOCK_STATE/active"
+check grep -Fxq "$dev_old" "$MOCK_STATE/active-dev"
+check grep -Fxq 'name: modern-wars-dev' "$dev_destination/compose.yaml"
+check grep -Fxq 'MW_PORT=4180' "$dev_destination/deployed.runtime.env"
+check grep -Fxq 'MW_BIND_ADDRESS=127.0.0.1' "$dev_destination/deployed.runtime.env"
+check test "$prod_metadata" = "$(sha256sum "$destination/.env" "$destination/compose.yaml" "$destination/deployed.runtime.env")"
+deploy "$dev_new" "$dev_destination" dev
+check grep -Fxq "MW_IMAGE=$dev_old" "$dev_destination/previous.env"
+check grep -Fxq "$old" "$MOCK_STATE/active"
+export MOCK_FAIL_IMAGE=$dev_old
+fail_deploy "$dev_old" "$dev_destination" dev
+check grep -Fxq "$dev_new" "$MOCK_STATE/active-dev"
+check grep -Fxq "$old" "$MOCK_STATE/active"
+check grep -Fxq "MW_IMAGE=$dev_new" "$dev_destination/.env"
+check test "$prod_metadata" = "$(sha256sum "$destination/.env" "$destination/compose.yaml" "$destination/deployed.runtime.env")"
+echo 'PASS: dev first deploy, upgrade and rollback never mutate production state'
+
+new_case
+seed
+export MOCK_FAIL_IMAGE=$dev_new
+fail_deploy "$dev_new" "$MOCK_STATE/dev deployment" dev
+check test ! -f "$MOCK_STATE/active-dev"
+check grep -Fxq "$old" "$MOCK_STATE/active"
+echo 'PASS: an unhealthy first dev deployment removes only the dev project'
+
+new_case
+fail_deploy "$dev_new" "$destination" staging
+check test ! -e "$destination"
+check test ! -e "$MOCK_STATE/commands"
+echo 'PASS: unknown profiles are rejected before directory or Docker operations'
+
+new_case
+fail_deploy "$new" "$destination" dev
+check test ! -e "$destination"
+check test ! -e "$MOCK_STATE/commands"
+echo 'PASS: dev cannot deploy an image from the production or unrelated registry package'
+
+for forbidden in 'MW_PORT=4174' 'COMPOSE_PROJECT_NAME=modern-wars-production' 'COMPOSE_FILE=production.yaml' 'MW_IMAGE=anything' 'MW_BIND_ADDRESS=$(touch unexpected)'; do
+  new_case
+  mkdir -p "$destination"
+  printf '%s\n' "$forbidden" > "$destination/runtime.env"
+  fail_deploy "$dev_new" "$destination" dev
+  check test ! -f "$MOCK_STATE/active-dev"
+  check test "$(grep -c 'pull game' "$MOCK_STATE/commands" || true)" -eq 0
+  echo "PASS: dev rejects unsafe runtime setting ${forbidden%%=*} before pulling"
+done
+
+new_case
+seed
+fail_deploy "$dev_new" "$destination" dev
+check grep -Fq 'another profile' "$MOCK_STATE/output"
+check grep -Fxq "$old" "$MOCK_STATE/active"
+# Older production releases have no marker, but their Compose name still identifies them.
+rm "$destination/.deployment-profile"
+fail_deploy "$dev_new" "$destination" dev
+check grep -Fq 'Existing Compose project' "$MOCK_STATE/output"
+check grep -Fxq "$old" "$MOCK_STATE/active"
+echo 'PASS: marked and legacy production directories cannot become dev directories'
+
+new_case
+deploy "$dev_old" "$destination" dev
+fail_deploy "$new" "$destination"
+check grep -Fq 'another profile' "$MOCK_STATE/output"
+check grep -Fxq "$dev_old" "$MOCK_STATE/active-dev"
+echo 'PASS: a dev directory cannot be reused by the production profile'
+
+new_case
+export MOCK_ORPHAN_PROJECT=modern-wars-production
+deploy "$dev_new" "$destination" dev
+check grep -Fxq "$dev_new" "$MOCK_STATE/active-dev"
+check grep -Fq 'label=com.docker.compose.project=modern-wars-dev' "$MOCK_STATE/commands"
+echo 'PASS: unrelated production containers do not block a first dev deployment'
+
+new_case
+export MOCK_ORPHAN_PROJECT=modern-wars-dev
+fail_deploy "$dev_new" "$destination" dev
+check grep -Fq 'containers exist without release metadata' "$MOCK_STATE/output"
+echo 'PASS: orphaned dev containers are rejected by their own project label'
 
 printf 'All %s deployment smoke checks passed.\n' "$count"

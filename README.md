@@ -14,11 +14,14 @@ do not represent complete current military inventories.
 Play at **[modern-wars.bald1nh0.net](https://modern-wars.bald1nh0.net/)**.
 Production uses a packaged Docker/Nginx image with browser simulation.
 
-Development is local. **4180 is the only persistent game test port; Docker is
-production.** Editing source or running a test build does not deploy a release.
+**4180 is the only persistent local game test port.** Editing source or running
+a test build does not deploy a release. The `dev` branch also supports a separate
+internal Docker deployment; it cannot replace the production Compose project.
 Vite uses a strict port, so an occupied port causes an error instead of opening
 another preview. See [deployment setup](docs/DEPLOYMENT.md) for the automated
-`main` → checks → image → production workflow.
+`main` → checks → image → production workflow and
+[internal development deployment](docs/DEPLOYMENT-DEV.md) for the independent
+`dev` workflow.
 
 ## Start a game
 

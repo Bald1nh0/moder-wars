@@ -1,0 +1,20 @@
+name: modern-wars-dev
+
+services:
+  game:
+    image: ${MW_IMAGE:?Set the immutable image digest}
+    ports:
+      - "${MW_BIND_ADDRESS:-127.0.0.1}:${MW_PORT:-4180}:8080"
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

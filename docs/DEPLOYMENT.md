@@ -3,11 +3,16 @@
 Production is served at <https://modern-wars.bald1nh0.net/>. Development stays
 local on port **4180**. No local development URL belongs in the README.
 
-**Publication hold:** wait for upstream licensing clarification in
-[issue #5](https://github.com/Vaspyyy/moder-wars/issues/5) and the user's decision
-to resume publication. Keep repository variable `RELEASE_PUBLISHING_ENABLED`
-unset/false. Checks can run, but image publication, deployment, releases and
-cleanup are skipped. Do not push or merge to `main` during the hold.
+The owner resumed production pipeline testing and merged the integration on
+2026-10-30. `RELEASE_PUBLISHING_ENABLED=true` still explicitly enables production
+publication. Upstream licensing remains a separate unresolved question tracked
+in [issue #5](https://github.com/Vaspyyy/moder-wars/issues/5); resuming deployment
+is not evidence of a license grant.
+
+The `dev` branch has an independent internal deployment on the same host:
+[development setup](DEPLOYMENT-DEV.md). It uses a separate image package,
+Compose project, directory, port and GitHub environment. The production flow
+below remains specific to `main`.
 
 ## Release flow
 
@@ -135,7 +140,7 @@ References: [runner registration](https://docs.github.com/en/actions/how-tos/man
    Registry login uses a temporary Docker config removed at the end of the step.
 5. Confirm runner `mw` is online and has the `mw` label before merging.
 
-6. After the publication hold is resolved and the user resumes releases, set
+6. When the user authorizes production publication, set
    repository **Settings → Secrets and variables → Actions → Variables →
    `RELEASE_PUBLISHING_ENABLED=true`**. It is a repository variable because the
    publish job runs before the production environment deployment job.

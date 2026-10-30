@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-30
+
+### Registry publication fix (unreleased)
+
+- Select the unique GHCR repository digest after publishing instead of assuming the first Docker `RepoDigests` entry belongs to GHCR. Preserve commit/version checks and digest-only deployments for production and development; reject absent or ambiguous matches.
+- Add regression coverage for CI/local aliases, reordered and duplicate digests, another package, and missing or ambiguous registry references.
+
+### Development deployment (unreleased)
+
+- Create `dev` from the merged main integration and prepare gated development image publication/deployment on the same Docker host, using a separate package, project, directory, port and GitHub environment. Keep production release tagging and cleanup independent.
+- Document internal Traefik/DNS setup, development activation and rollback; preserve the sole local preview on port 4180.
+- Validate 30 deployment/rollback cases and repeat the full CodeQL security-extended scan: the same 13 reviewed findings remain, with no new findings. Bind their reviews to the updated CI/configuration inputs.
+
 ## 2026-10-29
 
 ### 0.30.0-experimental.1 (unreleased)
