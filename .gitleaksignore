@@ -1,0 +1,4 @@
+# Historical metadata[50].flagUrl: a verified base64 SVG containing a PNG image.
+# The match is in the nested PNG base64, not a Square credential. Keep this exact finding only; do not ignore the rule,
+# file, or entire commit. Current source and all other history remain scanned.
+469b44c75f2c735c92125ace3685d9af8ef55831:WW2 Peru Update.json:square-access-token:1

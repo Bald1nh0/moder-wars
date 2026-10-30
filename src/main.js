@@ -1,10 +1,28 @@
+import { createAdminRegionsLoader } from "./admin-regions.js";
+import {
+	initializeCampaign,
+	reconcileCampaignMembership,
+} from "./campaign-core.js";
+import {
+	buildCampaignRegionIndex,
+	updateCampaignEvents,
+} from "./campaign-events.js";
+import { installCampaignUI } from "./campaign-ui.js";
 import { createConflictPresentation } from "./conflict-presentation.js";
+import {
+	getCountryForceProfiles,
+	resolveCountryRelationship,
+} from "./country-force-profiles.js";
+import { installDevicePerformanceTest } from "./device-performance-test.js";
 import { showConfirm } from "./dialogs.js";
+import { getSimulationMode } from "./feature-flags.js";
+import { buildLeaderboardRows, renderLeaderboard } from "./leaderboard.js";
 import {
 	createPresentationScheduler,
 	createUnitSpatialMirror,
 	setPresentationText,
 } from "./presentation-runtime.js";
+import { createRemoteSimulationOptions } from "./remote-simulation-worker.js";
 import { createLiveContext } from "./runtime-context.js";
 import { createSimulationClient } from "./simulation-client.js";
 import {
@@ -12,11 +30,16 @@ import {
 	LIVE_SIMULATION_CLOCK_OPTIONS,
 } from "./simulation-clock.js";
 import { PERF_COUNTER_DEFAULTS } from "./simulation-metrics.js";
+import { installSimulationModeSettings } from "./simulation-mode-settings.js";
 import { resizeSimulationGrid } from "./simulation-resize.js";
+
+let campaign = null;
+const campaignRegionsLoader = createAdminRegionsLoader();
 
 // Shared live binding bridge. Systems receive commands/state without importing main.js.
 const applicationRuntime = createLiveContext(
 	{
+		campaign: () => campaign,
 		perf: () => window.__perf,
 		simulationClient: () => simulationClient,
 		editSimulation: () => editSimulation,
@@ -875,6 +898,9 @@ const applicationRuntime = createLiveContext(
 		frontlineDirLng: (value) => {
 			frontlineDirLng = value;
 		},
+		campaign: (value) => {
+			campaign = value;
+		},
 		provinceMap: (value) => {
 			provinceMap = value;
 		},
@@ -1415,9 +1441,15 @@ function resetLocalSimulationClock() {
 	localSimulationClock.reset();
 }
 function editSimulation(mutation) {
-	return simulationClient.ownsState
-		? simulationClient.edit(mutation)
-		: mutation();
+	const reconcile = (value) => {
+		reconcileCampaignMembership(applicationRuntime);
+		return value;
+	};
+	const apply = () => {
+		const result = mutation();
+		return result?.then ? result.then(reconcile) : reconcile(result);
+	};
+	return simulationClient.ownsState ? simulationClient.edit(apply) : apply();
 }
 function onControlCellsChanged(indices) {
 	influenceLayer?.notifyControlCellsChanged(indices);
@@ -1448,7 +1480,9 @@ const localSimulationClock = createSimulationClock(
 	},
 	{ ...LIVE_SIMULATION_CLOCK_OPTIONS, speed: 1, paused: true },
 );
+const simulationMode = getSimulationMode();
 const simulationClient = createSimulationClient(applicationRuntime, {
+	...createRemoteSimulationOptions(simulationMode),
 	onEvent: (type, ...args) => {
 		if (type === "showTreatyOffer") showTreatyOffer(...args);
 		else if (type === "playExplosionSound") playExplosionSound();
@@ -1743,12 +1777,18 @@ import { getCookie, setCookie } from "./preferences.js";
 
 export { getCookie, setCookie } from "./preferences.js";
 
-import { applyLanguage, configureLanguageUi, getTranslation } from "./i18n.js";
+import {
+	applyLanguage,
+	configureLanguageUi,
+	gameText,
+	getTranslation,
+} from "./i18n.js";
 
 export { applyLanguage, getTranslation, TRANSLATIONS } from "./i18n.js";
 
 import {
 	initAudio,
+	isMuted,
 	playClickSound,
 	playExplosionSound,
 	playPeaceSound,
@@ -2070,32 +2110,49 @@ export const BUFF_STATES = [
 ];
 export const BUFF_METADATA = {
 	crippled: {
-		label: "MAJOR PENALTY",
+		get label() {
+			return gameText("GAME_BUFF_MAJOR_PENALTY");
+		},
 		color: "#7b241c",
 		textColor: "#fff",
 		class: "crippled-active",
 	},
 	weakened: {
-		label: "MINOR PENALTY",
+		get label() {
+			return gameText("GAME_BUFF_MINOR_PENALTY");
+		},
 		color: "#a04000",
 		textColor: "#fff",
 		class: "weakened-active",
 	},
-	none: { label: "NONE", color: "#444", textColor: "#fff", class: "" },
+	none: {
+		get label() {
+			return gameText("GAME_BUFF_NONE");
+		},
+		color: "#444",
+		textColor: "#fff",
+		class: "",
+	},
 	buff: {
-		label: "SMALL BUFF",
+		get label() {
+			return gameText("GAME_BUFF_SMALL_BUFF");
+		},
 		color: "#f1c40f",
 		textColor: "#000",
 		class: "active",
 	},
 	super: {
-		label: "MEDIUM BUFF",
+		get label() {
+			return gameText("GAME_BUFF_MEDIUM_BUFF");
+		},
 		color: "#9b59b6",
 		textColor: "#fff",
 		class: "super-active",
 	},
 	godly: {
-		label: "LARGE BUFF",
+		get label() {
+			return gameText("GAME_BUFF_LARGE_BUFF");
+		},
 		color: "#ffffff",
 		textColor: "#000",
 		class: "godly-active",
@@ -2134,6 +2191,7 @@ export const gameTimeDayDurationMs = 500;
 export let viewMode = "POLITICAL"; // 'POLITICAL' or 'FLAG'
 export let allianceViewEnabled = false; // when true, alliances override colors/flags in political/flag views
 export let showCountryLabels = true;
+export let showAdminRegions = true;
 export let showNonCapitalCities = true;
 // Cache for screen-space label curves so they don't move with the camera
 export const countryLabelAnchors = new Map(); // key: `${countryId}:${regionIndex}` -> { name, points, fontSize }
@@ -2517,6 +2575,10 @@ export let currentUsername = null;
 export let flagCodes = null;
 
 export let currentScenarioContext = null; // { id, name, ownerUsername }
+export function setCurrentScenarioContext(value) {
+	campaign = null;
+	currentScenarioContext = value;
+}
 
 export let hubReturnState = null;
 export let hubWasInEditor = false;
@@ -3182,7 +3244,7 @@ export function renderImportCountryCards(filterText = "") {
 	if (!filtered.length) {
 		importCountryCardList.innerHTML = `
             <div style="font-size: 12px; color:#777; text-align:center; padding:10px;">
-                No countries match that search.
+                ${gameText("GAME_NO_COUNTRIES")}
             </div>
         `;
 		return;
@@ -3199,8 +3261,8 @@ export function renderImportCountryCards(filterText = "") {
             <div class="import-country-card${selectedClass}" data-country-id="${c.id}">
                 ${flagHtml}
                 <div style="flex:1; min-width:0;">
-                    <div class="import-country-name">${c.name}</div>
-                    <div class="import-country-tiles">${tilesLabel} tiles</div>
+                    <div class="import-country-name">${escapeHtml(getTranslation(c.name, undefined, "NATIONS"))}</div>
+                    <div class="import-country-tiles">${gameText("GAME_TILES", { count: tilesLabel })}</div>
                 </div>
             </div>
         `;
@@ -3432,44 +3494,80 @@ export let activeTutorialKey = "mw_tutorial_finished";
 export const conquestTutorialSteps = [
 	{
 		icon: "⚔️",
-		title: "Welcome Commander",
-		content:
-			"Modern Wars is a grand strategy simulation of <b>organic frontlines</b>. Let's walk through a basic engagement setup.",
+		title: "GAME_TUTORIAL_0_TITLE",
+		content: "GAME_TUTORIAL_0_CONTENT",
 		actionRequired: "CLICK_NEXT",
 	},
 	{
 		icon: "🌍",
-		title: "Initialize World",
-		content:
-			"First, let's load the global theater. Click 'Next' to initialize the engine.",
+		title: "GAME_TUTORIAL_1_TITLE",
+		content: "GAME_TUTORIAL_1_CONTENT",
 		actionRequired: "LOAD_MAP",
 	},
 	{
 		icon: "🇩🇪",
-		title: "Recruit Side A",
-		content:
-			"We need an aggressor. Find <b>Germany</b> on the map and click it to recruit for Side A.",
+		title: "GAME_TUTORIAL_2_TITLE",
+		content: "GAME_TUTORIAL_2_CONTENT",
 		actionRequired: "SELECT_GERMANY",
 	},
 	{
 		icon: "🇵🇱",
-		title: "Recruit Side B",
-		content:
-			"Now for the opposition. Switch to <b>Side B</b> in the setup panel, then click <b>Poland</b> on the map.",
+		title: "GAME_TUTORIAL_3_TITLE",
+		content: "GAME_TUTORIAL_3_CONTENT",
 		actionRequired: "SELECT_POLAND",
 	},
 	{
 		icon: "⚔️",
-		title: "Launch Operation",
-		content:
-			"Both sides are ready. Click <b>Inaugurate Conflict</b> to begin the simulation.",
+		title: "GAME_TUTORIAL_4_TITLE",
+		content: "GAME_TUTORIAL_4_CONTENT",
 		actionRequired: "START_WAR",
 	},
 	{
 		icon: "🛡️",
-		title: "The Frontline",
-		content:
-			"The war is live! Units will now push borders organically. You can use <b>God Mode</b> to edit the map while the simulation runs. Good luck, Commander.",
+		title: "GAME_TUTORIAL_5_TITLE",
+		content: "GAME_TUTORIAL_5_CONTENT",
+		actionRequired: "CLICK_NEXT",
+	},
+	{
+		icon: "🚩",
+		title: "GAME_TUTORIAL_FORCES_TITLE",
+		content: "GAME_TUTORIAL_FORCES_CONTENT",
+		actionRequired: "CLICK_NEXT",
+	},
+	{
+		icon: "🏭",
+		title: "GAME_TUTORIAL_ECONOMY_TITLE",
+		content: "GAME_TUTORIAL_ECONOMY_CONTENT",
+		actionRequired: "CLICK_NEXT",
+	},
+	{
+		icon: "🏙️",
+		title: "GAME_TUTORIAL_CITIES_TITLE",
+		content: "GAME_TUTORIAL_CITIES_CONTENT",
+		actionRequired: "CLICK_NEXT",
+	},
+	{
+		icon: "📋",
+		title: "GAME_TUTORIAL_MOBILIZATION_TITLE",
+		content: "GAME_TUTORIAL_MOBILIZATION_CONTENT",
+		actionRequired: "CLICK_NEXT",
+	},
+	{
+		icon: "✈️",
+		title: "GAME_TUTORIAL_MISSIONS_TITLE",
+		content: "GAME_TUTORIAL_MISSIONS_CONTENT",
+		actionRequired: "CLICK_NEXT",
+	},
+	{
+		icon: "🗞️",
+		title: "GAME_TUTORIAL_JOURNAL_TITLE",
+		content: "GAME_TUTORIAL_JOURNAL_CONTENT",
+		actionRequired: "CLICK_NEXT",
+	},
+	{
+		icon: "💻",
+		title: "GAME_TUTORIAL_SESSION_TITLE",
+		content: "GAME_TUTORIAL_SESSION_CONTENT",
 		actionRequired: "CLICK_FINISH",
 	},
 ];
@@ -3477,44 +3575,38 @@ export const conquestTutorialSteps = [
 export const editorTutorialSteps = [
 	{
 		icon: "🛠️",
-		title: "World Builder",
-		content:
-			"Welcome to the <b>Satellite Editor</b>. Here you can redraw history or create entirely new worlds from scratch.",
+		title: "GAME_TUTORIAL_6_TITLE",
+		content: "GAME_TUTORIAL_6_CONTENT",
 		actionRequired: "CLICK_NEXT",
 	},
 	{
 		icon: "🏳️",
-		title: "Establish Nations",
-		content:
-			"First, click the <b>New Nation</b> button in the top-left toolbox. Define its name and color, then <b>click on the map</b> to establish its capital.",
+		title: "GAME_TUTORIAL_7_TITLE",
+		content: "GAME_TUTORIAL_7_CONTENT",
 		actionRequired: "CLICK_NEXT",
 	},
 	{
 		icon: "🎨",
-		title: "Painting Borders",
-		content:
-			"Once a nation exists, <b>select it</b> on the map to open the <b>Inspector</b>. Use the <b>Manual Paint</b> tool to grow its territory cell by cell.",
+		title: "GAME_TUTORIAL_8_TITLE",
+		content: "GAME_TUTORIAL_8_CONTENT",
 		actionRequired: "CLICK_NEXT",
 	},
 	{
 		icon: "📐",
-		title: "Annexation Tool",
-		content:
-			"Want modern borders instantly? Use the <b>Annex Tool</b> in the Inspector. Type a name like <b>'France'</b> to absorb its real-world territory.",
+		title: "GAME_TUTORIAL_9_TITLE",
+		content: "GAME_TUTORIAL_9_CONTENT",
 		actionRequired: "CLICK_NEXT",
 	},
 	{
 		icon: "📥",
-		title: "The Library",
-		content:
-			"Don't build alone. The <b>Country Library</b> lets you import nations designed by the community directly into your map.",
+		title: "GAME_TUTORIAL_10_TITLE",
+		content: "GAME_TUTORIAL_10_CONTENT",
 		actionRequired: "CLICK_NEXT",
 	},
 	{
 		icon: "💾",
-		title: "Share Your Vision",
-		content:
-			"Once your map is complete, use <b>Save Preset</b> to keep it locally, or <b>Share to Hub</b> for others to play and remix!",
+		title: "GAME_TUTORIAL_11_TITLE",
+		content: "GAME_TUTORIAL_11_CONTENT",
 		actionRequired: "CLICK_FINISH",
 	},
 ];
@@ -3530,28 +3622,28 @@ export function updateTutorialUI() {
 		currentTutorialStep === 3
 	) {
 		tutorialOverlay.style.justifyContent = "flex-end";
-		tutorialOverlay.style.paddingLeft = "0";
-		tutorialOverlay.style.paddingRight = "5%";
 	} else {
 		tutorialOverlay.style.justifyContent = "flex-start";
-		tutorialOverlay.style.paddingLeft = "5%";
-		tutorialOverlay.style.paddingRight = "0";
 	}
 
 	tutorialStepContainer.innerHTML = `
         <div class="tutorial-step">
             <div class="tutorial-header">
                 <span class="tutorial-icon">${step.icon}</span>
-                <h2 class="tutorial-title">${step.title}</h2>
+                <h2 class="tutorial-title">${gameText(step.title)}</h2>
             </div>
-            <div class="tutorial-body">${step.content}</div>
+            <div class="tutorial-body">${gameText(step.content)}</div>
         </div>
     `;
+
+	tutorialStepContainer.scrollTop = 0;
 
 	tutorialPrevBtn.style.visibility =
 		currentTutorialStep === 0 ? "hidden" : "visible";
 	tutorialNextBtn.innerText =
-		currentTutorialStep === activeTutorialSet.length - 1 ? "Finish" : "Next";
+		currentTutorialStep === activeTutorialSet.length - 1
+			? gameText("GAME_FINISH")
+			: gameText("GAME_NEXT");
 
 	const needsAction =
 		step.actionRequired !== "CLICK_NEXT" &&
@@ -3560,12 +3652,12 @@ export function updateTutorialUI() {
 	tutorialNextBtn.disabled = needsAction;
 	tutorialNextBtn.style.opacity = needsAction ? "0.5" : "1";
 
-	tutorialDotsContainer.innerHTML = activeTutorialSet
-		.map(
-			(_, i) =>
-				`<div class="dot ${i === currentTutorialStep ? "active" : ""}"></div>`,
-		)
-		.join("");
+	tutorialDotsContainer.textContent = gameText("GAME_TUTORIAL_PROGRESS", {
+		current: currentTutorialStep + 1,
+		total: activeTutorialSet.length,
+	});
+	tutorialDotsContainer.setAttribute("role", "status");
+	tutorialDotsContainer.setAttribute("aria-live", "polite");
 
 	if (step.actionRequired === "LOAD_MAP") {
 		tutorialNextBtn.onclick = () => {
@@ -3583,6 +3675,12 @@ export function updateTutorialUI() {
 			}
 		};
 	}
+	notifyTutorialChanged();
+}
+
+function notifyTutorialChanged() {
+	if (typeof CustomEvent !== "undefined")
+		document.dispatchEvent(new CustomEvent("tutorialchange"));
 }
 
 export function advanceTutorial() {
@@ -3596,12 +3694,27 @@ export function endTutorial() {
 	tutorialOverlay.style.display = "none";
 	tutorialActive = false;
 	setCookie(activeTutorialKey, "true");
+	notifyTutorialChanged();
 }
 
-export function startTutorial(set, key) {
-	activeTutorialSet = set;
+export function startTutorial(
+	set,
+	key,
+	{ reference = false, startAt = 0 } = {},
+) {
+	// Reading help during a battle must not reload its map or wait for setup actions.
+	activeTutorialSet = reference
+		? set.map((step, index) => ({
+				...step,
+				actionRequired:
+					index === set.length - 1 ? "CLICK_FINISH" : "CLICK_NEXT",
+			}))
+		: set;
 	activeTutorialKey = key;
-	currentTutorialStep = 0;
+	currentTutorialStep = Math.max(
+		0,
+		Math.min(set.length - 1, Math.floor(startAt)),
+	);
 	tutorialActive = true;
 	updateTutorialUI();
 	tutorialOverlay.style.display = "flex";
@@ -3652,10 +3765,10 @@ export const resetBtn = document.getElementById("reset-btn");
 
 // Buttons use clear text, ensure visibility is correct
 if (quickRestartBtn) {
-	quickRestartBtn.textContent = "QUICK RESTART";
+	quickRestartBtn.textContent = gameText("GAME_QUICK_RESTART");
 }
 if (resetBtn) {
-	resetBtn.textContent = "RESET";
+	resetBtn.textContent = gameText("GAME_RESET");
 }
 export const mainMenuBtn = document.getElementById("main-menu-btn");
 export const leaderboardBtn = document.getElementById("leaderboard-btn");
@@ -3708,15 +3821,17 @@ export function rebuildStatsPanel() {
 		const main = s.countries[0];
 		const name =
 			s.countries.length > 1
-				? `${main.name} +${s.countries.length - 1}`
-				: main.name || `Side ${String.fromCharCode(65 + s.idx)}`;
-		if (pos > 0) gridHtml += `<div class="stats-vs">VS</div>`;
+				? `${getTranslation(main.name, undefined, "NATIONS")} +${s.countries.length - 1}`
+				: getTranslation(main.name, undefined, "NATIONS") ||
+					gameText("GAME_SIDE", { side: String.fromCharCode(65 + s.idx) });
+		if (pos > 0)
+			gridHtml += `<div class="stats-vs">${getTranslation("VS_MINI")}</div>`;
 		gridHtml += `<div class="side-stats" data-side-idx="${s.idx}">
 			<div class="stat-name hud-side-accent" data-sidename="${s.idx}">${name}</div>
             <div class="stat-metrics">
-				<div class="metric"><span class="metric-label">PERSONNEL</span><span class="metric-value hud-side-accent" data-sidesoldiers="${s.idx}">0</span></div>
-                <div class="metric"><span class="metric-label">CITIES</span><span class="metric-value" data-sidecities="${s.idx}">0</span></div>
-				<div class="metric"><span class="metric-label">MOMENTUM</span><span class="metric-value metric-value--momentum" data-sidemomentum="${s.idx}">◆ STALEMATE</span></div>
+				<div class="metric"><span class="metric-label">${gameText("GAME_PERSONNEL")}</span><span class="metric-value hud-side-accent" data-sidesoldiers="${s.idx}">0</span></div>
+                <div class="metric"><span class="metric-label">${gameText("GAME_CITIES")}</span><span class="metric-value" data-sidecities="${s.idx}">0</span></div>
+				<div class="metric"><span class="metric-label">${gameText("GAME_MOMENTUM")}</span><span class="metric-value metric-value--momentum" data-sidemomentum="${s.idx}">${gameText("GAME_STALEMATE")}</span></div>
             </div>
         </div>`;
 	});
@@ -3759,7 +3874,7 @@ export function rebuildStatsPanel() {
 			if (i > 0) {
 				const vs = document.createElement("span");
 				vs.className = "hud-vs-separator";
-				vs.textContent = " vs ";
+				vs.textContent = ` ${getTranslation("VS_MINI")} `;
 				unitCountsDisplay.appendChild(vs);
 			}
 			const span = document.createElement("span");
@@ -4141,11 +4256,12 @@ export function applyWorldBounds(widthDeg, heightDeg) {
 
 	const halfW = w / 2;
 	const halfH = h / 2;
+	const theater = currentScenarioContext?.theater?.bounds;
 	const bounds = mapRuntime.latLngBounds(
-		mapRuntime.latLng(-halfH, -halfW),
-		mapRuntime.latLng(halfH, halfW),
+		mapRuntime.latLng(theater?.[1] ?? -halfH, theater?.[0] ?? -halfW),
+		mapRuntime.latLng(theater?.[3] ?? halfH, theater?.[2] ?? halfW),
 	);
-	map.setMaxBounds(bounds);
+	map.setMaxBounds(bounds, Boolean(theater));
 
 	// If current center is outside new bounds, fit map into the new box
 	if (!bounds.contains(map.getCenter())) {
@@ -4164,6 +4280,14 @@ export function applyWorldBounds(widthDeg, heightDeg) {
 }
 
 export function isInsideWorldBoxLatLng(lat, lng) {
+	const theater = currentScenarioContext?.theater?.bounds;
+	if (theater)
+		return (
+			lat >= theater[1] &&
+			lat <= theater[3] &&
+			lng >= theater[0] &&
+			lng <= theater[2]
+		);
 	if (!worldWidthDeg || !worldHeightDeg) return true;
 	const halfW = worldWidthDeg / 2;
 	const halfH = worldHeightDeg / 2;
@@ -4903,7 +5027,7 @@ export async function loadCities(
 }
 
 export function handleCountryClick(...args) {
-	if (simulationClient.active && gameState.startsWith("EDITOR_"))
+	if (simulationClient.ownsState && gameState.startsWith("EDITOR_"))
 		return editSimulation(() => handleCountryClickOwned(...args));
 	return handleCountryClickOwned(...args);
 }
@@ -4929,10 +5053,12 @@ function handleCountryClickOwned(
 			if (ownerIdAtClick > 0) {
 				godBombSourceId = ownerIdAtClick;
 				const meta = countryMetadata[godBombSourceId - 1];
-				statusText.innerText = `GOD BOMB: ${meta?.name || "Nation"} is the bomber. Click anywhere to target.`;
+				statusText.innerText = gameText("GAME_BOMBER_SELECTED", {
+					name: meta?.displayName || meta?.name || gameText("GAME_NATION"),
+				});
 				playClickSound();
 			} else {
-				statusText.innerText = "GOD BOMB: Click a country to select who fires.";
+				statusText.innerText = gameText("GAME_PICK_BOMBER");
 			}
 		} else {
 			// Firing Phase: Launch bomb from the source country to the clicked location
@@ -4963,7 +5089,12 @@ function handleCountryClickOwned(
 
 			launchBomb(fromLat, fromLng, latlng.lat, latlng.lng, sideIdx);
 			playClickSound();
-			statusText.innerText = `GOD BOMB: ${senderMeta?.name || "Nation"} strike launched. (Shift+Click to change bomber)`;
+			statusText.innerText = gameText("GAME_STRIKE_LAUNCHED", {
+				name:
+					senderMeta?.displayName ||
+					senderMeta?.name ||
+					gameText("GAME_NATION"),
+			});
 		}
 		return;
 	}
@@ -4984,9 +5115,11 @@ function handleCountryClickOwned(
 			if (countryIdAtClick > 0) {
 				editingCountryId = countryIdAtClick;
 				const meta = countryMetadata[editingCountryId - 1];
-				statusText.innerText = `DEPLOYMENT: ${meta?.name || "Unknown"} (Click map to deploy divisions)`;
+				statusText.innerText = gameText("GAME_DEPLOYMENT", {
+					name: meta?.displayName || meta?.name || gameText("GAME_UNKNOWN"),
+				});
 			} else {
-				statusText.innerText = "SELECT SOURCE: Click a nation on the map first";
+				statusText.innerText = gameText("GAME_SELECT_SOURCE");
 			}
 		} else {
 			placeDivisionAt(latlng, editingCountryId);
@@ -5021,7 +5154,7 @@ function handleCountryClickOwned(
 			});
 			units = units.filter((u) => u.sovereignId !== targetId);
 
-			statusText.innerText = `ANNEXED: ${victimName} absorbed.`;
+			statusText.innerText = gameText("GAME_ANNEXED", { name: victimName });
 			recalculateAllBounds();
 			influenceLayer.render();
 			updateSidesUI();
@@ -5031,8 +5164,7 @@ function handleCountryClickOwned(
 			gameState = "EDITOR_ACTIVE";
 			map.getContainer().classList.remove("painting-cursor");
 		} else {
-			statusText.innerText =
-				"Selection Cancelled: Clicked neutral land or self.";
+			statusText.innerText = gameText("GAME_SELECTION_INVALID");
 			openInspector(editingCountryId);
 			gameState = "EDITOR_ACTIVE";
 			map.getContainer().classList.remove("painting-cursor");
@@ -5045,7 +5177,7 @@ function handleCountryClickOwned(
 		if (sovereignId > 0 && sovereignId !== selectingOverlordForId) {
 			setVassalage(selectingOverlordForId, sovereignId);
 		} else {
-			statusText.innerText = "Selection Cancelled";
+			statusText.innerText = gameText("GAME_SELECTION_CANCELLED");
 		}
 		gameState = godModeActive ? "EDITOR_ACTIVE" : "EDITOR_ACTIVE";
 		if (godModeActive) gameState = "EDITOR_ACTIVE";
@@ -5065,10 +5197,13 @@ function handleCountryClickOwned(
 					new Set([...(bMeta.allies || []), selectingAllyForId]),
 				);
 				markAllianceCacheDirty();
-				statusText.innerText = `Alliance formed: ${aMeta.name} ↔ ${bMeta.name}`;
+				statusText.innerText = gameText("GAME_ALLIANCE_FORMED", {
+					a: aMeta.displayName || aMeta.name,
+					b: bMeta.displayName || bMeta.name,
+				});
 			}
 		} else {
-			statusText.innerText = "Ally selection cancelled";
+			statusText.innerText = gameText("GAME_ALLY_CANCELLED");
 		}
 		selectingAllyForId = -1;
 		gameState = "EDITOR_ACTIVE";
@@ -5083,7 +5218,7 @@ function handleCountryClickOwned(
 		if (sovereignId > 0 && sovereignId !== selectingOverlordForId) {
 			setAsReleasable(selectingOverlordForId, sovereignId);
 		} else {
-			statusText.innerText = "Selection Cancelled";
+			statusText.innerText = gameText("GAME_SELECTION_CANCELLED");
 		}
 		gameState = "EDITOR_ACTIVE";
 		selectingOverlordForId = -1;
@@ -5109,8 +5244,8 @@ function handleCountryClickOwned(
 		const count = selectedCountryIds.size;
 		statusText.innerText =
 			count > 0
-				? `Selected ${count} countr${count === 1 ? "y" : "ies"} for ZIP export`
-				: "Map Editor (Alpha)";
+				? gameText("GAME_EXPORT_SELECTION", { count })
+				: gameText("GAME_MAP_EDITOR");
 		// Keep normal inspector / setup logic from running on Ctrl-click
 		influenceLayer.render();
 		return;
@@ -5134,7 +5269,9 @@ function handleCountryClickOwned(
 			if (sideCountry) {
 				peaceSelection1 = sideCountry;
 				gameState = "PEACE_SELECT_2";
-				statusText.innerText = `Peace for ${sideCountry.name}: Select Opponent`;
+				statusText.innerText = gameText("GAME_PEACE_SELECT_OPPONENT", {
+					name: getTranslation(sideCountry.name, undefined, "NATIONS"),
+				});
 				influenceLayer.render();
 			}
 		}
@@ -5181,7 +5318,9 @@ function handleCountryClickOwned(
 
 			if (godModeActive && gameState === "EDITOR_ACTIVE") {
 				const meta = countryMetadata[sovereignId - 1];
-				statusText.innerText = `GOD MODE: ${meta?.name || "Selected Nation"} selected.`;
+				statusText.innerText = gameText("GAME_GOD_SELECTED", {
+					name: meta?.displayName || meta?.name || gameText("GAME_NATION"),
+				});
 			}
 		}
 		return;
@@ -5226,7 +5365,10 @@ function handleCountryClickOwned(
 			);
 			sides[activeSideIndex].push(countryToMove);
 			updateSidesUI();
-			statusText.innerText = `REASSIGNED: ${countryName} moved to Side ${String.fromCharCode(65 + activeSideIndex)}`;
+			statusText.innerText = gameText("GAME_REASSIGNED", {
+				name: countryName,
+				side: String.fromCharCode(65 + activeSideIndex),
+			});
 			influenceLayer.render();
 		}
 		lastSelectionTime = Date.now();
@@ -5242,7 +5384,9 @@ function handleCountryClickOwned(
 				activeSideIndex = emptySideIndex;
 			} else {
 				if (sides.length >= MAX_SIDES) {
-					statusText.textContent = `Maximum ${MAX_SIDES} sides supported. Select an existing side to reassign a country.`;
+					statusText.textContent = gameText("GAME_MAX_REASSIGN", {
+						count: MAX_SIDES,
+					});
 					return;
 				}
 				sides.push([]);
@@ -5302,7 +5446,7 @@ function handleCountryClickOwned(
 	lastSelectionTime = Date.now();
 	lastSelectedId = sovereignId;
 	updateSidesUI();
-	statusText.innerText = "Conflict Setup (Select more or click Inaugurate)";
+	statusText.innerText = gameText("GAME_SETUP_STATUS");
 	influenceLayer.render();
 
 	// Tutorial Progression Logic
@@ -5397,10 +5541,14 @@ export function deepClone(obj) {
 
 function getSideDisplayName(sideIndex, sideCountries = sides[sideIndex] || []) {
 	const first = sideCountries[0];
-	if (!first) return `Side ${String.fromCharCode(65 + sideIndex)}`;
+	if (!first)
+		return gameText("GAME_SIDE", { side: String.fromCharCode(65 + sideIndex) });
 	return sideCountries.length > 1
-		? `${first.name} Allies`
-		: first.name || `Side ${String.fromCharCode(65 + sideIndex)}`;
+		? gameText("GAME_ALLIES", {
+				name: getTranslation(first.name, undefined, "NATIONS"),
+			})
+		: getTranslation(first.name, undefined, "NATIONS") ||
+				gameText("GAME_SIDE", { side: String.fromCharCode(65 + sideIndex) });
 }
 
 function applyBroadSetupPosture(posture) {
@@ -5463,8 +5611,10 @@ function warDeskOverviewRows() {
 	const rows = [];
 	const detail = (held, total) =>
 		total > 0
-			? `${((held / total) * 100).toFixed(1)}% original territory retained`
-			: "Original territory unavailable";
+			? gameText("GAME_RETAINED", {
+					percent: ((held / total) * 100).toFixed(1),
+				})
+			: gameText("GAME_NO_ORIGINAL_TERRITORY");
 	for (const definition of _warOverviewSides) {
 		const sideIndex = sideUids.indexOf(definition.uid);
 		let held = 0,
@@ -5483,8 +5633,8 @@ function warDeskOverviewRows() {
 			countryRows.push({
 				kind: "country",
 				color: country.color,
-				label: country.name,
-				primaryLabel: "Deployed manpower",
+				label: getTranslation(country.name, undefined, "NATIONS"),
+				primaryLabel: gameText("GAME_DEPLOYED"),
 				value: Math.round(personnel.get(country.id) || 0),
 				secondaryValue: losses,
 				detail: detail(retained, original),
@@ -5496,8 +5646,15 @@ function warDeskOverviewRows() {
 				definition.countries.length === 1
 					? countryRows[0].color
 					: definition.color,
-			label: definition.name,
-			primaryLabel: "Manpower",
+			label:
+				definition.countries.length === 1
+					? getTranslation(definition.countries[0].name, undefined, "NATIONS")
+					: definition.countries
+							.map((country) =>
+								getTranslation(country.name, undefined, "NATIONS"),
+							)
+							.join(" + "),
+			primaryLabel: gameText("GAME_MANPOWER"),
 			value: sideIndex >= 0 ? Math.round(sideSoldiers[sideIndex] || 0) : 0,
 			secondaryValue: casualties,
 			detail: detail(held, total),
@@ -5526,11 +5683,71 @@ function reopenConflictSetupAfterWar(...args) {
 	return lifecycle.reopenConflictSetupAfterWar(...args);
 }
 
+async function prepareCampaign(options = {}) {
+	const date = gameTimeDate
+		? `${gameTimeDate.year}-${String(gameTimeDate.month).padStart(2, "0")}-${String(gameTimeDate.day).padStart(2, "0")}`
+		: "2026-01-01";
+	const profiles = getCountryForceProfiles(
+		countryMetadata.filter(Boolean),
+		date,
+	);
+	initializeCampaign(applicationRuntime, {
+		profiles,
+		enabled: options.campaign !== false,
+	});
+	campaign.scenarioDate = date;
+	if (!campaign.enabled) return;
+	for (const country of Object.values(campaign.countries)) {
+		const metadata = countryMetadata.find((entry) => entry?.id === country.id);
+		country.relationship = resolveCountryRelationship(
+			metadata,
+			countryMetadata,
+			date,
+		);
+	}
+	// Province checks use sparse memberships prepared once; no world scan per tick.
+	if (
+		!isCustomTerrain &&
+		Object.values(campaign.countries).some(
+			(country) => country.profile?.iso3 === "UKR",
+		)
+	) {
+		const regions =
+			campaignRegionsLoader.data || (await campaignRegionsLoader.load());
+		options.signal?.throwIfAborted();
+		if (regions) {
+			try {
+				campaign.regions = buildCampaignRegionIndex(
+					applicationRuntime,
+					regions,
+				);
+			} catch (error) {
+				console.warn("Optional campaign region index unavailable", error);
+			}
+		}
+	}
+	updateCampaignEvents(applicationRuntime);
+}
+
 export async function startWar(...args) {
+	const signal = args[0]?.signal;
+	signal?.throwIfAborted();
 	simulationClient.stop();
 	ensureSideInfluenceMaps();
 	const result = await lifecycle.startWar(...args);
-	if (gameState === "SIMULATING") await simulationClient.start();
+	signal?.throwIfAborted();
+	if (gameState === "SIMULATING") {
+		const paused = isPaused;
+		isPaused = true;
+		try {
+			await prepareCampaign(args[0]);
+		} finally {
+			isPaused = paused;
+			resetLocalSimulationClock();
+		}
+		args[0]?.signal?.throwIfAborted();
+		await simulationClient.start();
+	}
 	return result;
 }
 
@@ -5538,7 +5755,18 @@ export async function _startWarInner(...args) {
 	simulationClient.stop();
 	ensureSideInfluenceMaps();
 	const result = await lifecycle._startWarInner(...args);
-	if (gameState === "SIMULATING") await simulationClient.start();
+	if (gameState === "SIMULATING") {
+		const paused = isPaused;
+		isPaused = true;
+		try {
+			await prepareCampaign(args[0]);
+		} finally {
+			isPaused = paused;
+			resetLocalSimulationClock();
+		}
+		args[0]?.signal?.throwIfAborted();
+		await simulationClient.start();
+	}
 	return result;
 }
 
@@ -5806,6 +6034,7 @@ export function updateLoop() {
 
 	// --- Performance measurement ---
 	const realNow = performance.now();
+	refreshLeaderboard();
 	const _frameDt = _perfLastTime > 0 ? realNow - _perfLastTime : 16.67;
 	if (_perfLastTime > 0) finalizePendingPerfFrame(_frameDt);
 	let framePerfEntry = null;
@@ -5946,7 +6175,10 @@ export function updateLoop() {
 			const pc = PHASE_CONFIG[phase] || PHASE_CONFIG.STALEMATE;
 			if (mel.style.getPropertyValue("--momentum-color") !== pc.color)
 				mel.style.setProperty("--momentum-color", pc.color);
-			setPresentationText(mel, `${pc.symbol} ${phase}`);
+			setPresentationText(
+				mel,
+				`${pc.symbol} ${gameText(`GAME_PHASE_${phase}`)}`,
+			);
 		}
 	}
 
@@ -6110,87 +6342,44 @@ export function updateCombatantsUI() {
 	// Users can click nations directly on the map to buff them via the inspector.
 }
 
-/**
- * Build and show global leaderboard of all countries with current size and estimated unit strength.
- */
-export function openLeaderboard() {
+let lastLeaderboardRefresh = -Infinity;
+
+/** Refresh only an open leaderboard, including paused simulation snapshots. */
+function refreshLeaderboard(force = false) {
 	if (
 		!leaderboardOverlay ||
+		leaderboardOverlay.style.display !== "flex" ||
 		!leaderboardList ||
-		!countryMetadata ||
 		!worldControlMap
 	)
 		return;
-
-	// Count tiles per country id
-	const maxId = countryMetadata.reduce(
-		(max, m) => (m ? Math.max(max, m.id) : max),
-		0,
-	);
-	const tileCounts = new Int32Array(maxId + 1);
-	for (let i = 0; i < worldControlMap.length; i++) {
-		const id = worldControlMap[i];
-		if (id > 0 && id <= maxId) tileCounts[id]++;
-	}
-
+	const now = performance.now();
+	if (!force && now - lastLeaderboardRefresh < 1000) return;
+	lastLeaderboardRefresh = now;
 	const lang = getCookie("mw_lang") || "en";
-
-	const rows = [];
-	for (let i = 0; i < countryMetadata.length; i++) {
-		const meta = countryMetadata[i];
-		if (!meta) continue;
-		const id = meta.id;
-		const tiles = tileCounts[id] || 0;
-
-		// Exclude Antarctica from the leaderboard to avoid it dominating due to map area
-		const rawName = meta.name || "Unknown";
-		if (rawName === "Antarctica") continue;
-
-		// Size zero: still show (releasables / dead states), but mark as 0 tiles
-		const estUnits = estimateUnitsForCountry ? estimateUnitsForCountry(id) : 0;
-
-		const displayName = getTranslation(rawName, lang, "NATIONS");
-		const flagUrl = meta.tempFlag?.src
-			? meta.tempFlag.src
-			: meta.flagUrl || getFlagUrl(findCodeByName(meta.name), meta.name);
-		rows.push({
-			id,
-			name: displayName,
-			rawName,
-			tiles,
-			estUnits,
-			flagUrl,
-		});
-	}
-
-	// Primary sort: estimated units desc, secondary: tiles desc, tertiary: name
-	rows.sort((a, b) => {
-		if (b.estUnits !== a.estUnits) return b.estUnits - a.estUnits;
-		if (b.tiles !== a.tiles) return b.tiles - a.tiles;
-		return a.name.localeCompare(b.name);
+	const rows = buildLeaderboardRows({
+		countryMetadata,
+		worldControlMap,
+		units,
+		getPersonnel: getLiveFormationPersonnel,
+		countryName: (meta) =>
+			getTranslation(meta.name || "Unknown", lang, "NATIONS"),
+		countryFlag: (meta) =>
+			meta.tempFlag?.src ||
+			meta.flagUrl ||
+			getFlagUrl(findCodeByName(meta.name), meta.name),
 	});
+	renderLeaderboard(rows, {
+		container: leaderboardList,
+		note: document.getElementById("leaderboard-note"),
+	});
+}
 
-	leaderboardList.innerHTML = rows
-		.map((row, idx) => {
-			const unitsLabel =
-				row.estUnits > 0 ? influenceLayer.formatSoldiers(row.estUnits) : "—";
-			const tilesLabel = row.tiles.toLocaleString();
-			const rank = idx + 1;
-			const flagSrc = row.flagUrl ? escapeHtml(row.flagUrl) : "";
-			const safeName = escapeHtml(row.name);
-			return `
-            <div class="scroller-card" style="padding: 10px; display: flex; align-items: center; gap: 10px;">
-                <div class="leaderboard-rank" style="width: 30px; font-family: 'Playfair Display'; font-size: 18px;">${rank}</div>
-                ${flagSrc ? `<img src="${flagSrc}" class="leaderboard-flag" style="width: 35px; height: 22px;">` : `<div class="leaderboard-flag" style="width: 35px; height: 22px; background:#111;"></div>`}
-                <div class="scroller-card-name" style="flex: 2; font-size: 16px; margin: 0;">${safeName}</div>
-                <div class="leaderboard-tiles" style="flex: 1; text-align: right; color: #888; font-size: 12px;">${tilesLabel}</div>
-                <div class="leaderboard-units" style="flex: 1; text-align: right; font-weight: bold; font-size: 13px;">${unitsLabel}</div>
-            </div>
-        `;
-		})
-		.join("");
-
+/** Show current deployed units and personnel; pooled reserves remain in War Overview. */
+export function openLeaderboard() {
+	if (!leaderboardOverlay || !leaderboardList || !worldControlMap) return;
 	leaderboardOverlay.style.display = "flex";
+	refreshLeaderboard(true);
 }
 
 // The simulation stops proposing peace while it believes a notice is on screen,
@@ -6203,9 +6392,9 @@ function setTreatyAlertVisible(visible) {
 export function showTreatyOffer(proposerSideIdx, willAccept) {
 	lastTreatyTick = _simTickCount;
 	const name = getSideDisplayName(proposerSideIdx);
-	treatyMsg.innerText = `${name} requests peace`;
+	treatyMsg.innerText = gameText("GAME_PEACE_REQUEST", { name });
 	document.getElementById("treaty-status").innerText =
-		"Considering proposal...";
+		gameText("GAME_CONSIDERING");
 	setTreatyAlertVisible(true);
 	const token = _warLifecycleToken;
 	// Entering the separate-peace picker pauses the war; the offer lapses then.
@@ -6218,8 +6407,8 @@ export function showTreatyOffer(proposerSideIdx, willAccept) {
 		() => {
 			if (offerLapsed()) return;
 			document.getElementById("treaty-status").innerText = willAccept
-				? "Treaty Accepted"
-				: "Proposal Rejected";
+				? gameText("GAME_TREATY_ACCEPTED")
+				: gameText("GAME_PROPOSAL_REJECTED");
 			scheduleWarLifecycleCallback(
 				() => {
 					if (offerLapsed()) return;
@@ -6245,7 +6434,7 @@ export function capitulateCountry(...args) {
 }
 
 export function applyTreaty(...args) {
-	if (simulationClient.active)
+	if (simulationClient.ownsState)
 		return simulationClient.command({
 			type: "APPLY_TREATY",
 			treatyType: args[0],
@@ -6314,6 +6503,19 @@ const showLabelsCheckbox = document.getElementById("show-labels-checkbox");
 const showCitiesCheckbox = document.getElementById("show-cities-checkbox");
 const showBattlesCheckbox = document.getElementById("show-battles-checkbox");
 const showAllianceCheckbox = document.getElementById("show-alliance-checkbox");
+
+const showAdminRegionsCheckbox = document.getElementById(
+	"show-admin-regions-checkbox",
+);
+showAdminRegions = getCookie("mw_show_admin_regions") !== "false";
+if (showAdminRegionsCheckbox) {
+	showAdminRegionsCheckbox.checked = showAdminRegions;
+	showAdminRegionsCheckbox.addEventListener("change", (event) => {
+		showAdminRegions = event.target.checked;
+		setCookie("mw_show_admin_regions", String(showAdminRegions));
+		influenceLayer?.requestRender(RENDER_LAYERS.DYNAMIC);
+	});
+}
 
 const armyDiagnosticsCheckbox = document.getElementById(
 	"show-army-diagnostics-checkbox",
@@ -6425,11 +6627,11 @@ export function updateSpeedControls() {
 	pauseBtn.setAttribute("aria-pressed", String(isPaused));
 	pauseBtn.setAttribute(
 		"aria-label",
-		isPaused ? "Resume simulation" : "Pause simulation",
+		isPaused ? gameText("GAME_RESUME") : gameText("GAME_PAUSE"),
 	);
 	pauseBtn.title = isPaused
-		? "Resume simulation (Space)"
-		: "Pause simulation (Space)";
+		? gameText("GAME_RESUME_SPACE")
+		: gameText("GAME_PAUSE_SPACE");
 }
 
 export function togglePause() {
@@ -6458,10 +6660,11 @@ export async function unclaimSelectedCountry() {
 
 	// Visual confirmation is good for destructive actions
 	if (
-		!(await showConfirm(
-			`Are you sure you want to unclaim all territory for ${name}?`,
-			{ title: "Unclaim territory", okLabel: "Unclaim", danger: true },
-		))
+		!(await showConfirm(gameText("GAME_UNCLAIM_CONFIRM", { name }), {
+			title: gameText("GAME_UNCLAIM_TITLE"),
+			okLabel: gameText("GAME_UNCLAIM"),
+			danger: true,
+		}))
 	)
 		return;
 	// The inspector may have moved on to another nation while the dialog was open.
@@ -6484,7 +6687,7 @@ export async function unclaimSelectedCountry() {
 	editingCountryId = -1;
 	recalculateAllBounds();
 	influenceLayer.render();
-	statusText.innerText = `UNCLAIMED: ${name} territory has been returned to neutral status.`;
+	statusText.innerText = gameText("GAME_UNCLAIMED", { name });
 }
 
 export function setSpeed(index) {
@@ -6527,7 +6730,9 @@ export function saveCountryLocally(countryId) {
 		new Blob([JSON.stringify(data)], { type: "application/json" }),
 		`${meta.name.replace(/\s+/g, "_")}_country.json`,
 	);
-	statusText.innerText = `SAVED: ${meta.name} exported locally`;
+	statusText.innerText = gameText("GAME_COUNTRY_SAVED", {
+		name: meta.displayName || meta.name,
+	});
 }
 
 community_controls.bindDeleteCountryHandler();
@@ -6560,7 +6765,7 @@ export function preloadAssets() {
 
 // Initialization logic
 export function initializeEngine(refreshLoadedGeography = true) {
-	if (simulationClient.active)
+	if (simulationClient.ownsState)
 		return editSimulation(() => initializeEngineOwned(refreshLoadedGeography));
 	return initializeEngineOwned(refreshLoadedGeography);
 }
@@ -6649,7 +6854,7 @@ export function checkAutoLaunch() {
 	settingsOverlay.style.display = "none";
 	mainMenu.style.display = "flex";
 	gameState = "MAIN_MENU";
-	launchBtn.textContent = "Save settings";
+	launchBtn.textContent = gameText("GAME_SAVE_SETTINGS");
 }
 
 // Settings Tab Logic
@@ -6664,7 +6869,66 @@ checkAutoLaunch();
 configureLanguageUi({
 	statusText: () => statusText,
 	countryMetadata: () => countryMetadata,
-	refreshSides: updateSidesUI,
+	refreshSides: () => {
+		const values = new Map(
+			Array.from(
+				document.querySelectorAll("#manpower-inputs-container input"),
+				(input) => [input.id, input.value],
+			),
+		);
+		updateSidesUI();
+		for (const [id, value] of values) {
+			const input = document.getElementById(id);
+			if (input) input.value = value;
+		}
+	},
+	refreshDynamic: () => {
+		updateSpeedControls();
+		updateRandomWarButton();
+		quickRestartBtn.textContent = gameText("GAME_QUICK_RESTART");
+		resetBtn.textContent = gameText("GAME_RESET");
+		launchBtn.textContent = gameText("GAME_SAVE_SETTINGS");
+		viewModeBtn.textContent = gameText(
+			viewMode === "FLAG" ? "GAME_FLAG_VIEW" : "GAME_POLITICAL",
+		);
+		godModeBtn.textContent = getTranslation(
+			godModeActive ? "GOD_ACTIVE" : "GOD_MODE",
+		);
+		godBombBtn.textContent = gameText(
+			godBombActive ? "GAME_GOD_BOMB_ON" : "GAME_GOD_BOMB_OFF",
+		);
+		muteBtn.textContent = gameText(
+			isMuted ? "GAME_SOUND_OFF" : "GAME_SOUND_ON",
+		);
+		const overviewButton = document.getElementById("war-desk-toggle-btn");
+		if (overviewButton) {
+			overviewButton.title = gameText(
+				document.getElementById("war-desk-body")?.hidden
+					? "GAME_EXPAND_OVERVIEW"
+					: "GAME_COLLAPSE_OVERVIEW",
+			);
+			overviewButton.setAttribute("aria-label", overviewButton.title);
+		}
+		if (tutorialActive) updateTutorialUI();
+		if (countryInspector.style.display === "block" && editingCountryId > 0) {
+			// Changing the language must not discard unsaved inspector edits.
+			const fields = Array.from(
+				countryInspector.querySelectorAll("input, select, textarea"),
+				(field) => [field, field.value, field.checked],
+			);
+			openInspector(editingCountryId);
+			for (const [field, value, checked] of fields) {
+				field.value = value;
+				if (checked !== undefined) field.checked = checked;
+			}
+		}
+		if (cityInspector.style.display === "block")
+			refreshCityOwnerSelect(Number(cityOwnerSelect.value) || null);
+		updateWarOverview(true);
+		refreshLeaderboard(true);
+		influenceLayer?.invalidate(RENDER_LAYERS.ALL);
+		influenceLayer?.render();
+	},
 });
 menu_controls.bindLanguageSelectChange();
 applyLanguage();
@@ -6706,6 +6970,7 @@ menu_controls.bindEnterScenarioBtnClick();
 
 // Wire Scroller Cards
 menu_controls.bindScrollerChoiceModernClick();
+menu_controls.bindScrollerChoiceUkraine2023Click();
 menu_controls.bindScrollerChoice1936Click();
 menu_controls.bindScrollerChoice1914Click();
 
@@ -6932,6 +7197,8 @@ inspector_controls.bindEditorCityClearBtnClick();
 
 menu_controls.bindLeaderboardBtnClick();
 
+menu_controls.bindMainMenuBtnClick();
+
 menu_controls.bindCloseLeaderboardBtnClick();
 
 menu_controls.bindCloseHubBtnClick();
@@ -6992,3 +7259,8 @@ menu_controls.bindQuickRestartBtnClick();
 function removeCountryFormations(...args) {
 	return lifecycle.removeCountryFormations(...args);
 }
+
+// Install after all live UI and simulation bindings have initialized.
+installDevicePerformanceTest(applicationRuntime);
+installSimulationModeSettings(simulationMode);
+installCampaignUI(applicationRuntime);

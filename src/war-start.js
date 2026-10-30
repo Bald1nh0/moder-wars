@@ -1,11 +1,13 @@
 import { showAlert } from "./dialogs.js";
+import { gameText } from "./i18n.js";
 import { loadRiverLines, rasterizeRiverMask } from "./river-lines.js";
 // Explicit live context keeps replacements of arrays/state visible across awaits and callbacks.
 export function createWarStart(runtime) {
-	async function startWar() {
+	async function startWar({ signal } = {}) {
+		signal?.throwIfAborted();
 		const activeSides = runtime.sides.filter((s) => s.length > 0);
 		if (activeSides.length < 2) {
-			showAlert("Please assign countries to at least two sides.");
+			showAlert(gameText("APP_1"));
 			return;
 		}
 
@@ -15,21 +17,26 @@ export function createWarStart(runtime) {
 		runtime.loadingBar.style.width = "0%";
 
 		await new Promise((r) => setTimeout(r, 50));
+		signal?.throwIfAborted();
 
 		try {
-			await _startWarInner();
+			await _startWarInner({ signal });
 		} catch (err) {
+			if (signal?.aborted) throw err;
 			console.error("[MW] startWar FAILED:", err);
 			runtime.loadingOverlay.style.display = "none";
-			showAlert(`War failed to start: ${err.message}`);
+			showAlert(gameText("APP_2", { p0: err.message }));
 		}
 	}
 
-	async function _startWarInner() {
+	async function _startWarInner({ signal } = {}) {
+		signal?.throwIfAborted();
 		runtime.invalidateWarLifecycleTimers();
+		const riverLines = runtime.isCustomTerrain ? null : await loadRiverLines();
+		signal?.throwIfAborted();
 		runtime.riverMask = runtime.isCustomTerrain
 			? null
-			: rasterizeRiverMask(await loadRiverLines(), {
+			: rasterizeRiverMask(riverLines, {
 					gridWidth: runtime.gridWidth,
 					gridHeight: runtime.gridHeight,
 					gridRes: runtime.CONFIG.GRID_RES,
@@ -225,8 +232,8 @@ export function createWarStart(runtime) {
 			isHistoricalGateActive;
 
 		runtime.statusText.innerText = runtime.ffaMode
-			? "Free For All Active"
-			: "Global Conflict Active";
+			? gameText("APP_3")
+			: gameText("APP_4");
 		runtime.recalculateAllBounds();
 		runtime.setupPanel.style.display = "none";
 		runtime.statsPanel.style.display = "block";
@@ -375,6 +382,7 @@ export function createWarStart(runtime) {
 					runtime.loadingBar.style.width = `${Math.min(90, (processed / regionTotalCells) * 70)}%`;
 					// Yield back to the browser so the UI doesn't freeze on giant conflicts
 					await new Promise((r) => setTimeout(r, 0));
+					signal?.throwIfAborted();
 				}
 			}
 		}
@@ -397,7 +405,7 @@ export function createWarStart(runtime) {
 		// Automatically switch to POLITICAL view at the start of every war for consistent visibility.
 		runtime.viewMode = "POLITICAL";
 		if (runtime.viewModeBtn) {
-			runtime.viewModeBtn.innerText = "POLITICAL";
+			runtime.viewModeBtn.innerText = gameText("GAME_POLITICAL");
 			runtime.viewModeBtn.style.background = "#3498db";
 		}
 		if (

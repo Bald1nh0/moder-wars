@@ -1,16 +1,17 @@
 import { showAlert, showConfirm } from "./dialogs.js";
+import { gameText } from "./i18n.js";
 // Controls receive live state and commands; they do not import the application.
 export function createInspectorControls(runtime) {
 	async function loadReferenceGeometry() {
 		try {
-			runtime.loadingStatus.innerText = "Loading Modern Reference Geography...";
+			runtime.loadingStatus.innerText = gameText(
+				"EDITOR_MSG_REFERENCE_LOADING",
+			);
 			runtime.loadingOverlay.style.display = "flex";
 			return await runtime.ensureRawGeography();
 		} catch (error) {
 			console.warn("Modern reference geography unavailable:", error);
-			showAlert(
-				"Modern reference geography could not be loaded. Please try again.",
-			);
+			showAlert(gameText("EDITOR_MSG_REFERENCE_FAILED"));
 			return null;
 		} finally {
 			runtime.loadingOverlay.style.display = "none";
@@ -19,7 +20,7 @@ export function createInspectorControls(runtime) {
 
 	function bindConfirmCreateBtnClick() {
 		runtime.confirmCreateBtn.addEventListener("click", async () => {
-			const name = runtime.newCountryNameInput.value || "New Nation";
+			const name = runtime.newCountryNameInput.value || gameText("NEW_NATION");
 			const color = runtime.newCountryColorInput.value;
 			const file = runtime.newCountryFlagInput.files[0];
 
@@ -38,7 +39,9 @@ export function createInspectorControls(runtime) {
 
 			if (file) {
 				try {
-					runtime.loadingStatus.innerText = "Uploading Flag...";
+					runtime.loadingStatus.innerText = gameText(
+						"EDITOR_MSG_FLAG_UPLOADING",
+					);
 					runtime.loadingOverlay.style.display = "flex";
 					runtime.customCountryData.flagUrl = await websim.upload(file);
 					runtime.loadingOverlay.style.display = "none";
@@ -49,7 +52,7 @@ export function createInspectorControls(runtime) {
 
 			runtime.createCountryModal.style.display = "none";
 			runtime.gameState = "EDITOR_PLACING";
-			runtime.statusText.innerText = "Click on Map to Place Capital";
+			runtime.statusText.innerText = gameText("EDITOR_MSG_PLACE_CAPITAL");
 			runtime.map.getContainer().classList.add("painting-cursor");
 		});
 	}
@@ -81,8 +84,10 @@ export function createInspectorControls(runtime) {
 	function bindInspectFetchFlagBtnClick() {
 		runtime.inspectFetchFlagBtn.addEventListener("click", async () => {
 			if (runtime.editingCountryId <= 0) return;
-			const name = runtime.inspectNameInput.value.trim();
-			if (!name) return;
+			const enteredName = runtime.inspectNameInput.value.trim();
+			if (!enteredName) return;
+			const meta = runtime.countryMetadata?.[runtime.editingCountryId - 1];
+			const name = enteredName === meta?.displayName ? meta.name : enteredName;
 
 			let code = runtime.findCodeByName(name);
 
@@ -120,11 +125,7 @@ export function createInspectorControls(runtime) {
 			}
 
 			if (!code) {
-				showAlert(
-					"Could not find a modern flag for '" +
-						name +
-						"'. Try the full English name.",
-				);
+				showAlert(gameText("EDITOR_MSG_FLAG_NOT_FOUND", { name }));
 				return;
 			}
 
@@ -138,7 +139,9 @@ export function createInspectorControls(runtime) {
 			const file = e.target.files[0];
 			if (file && runtime.editingCountryId > 0) {
 				try {
-					runtime.loadingStatus.innerText = "Uploading Flag...";
+					runtime.loadingStatus.innerText = gameText(
+						"EDITOR_MSG_FLAG_UPLOADING",
+					);
 					runtime.loadingOverlay.style.display = "flex";
 					const url = await websim.upload(file);
 
@@ -173,7 +176,7 @@ export function createInspectorControls(runtime) {
 	function bindInspectPaintBtnClick() {
 		runtime.inspectPaintBtn.addEventListener("click", () => {
 			runtime.gameState = "EDITOR_PAINTING";
-			runtime.statusText.innerText = "PAINTING BORDERS (Drag to draw)";
+			runtime.statusText.innerText = gameText("EDITOR_MSG_PAINT_BORDERS");
 			runtime.countryInspector.style.display = "none";
 			runtime.map.getContainer().classList.add("painting-cursor");
 			runtime.editorPaintBtn.style.display = "block";
@@ -188,8 +191,7 @@ export function createInspectorControls(runtime) {
 		runtime.inspectAnnexClickBtn.addEventListener("click", () => {
 			if (runtime.editingCountryId <= 0) return;
 			runtime.gameState = "EDITOR_ANNEXING";
-			runtime.statusText.innerText =
-				"ANNEX TOOL: Click any country on the map to absorb its land";
+			runtime.statusText.innerText = gameText("EDITOR_MSG_ANNEX_TOOL");
 			runtime.countryInspector.style.display = "none";
 			runtime.map.getContainer().classList.add("painting-cursor");
 		});
@@ -216,9 +218,7 @@ export function createInspectorControls(runtime) {
 			});
 
 			if (!feature) {
-				showAlert(
-					"Country not found in modern reference data. Try names like 'Poland', 'Ukraine', or 'United States of America'.",
-				);
+				showAlert(gameText("EDITOR_MSG_COUNTRY_NOT_FOUND"));
 				return;
 			}
 
@@ -231,13 +231,12 @@ export function createInspectorControls(runtime) {
 		if (runtime.addAllyBtn) {
 			runtime.addAllyBtn.addEventListener("click", () => {
 				if (runtime.editingCountryId <= 0) {
-					showAlert("Select a nation first in the inspector to add allies.");
+					showAlert(gameText("EDITOR_MSG_SELECT_ALLY_SOURCE"));
 					return;
 				}
 				runtime.selectingAllyForId = runtime.editingCountryId;
 				runtime.gameState = "EDITOR_SELECTING_ALLY";
-				runtime.statusText.innerText =
-					"Alliance: click another country on the map to ally with.";
+				runtime.statusText.innerText = gameText("EDITOR_MSG_SELECT_ALLY");
 				runtime.countryInspector.style.display = "none";
 				runtime.map.getContainer().classList.add("painting-cursor");
 			});
@@ -261,8 +260,7 @@ export function createInspectorControls(runtime) {
 				});
 				meta.allies = [];
 				runtime.markAllianceCacheDirty();
-				runtime.statusText.innerText =
-					"All alliances for this nation have been cleared.";
+				runtime.statusText.innerText = gameText("EDITOR_MSG_ALLIES_CLEARED");
 				runtime.openInspector(runtime.editingCountryId);
 				runtime.influenceLayer.render();
 			});
@@ -275,19 +273,21 @@ export function createInspectorControls(runtime) {
 				const file = e.target.files[0];
 				if (!file || runtime.editingCountryId <= 0) return;
 				try {
-					runtime.loadingStatus.innerText = "Uploading Alliance Flag...";
+					runtime.loadingStatus.innerText = gameText(
+						"EDITOR_MSG_ALLIANCE_FLAG_UPLOADING",
+					);
 					runtime.loadingOverlay.style.display = "flex";
 					const url = await websim.upload(file);
 					const rootId = runtime.getAllianceRootId(runtime.editingCountryId);
 					if (!rootId) {
 						runtime.loadingOverlay.style.display = "none";
-						showAlert("Could not resolve alliance group for this nation.");
+						showAlert(gameText("EDITOR_MSG_ALLIANCE_NOT_FOUND"));
 						return;
 					}
 					const rootMeta = runtime.countryMetadata[rootId - 1];
 					if (!rootMeta) {
 						runtime.loadingOverlay.style.display = "none";
-						showAlert("Alliance root metadata missing.");
+						showAlert(gameText("EDITOR_MSG_ALLIANCE_METADATA_MISSING"));
 						return;
 					}
 					rootMeta.allianceFlagUrl = url;
@@ -298,12 +298,13 @@ export function createInspectorControls(runtime) {
 						runtime.influenceLayer.render();
 					};
 					rootMeta.allianceFlagTempFlag.src = url;
-					runtime.statusText.innerText =
-						"Alliance flag set for this alliance group.";
+					runtime.statusText.innerText = gameText(
+						"EDITOR_MSG_ALLIANCE_FLAG_SET",
+					);
 				} catch (err) {
 					console.error("Alliance flag upload failed", err);
 					runtime.loadingOverlay.style.display = "none";
-					showAlert("Failed to upload alliance flag.");
+					showAlert(gameText("EDITOR_MSG_ALLIANCE_FLAG_FAILED"));
 				}
 			});
 		}
@@ -324,7 +325,9 @@ export function createInspectorControls(runtime) {
 					runtime.updateCountryFlag(runtime.editingCountryId, meta.baseFlagUrl);
 				}
 
-				runtime.statusText.innerText = `Vassal status cleared for ${meta.name}`;
+				runtime.statusText.innerText = gameText("EDITOR_MSG_VASSAL_CLEARED", {
+					name: meta.displayName || meta.name,
+				});
 				runtime.openInspector(runtime.editingCountryId);
 				runtime.influenceLayer.render();
 			}
@@ -367,7 +370,10 @@ export function createInspectorControls(runtime) {
 						}
 					});
 
-					runtime.statusText.innerText = `SECRET BUFF: ${meta.name} hidden buff set to ${runtime.BUFF_METADATA[nextHidden]?.label || nextHidden}`;
+					runtime.statusText.innerText = gameText("EDITOR_MSG_SECRET_BUFF", {
+						name: meta.displayName || meta.name,
+						buff: runtime.BUFF_METADATA[nextHidden]?.label || nextHidden,
+					});
 					runtime.influenceLayer.render();
 					return;
 				}
@@ -388,7 +394,7 @@ export function createInspectorControls(runtime) {
 					runtime.BUFF_METADATA[nextState] || runtime.BUFF_METADATA.none;
 				runtime.inspectBuffBtn.innerHTML = `
             <span class="buff-arrow" data-dir="-1" style="font-size: 12px; margin-right:4px;">◀</span>
-            <span class="buff-label">BUFF: ${bMeta.label}</span>
+            <span class="buff-label">${gameText("EDITOR_MSG_BUFF", { buff: bMeta.label })}</span>
             <span class="buff-arrow" data-dir="1" style="font-size: 12px; margin-left:4px;">▶</span>
         `;
 				runtime.inspectBuffBtn.style.background = bMeta.color;
@@ -447,8 +453,7 @@ export function createInspectorControls(runtime) {
 	function bindCityMoveBtnClick() {
 		runtime.cityMoveBtn.addEventListener("click", () => {
 			if (runtime.editingCityId <= 0) return;
-			runtime.statusText.innerText =
-				"City Move: click on the map to set the new position.";
+			runtime.statusText.innerText = gameText("EDITOR_MSG_MOVE_CITY");
 			runtime.cityEditMode = "MOVE";
 			runtime.cityInspector.style.display = "none";
 		});
@@ -460,11 +465,14 @@ export function createInspectorControls(runtime) {
 			const city = runtime.cities.find((c) => c.id === runtime.editingCityId);
 			if (!city) return;
 			if (
-				!(await showConfirm(`Delete city "${city.name}"?`, {
-					title: "Delete city",
-					okLabel: "Delete",
-					danger: true,
-				}))
+				!(await showConfirm(
+					gameText("EDITOR_MSG_DELETE_CITY_CONFIRM", { name: city.name }),
+					{
+						title: gameText("EDITOR_MSG_DELETE_CITY"),
+						okLabel: gameText("EDITOR_MSG_DELETE"),
+						danger: true,
+					},
+				))
 			)
 				return;
 			runtime.cities = runtime.cities.filter((c) => c.id !== city.id);
@@ -475,7 +483,7 @@ export function createInspectorControls(runtime) {
 			runtime.editingCityId = -1;
 			runtime.cityInspector.style.display = "none";
 			runtime.influenceLayer.render();
-			runtime.statusText.innerText = "City deleted.";
+			runtime.statusText.innerText = gameText("EDITOR_MSG_CITY_DELETED");
 		});
 	}
 
@@ -491,8 +499,7 @@ export function createInspectorControls(runtime) {
 			runtime.editorCityNewBtn.addEventListener("click", () => {
 				if (!(runtime.gameMode === "EDITOR" || runtime.godModeActive)) return;
 				runtime.cityEditMode = "CREATE";
-				runtime.statusText.innerText =
-					"City Tools: click on the map to create a new city.";
+				runtime.statusText.innerText = gameText("EDITOR_MSG_CREATE_CITY");
 				runtime.cityInspector.style.display = "none";
 			});
 		}
@@ -505,14 +512,22 @@ export function createInspectorControls(runtime) {
 
 				// Robust multi-stage verification for critical deletion
 				const verify1 = await showConfirm(
-					"You are about to clear ALL cities from this scenario. This action is permanent. Proceed?",
-					{ title: "Clear all cities", okLabel: "Proceed", danger: true },
+					gameText("EDITOR_MSG_CLEAR_CITIES_CONFIRM"),
+					{
+						title: gameText("EDITOR_MSG_CLEAR_CITIES"),
+						okLabel: gameText("EDITOR_MSG_PROCEED"),
+						danger: true,
+					},
 				);
 				if (!verify1) return;
 
 				const verify2 = await showConfirm(
-					"Are you absolutely sure you want to remove all urban centers?",
-					{ title: "Final confirmation", okLabel: "Remove all", danger: true },
+					gameText("EDITOR_MSG_CLEAR_CITIES_FINAL"),
+					{
+						title: gameText("EDITOR_MSG_FINAL_CONFIRM"),
+						okLabel: gameText("EDITOR_MSG_REMOVE_ALL"),
+						danger: true,
+					},
 				);
 				if (!verify2) return;
 				if (!(runtime.gameMode === "EDITOR" || runtime.godModeActive)) return;
@@ -523,8 +538,7 @@ export function createInspectorControls(runtime) {
 				runtime.editingCityId = -1;
 				runtime.cityInspector.style.display = "none";
 				runtime.influenceLayer.render();
-				runtime.statusText.innerText =
-					"CITIDEL WIPE COMPLETE: All urban centers removed.";
+				runtime.statusText.innerText = gameText("EDITOR_MSG_CITIES_CLEARED");
 				runtime.playClickSound();
 			});
 		}

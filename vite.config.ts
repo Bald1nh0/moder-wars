@@ -10,6 +10,7 @@ import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
 const root = import.meta.dirname;
+let outputDirectory = resolve(root, "dist");
 function paths(directory: string, prefix = ""): string[] {
 	return readdirSync(directory, { withFileTypes: true }).flatMap((entry) =>
 		entry.isDirectory()
@@ -18,6 +19,8 @@ function paths(directory: string, prefix = ""): string[] {
 	);
 }
 export default defineConfig({
+	server: { port: 4180, strictPort: true },
+	preview: { port: 4180, strictPort: true },
 	base: "./",
 	publicDir: false,
 	worker: { format: "es" },
@@ -31,8 +34,11 @@ export default defineConfig({
 	plugins: [
 		{
 			name: "modern-wars-static-assets",
+			configResolved(config) {
+				outputDirectory = resolve(config.root, config.build.outDir);
+			},
 			closeBundle() {
-				const out = resolve(root, "dist");
+				const out = outputDirectory;
 				mkdirSync(out, { recursive: true });
 				cpSync(resolve(root, "assets"), resolve(out, "assets"), {
 					recursive: true,

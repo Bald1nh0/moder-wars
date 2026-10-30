@@ -20,10 +20,12 @@ let core,
 	outstanding = false,
 	lastSnapshot = 0;
 let topology = false;
+let commandDirty = false;
 let lastPublishedTick = -1;
 let presentationCache = createPresentationSnapshotCache();
 const events = [];
 function publish(force = false) {
+	force ||= commandDirty;
 	if (
 		core &&
 		!force &&
@@ -43,6 +45,7 @@ function publish(force = false) {
 		reuseBaselineForWorker: true,
 	});
 	topology = false;
+	commandDirty = false;
 	lastPublishedTick = core.state._simTickCount;
 	snapshot.events = events.splice(0);
 	lastSnapshot = performance.now();
@@ -98,6 +101,7 @@ self.onmessage = ({ data }) => {
 			stopLoop();
 			epoch = data.epoch;
 			outstanding = false;
+			commandDirty = false;
 			events.length = 0;
 			topology = false;
 			lastPublishedTick = -1;
@@ -145,8 +149,16 @@ self.onmessage = ({ data }) => {
 				paused: core.state.isPaused || core.state.gameState !== "SIMULATING",
 			});
 		} else if (data.type === "COMMAND") {
-			core.command(data.command);
+			const result = core.command(data.command);
+			commandDirty = true;
 			publish(true);
+			if (data.requestId != null)
+				self.postMessage({
+					type: "COMMAND_RESULT",
+					epoch,
+					requestId: data.requestId,
+					result,
+				});
 		} else if (data.type === "HANDOFF") {
 			stopLoop();
 			clock.configure({ paused: true });

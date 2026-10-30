@@ -1,24 +1,24 @@
+import { gameText } from "./i18n.js";
 // Controls receive live state and commands; they do not import the application.
 export function createSandboxControls(runtime) {
 	function bindGodBombBtnClick() {
 		runtime.godBombBtn.addEventListener("click", () => {
 			runtime.godBombActive = !runtime.godBombActive;
 			runtime.godBombBtn.innerText = runtime.godBombActive
-				? "GOD BOMB: ON"
-				: "GOD BOMB: OFF";
+				? gameText("GAME_GOD_BOMB_ON")
+				: gameText("GAME_GOD_BOMB_OFF");
 			runtime.godBombBtn.classList.toggle("active", runtime.godBombActive);
 
 			if (runtime.godBombActive) {
 				runtime.godBombSourceId = -1;
-				runtime.statusText.innerText =
-					"GOD BOMB ACTIVE: Click a country to set as sender";
+				runtime.statusText.innerText = gameText("GAME_GOD_BOMB_PICK");
 				runtime.map.getContainer().classList.add("painting-cursor");
 				runtime.countryInspector.style.display = "none";
 			} else {
 				runtime.godBombSourceId = -1;
 				runtime.statusText.innerText = runtime.godModeActive
-					? "GOD MODE: Map Editing Active"
-					: "Simulation Continued";
+					? gameText("GAME_GOD_EDITING")
+					: gameText("GAME_SIM_CONTINUED");
 				runtime.map.getContainer().classList.remove("painting-cursor");
 			}
 		});
@@ -35,7 +35,7 @@ export function createSandboxControls(runtime) {
 				runtime.godModeActive = true;
 				runtime.godBombActive = false;
 				if (runtime.godBombBtn) {
-					runtime.godBombBtn.innerText = "GOD BOMB: OFF";
+					runtime.godBombBtn.innerText = gameText("GAME_GOD_BOMB_OFF");
 					runtime.godBombBtn.classList.remove("active");
 				}
 				runtime.preGodModeState = runtime.gameState;
@@ -73,8 +73,10 @@ export function createSandboxControls(runtime) {
 				}
 
 				runtime.statusText.innerText = runtime.currentScenarioContext
-					? `GOD MODE // REMIXING: ${runtime.currentScenarioContext.name}`
-					: "GOD MODE: Map Editing Active";
+					? gameText("GAME_GOD_REMIXING", {
+							name: runtime.currentScenarioContext.name,
+						})
+					: gameText("GAME_GOD_EDITING");
 				runtime.updateRestartVisibility();
 			} else {
 				// Deactivate God Mode
@@ -112,7 +114,7 @@ export function createSandboxControls(runtime) {
 					runtime.terrainControls.style.display = "none";
 
 				runtime.godBombBtn.style.display = "none";
-				runtime.godBombBtn.innerText = "GOD BOMB: OFF";
+				runtime.godBombBtn.innerText = gameText("GAME_GOD_BOMB_OFF");
 				runtime.godBombBtn.classList.remove("active");
 				runtime.countryInspector.style.display = "none";
 				runtime.shareFlagBtn.style.display = "none";
@@ -145,14 +147,16 @@ export function createSandboxControls(runtime) {
 						runtime.gameState = "SELECTING_P1";
 					runtime.setupPanel.style.display = "block";
 					runtime.statusText.innerText = runtime.currentScenarioContext
-						? `PLAYING: ${runtime.currentScenarioContext.name}`
+						? gameText("GAME_PLAYING", {
+								name: runtime.currentScenarioContext.name,
+							})
 						: runtime.getTranslation("SELECT_P1");
 					runtime.updateSidesUI();
 				} else if (runtime.gameState === "SIMULATING") {
 					runtime.statsPanel.style.display = "block";
 					runtime.statusText.innerText = runtime.ffaMode
-						? "Free For All Active"
-						: "Global Conflict Active";
+						? gameText("GAME_FFA_ACTIVE")
+						: gameText("GAME_CONFLICT_ACTIVE");
 				} else {
 					// Safety fallback: transition any orphaned state to setup mode
 					runtime.gameState = "SELECTING_P1";

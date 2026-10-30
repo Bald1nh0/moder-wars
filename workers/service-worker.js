@@ -1,6 +1,6 @@
 // Service Worker — versioned offline shell plus persistent runtime data cache
 
-const CACHE_VERSION = "mw-v0.28.0";
+const CACHE_VERSION = "mw-v0.30.0-experimental.1";
 const APP_SHELL_PREFIX = "mw-app-shell-";
 const RUNTIME_PREFIX = "mw-runtime-";
 const LEGACY_CACHE_PREFIX = "mw-cache-";
@@ -10,6 +10,26 @@ const APP_SHELL_CACHE = `${APP_SHELL_PREFIX}${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${RUNTIME_PREFIX}v1`;
 
 const APP_SHELL_PATHS = [
+	"src/worker-asset-url.js",
+	"src/campaign-core.js",
+	"src/campaign-ai.js",
+	"src/campaign-events.js",
+	"src/campaign-ui.js",
+	"src/translations-campaign.js",
+	"src/country-force-profiles.js",
+	"src/country-force-data.js",
+	"styles/campaign.css",
+	"src/feature-flags.js",
+	"src/simulation-mode-settings.js",
+	"src/device-performance-test.js",
+	"src/translations-device-test.js",
+	"src/simulation-wire.js",
+	"src/remote-simulation-worker.js",
+	"src/leaderboard.js",
+	"src/occupation-regions.js",
+	"src/render-occupation.js",
+	"src/render-admin-regions.js",
+	"src/admin-regions.js",
 	"index.html",
 	"src/ai-plan-execution.js",
 	"src/ai-planning.js",
@@ -82,6 +102,7 @@ const APP_SHELL_PATHS = [
 	"src/reference-controls.js",
 	"src/reference-overlay.js",
 	"src/render-atlas.js",
+	"src/render-budget.ts",
 	"src/render-flags.js",
 	"src/render-labels.js",
 	"src/render-soldier-labels.js",
@@ -96,6 +117,8 @@ const APP_SHELL_PATHS = [
 	"src/scenario-codec.js",
 	"src/scenario-export.js",
 	"src/scenario-loader.js",
+	"src/scenario-territory.js",
+	"src/scenario-theater.js",
 	"src/scenario-menu.js",
 	"src/settings.js",
 	"src/simulation-calendar.js",
@@ -108,6 +131,14 @@ const APP_SHELL_PATHS = [
 	"src/territory-ledger.js",
 	"src/territory-runtime.js",
 	"src/translations.js",
+	"src/translations-app.js",
+	"src/translations-map.js",
+	"src/translations-community.js",
+	"src/translations-ui.js",
+	"src/translations-game.js",
+	"src/translations-editor.js",
+	"src/translations-nations.js",
+
 	"src/war-overview.js",
 	"src/war-start.js",
 	"styles/style.css",

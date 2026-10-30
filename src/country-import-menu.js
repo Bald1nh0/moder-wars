@@ -1,4 +1,5 @@
 import { showAlert } from "./dialogs.js";
+import { gameText } from "./i18n.js";
 // Dependencies are supplied by the application; this module does not import it.
 export function createCountryImportMenu(runtime) {
 	function loadCountryFromPC() {
@@ -9,7 +10,7 @@ export function createCountryImportMenu(runtime) {
 			const file = e.target.files[0];
 			if (!file) return;
 
-			runtime.loadingStatus.innerText = "Loading Country Data...";
+			runtime.loadingStatus.innerText = gameText("APP_37");
 			runtime.loadingOverlay.style.display = "flex";
 
 			try {
@@ -17,7 +18,7 @@ export function createCountryImportMenu(runtime) {
 				const data = JSON.parse(text);
 
 				if (!data.metadata || !data.cells) {
-					throw new Error("Invalid country file structure");
+					throw new Error(gameText("COMMUNITY_INVALID_COUNTRY_FILE"));
 				}
 
 				const currentRes = runtime.CONFIG.GRID_RES;
@@ -33,7 +34,7 @@ export function createCountryImportMenu(runtime) {
 				// Create metadata entry
 				const meta = {
 					id: newId,
-					name: data.metadata.name || "Imported Nation",
+					name: data.metadata.name || gameText("COMMUNITY_IMPORTED_NATION"),
 					color: data.metadata.color || "rgba(150, 150, 150, 0.5)",
 					rgba: runtime.parseColorToRGBA(
 						data.metadata.color || "rgba(150, 150, 150, 0.5)",
@@ -148,11 +149,11 @@ export function createCountryImportMenu(runtime) {
 				}
 
 				runtime.openInspector(newId);
-				runtime.statusText.innerText = `IMPORTED: ${meta.name} from local file`;
+				runtime.statusText.innerText = gameText("APP_38", { p0: meta.name });
 				runtime.influenceLayer.render();
 			} catch (err) {
 				console.error("Country import error:", err);
-				showAlert(`Failed to import country: ${err.message}`);
+				showAlert(gameText("APP_39", { p0: err.message }));
 				runtime.loadingOverlay.style.display = "none";
 			}
 		};
@@ -169,8 +170,8 @@ export function createCountryImportMenu(runtime) {
 		const metaList = runtime.importScenarioBuffer.metadata || [];
 		if (!metaList.length) {
 			runtime.importCountryCardList.innerHTML = `
-            <div style="font-size: 12px; color:#777; text-align:center; padding:10px;">
-                No countries found in scenario
+            <div style="font-size: 12px; color:#777; text-align:center; padding:10px;" data-i18n="COMMUNITY_NO_COUNTRIES">
+                ${gameText("COMMUNITY_NO_COUNTRIES")}
             </div>
         `;
 			runtime.importCountrySearch.disabled = true;
@@ -195,7 +196,7 @@ export function createCountryImportMenu(runtime) {
 				const flagUrl = m.flagUrl || null;
 				return {
 					id: m.id,
-					name: m.name || `Country ${m.id}`,
+					name: m.name || gameText("COMMUNITY_COUNTRY_ID", { id: m.id }),
 					tiles,
 					flagUrl,
 				};
@@ -205,8 +206,8 @@ export function createCountryImportMenu(runtime) {
 
 		if (!sortedMeta.length) {
 			runtime.importCountryCardList.innerHTML = `
-            <div style="font-size: 12px; color:#777; text-align:center; padding:10px;">
-                No countries with territory found
+            <div style="font-size: 12px; color:#777; text-align:center; padding:10px;" data-i18n="COMMUNITY_NO_TERRITORY">
+                ${gameText("COMMUNITY_NO_TERRITORY")}
             </div>
         `;
 			runtime.importCountrySearch.disabled = true;
@@ -225,9 +226,7 @@ export function createCountryImportMenu(runtime) {
 	function openImportCountryModal() {
 		if (!runtime.importCountryModal) return;
 		if (!(runtime.gameMode === "EDITOR" || runtime.godModeActive)) {
-			showAlert(
-				"You can only import from scenario while in the editor or God Mode.",
-			);
+			showAlert(gameText("APP_40"));
 			return;
 		}
 
@@ -269,8 +268,8 @@ export function createCountryImportMenu(runtime) {
 		}
 		if (runtime.importCountryCardList) {
 			runtime.importCountryCardList.innerHTML = `
-            <div style="font-size: 12px; color:#777; text-align:center; padding:10px;">
-                Choose a source scenario first
+            <div style="font-size: 12px; color:#777; text-align:center; padding:10px;" data-i18n="COMMUNITY_CHOOSE_SOURCE">
+                ${gameText("COMMUNITY_CHOOSE_SOURCE")}
             </div>
         `;
 		}

@@ -148,7 +148,8 @@ export function createBenchmarkRuntime(runtime) {
 		runtime._benchmarkReject = null;
 	}
 
-	async function startBenchmark(options = {}) {
+	async function runBenchmark(options = {}) {
+		options.signal?.throwIfAborted();
 		if (
 			runtime._isBenchmarking ||
 			runtime._isBenchmarkWarmingUp ||
@@ -194,7 +195,7 @@ export function createBenchmarkRuntime(runtime) {
 		} else {
 			runtime._benchmarkUnitsPerSide = null;
 		}
-		// Load the 2022 Modern Day scenario if countryMetadata isn't populated yet
+		// Keep the benchmark's 2022 baseline independent of the current play-menu scenario.
 		if (!runtime.countryMetadata || runtime.countryMetadata.length === 0) {
 			runtime.loadingStatus.innerText = "Loading Modern World Theater...";
 			runtime.loadingOverlay.style.display = "flex";
@@ -202,7 +203,7 @@ export function createBenchmarkRuntime(runtime) {
 			try {
 				const url = "assets/maps/world map 2022.json";
 				await runtime.performPresetLoad(
-					runtime.COMPILED_SCENARIO_URLS.modern,
+					"assets/maps/compiled/world-map-2022-v3.mwsc.gz?rev=a40b8db35255df20",
 					"CONQUEST",
 					{
 						jsonFallbackUrl: url,
@@ -216,6 +217,8 @@ export function createBenchmarkRuntime(runtime) {
 				throw e;
 			}
 		}
+
+		options.signal?.throwIfAborted();
 
 		// Match Russia and China by name (China may be "People's Republic of China")
 		const metaRussia = runtime.countryMetadata.find(
@@ -273,7 +276,8 @@ export function createBenchmarkRuntime(runtime) {
 				? requestedUnits * runtime.CONFIG.UNIT_TO_SOLDIER_RATIO
 				: null;
 		runtime.updateSidesUI();
-		await runtime.startWar();
+		await runtime.startWar({ signal: options.signal, campaign: false });
+		options.signal?.throwIfAborted();
 		runtime._benchmarkForcePersonnelPerSide = null;
 		if (runtime.gameState !== "SIMULATING") {
 			restoreBenchmarkSettings();
@@ -312,6 +316,7 @@ export function createBenchmarkRuntime(runtime) {
 		if (warmupMs > 0) {
 			await new Promise((resolve) => setTimeout(resolve, warmupMs));
 		}
+		options.signal?.throwIfAborted();
 		runtime._isBenchmarkWarmingUp = false;
 		if (runtime.gameState !== "SIMULATING") {
 			restoreBenchmarkSettings();
@@ -355,6 +360,34 @@ export function createBenchmarkRuntime(runtime) {
 			}, durationMs + 250);
 		});
 	}
+	async function startBenchmark(options = {}) {
+		const signal = options.signal;
+		if (!signal) return runBenchmark(options);
+		signal.throwIfAborted();
+		const cancel = () => {
+			runtime._isBenchmarking = false;
+			runtime._isBenchmarkWarmingUp = false;
+			runtime.isPaused = true;
+			runtime.simulationClient?.stop();
+			if (runtime._benchmarkTimeoutId != null)
+				clearTimeout(runtime._benchmarkTimeoutId);
+			runtime._benchmarkTimeoutId = null;
+			runtime._benchmarkReject?.(
+				new Error(String(signal.reason || "cancelled")),
+			);
+			runtime._benchmarkResolve = null;
+			runtime._benchmarkReject = null;
+			restoreBenchmarkSettings();
+		};
+		signal.addEventListener("abort", cancel, { once: true });
+		try {
+			return await runBenchmark(options);
+		} finally {
+			signal.removeEventListener("abort", cancel);
+			if (signal.aborted) cancel();
+		}
+	}
+
 	return {
 		restoreBenchmarkSettings,
 		prepareIsolatedBenchmarkRun,

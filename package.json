@@ -1,6 +1,6 @@
 {
 	"name": "modern-wars",
-	"version": "0.28.0",
+	"version": "0.30.0-experimental.1",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -9,18 +9,22 @@
 		"preview": "vite preview --host 127.0.0.1",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check .",
-		"check": "npm run typecheck && npm run lint && npm run smoke && npm run build && node scripts/build-output-smoke.mjs",
-		"smoke": "node scripts/modernization-smoke.mjs"
+		"check": "npm run version:check && npm run typecheck && npm run lint && npm run smoke && npm run build && node scripts/build-output-smoke.mjs",
+		"smoke": "node scripts/modernization-smoke.mjs",
+		"version:check": "node scripts/release-version.mjs check",
+		"version:bump": "node scripts/release-version.mjs bump",
+		"prototype:server": "node server/index.mjs"
 	},
 	"dependencies": {
 		"jszip": "3.10.1",
-		"pixi.js": "8.22.0"
+		"pixi.js": "8.22.0",
+		"ws": "8.22.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.13",
 		"@types/node": "26.6.4",
 		"typescript": "6.0.3",
-		"vite": "8.3.2"
+		"vite": "8.3.5"
 	},
 	"engines": {
 		"node": ">=24"

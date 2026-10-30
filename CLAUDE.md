@@ -1,6 +1,18 @@
-# CLAUDE.md
+# Repository agent instructions
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Shared guidance for Claude Code, Codex, and other coding agents working in this repository.
+
+## Single source of truth
+
+`CLAUDE.md` is the canonical file. `AGENTS.md` is a relative symbolic link to `CLAUDE.md`, so both entry points expose the same instructions. Edit `CLAUDE.md` directly; do not replace `AGENTS.md` with a regular file or maintain a second copy. Preserve the symlink when checking out or copying the repository.
+
+## Working agreements
+
+- Discuss work in Ukrainian by default. Write code comments, configuration comments, documentation, and README content in English. Player-facing text must support English, Ukrainian, and Russian through the existing translation dictionaries.
+- Keep changes focused, preserve project conventions, and verify behavior instead of inferring it from button labels or comments. Use browser checks for visual changes and user flows; Node smoke checks alone do not establish browser behavior.
+- Preserve existing staged and unstaged work. Work on a feature branch and do not commit or push unless requested.
+- Current integration branch: `feature/campaign-ai-planning`, which includes the preceding stability, server-simulation and forces/economy branches. Keep subsequent work here. The user authorized committing and pushing the reviewed CodeQL remediation to this feature branch on 2026-10-29. Main merges and releases remain on hold pending review and explicit authorization. Do not bypass that review with a direct main push.
+- Keep `CHANGELOG.md` current under the appropriate date and development version. Update these shared instructions when architecture, commands, or deployment practices change.
 
 ## Project
 
@@ -23,13 +35,39 @@ There is no test runner. "Tests" are the standalone `scripts/*-smoke.mjs` files,
 
 Asset maintenance scripts (only run after changing their source data): `scripts/prepare-atlas-coast.mjs 110m|50m|10m`, `scripts/build-title-backdrop.mjs`, `scripts/build-scenario-binaries.mjs`, `scripts/build-geo-rasters.mjs`.
 
+### Validate without replacing a running build
+
+`npm run check` and the default build overwrite `dist/`. When a preview uses that directory, run the equivalent checks with a separate build output:
+
+```sh
+npm run typecheck && npm run lint && npm run smoke
+npm run build -- --outDir /tmp/moder-wars-validation
+MW_BUILD_DIR=/tmp/moder-wars-validation node scripts/build-output-smoke.mjs
+npm run preview -- --outDir /tmp/moder-wars-validation --port 4180 --strictPort
+```
+
+Use isolated build directories, but keep exactly one persistent game test server on port **4180**. Coordinate replacing that server instead of starting previews on other ports; Vite dev/preview use strict port 4180. Automated integration checks may use temporary loopback ports and must close them before exiting. Check existing processes before stopping servers; stop only this project's previews.
+
 ## Release and caching rules
 
+- Follow SemVer: PATCH for compatible fixes/performance/security changes, MINOR for compatible gameplay/features, MAJOR for incompatible public-contract changes after 1.0. Before 1.0, use MINOR for breaking changes and document migration; 1.0 marks the first supported stable contract. Treat documented scenario import/export, settings and simulation protocol compatibility as contracts. Use prereleases such as `0.30.0-rc.1` for experiments; do not reuse a published version.
+- Use `npm run version:bump -- patch|minor|major|VERSION`, then update the dated changelog. `npm run version:check` validates SemVer and all markers; the helper does not commit or create Git tags. Explicit versions support prerelease increments; build metadata (`+...`) is intentionally unsupported because Docker tags cannot mirror it.
 - The game version lives in places that must match: `<title>` in `index.html`, `CACHE_VERSION` in `workers/service-worker.js`, and `version` in `package.json` and `package-lock.json`. Bump them together when releasing.
-- Pushes to main are checked and `dist/` is deployed to GitHub Pages by `.github/workflows/check-and-pages.yml`.
+- `.github/workflows/check-and-deploy.yml` checks PRs on GitHub-hosted runners. Only successful pushes to `main` publish the checked Docker image to GHCR and deploy its digest through the dedicated self-hosted runner labeled `mw`. Manual workflow dispatch checks only. See `docs/DEPLOYMENT.md` for environment restrictions, public-repository runner precautions, host setup and rollback. Preparing the workflow does not itself migrate existing production.
+- Security checks gate publication: npm advisories include build dependencies, Gitleaks scans full fetched history with redacted output, CodeQL analyzes JavaScript/TypeScript and its SARIF gate rejects findings or missing results, and Trivy checks the final image. Do not suppress a finding or broaden scanner exclusions just to pass CI. Review pinned scanner updates. Keep all checks on GitHub-hosted runners; never execute untrusted PR code using `pull_request_target` or on `mw`.
+- Any CodeQL false-positive exception needs a concrete security rationale, exact finding range/count, source-file hash and analysis-input digest in `.github/codeql-reviewed.json`. Source or configuration changes invalidate that review; investigate before updating hashes, never auto-approve a baseline. Keep all findings visible in the uploaded SARIF. Gitleaks exceptions must identify a verified non-secret by exact fingerprint, never exclude a whole rule/file/history to make CI pass.
+- `.github/CODEOWNERS` requests owner review for every file, including CI/build inputs and itself. It requires protected-branch settings to enforce review and does not prevent pre-merge workflow execution. Keep the one-repository runner risk explicit: fork approval is mitigation, not isolation. Administrative GitHub and network settings must be verified separately; do not mark them complete based solely on local files.
+- The recommended GitHub Actions execution policy targets all workflows (including new ones), restricts actors to the owner, and allows only the intended events. Configure it in GitHub settings, outside YAML. External/bot PR checks may be blocked; only run reviewed changes through an owner-controlled path. Do not automatically broaden the actor allowlist or assume a re-run changes the policy actor. See the deployment security setup; activation is not implied by this instruction.
+- Nginx owns HTTP framing, MIME-sniffing and referrer protections; the HTML meta CSP retains script/worker/service restrictions. Preserve header inheritance across locations and verify with `node scripts/security-headers-smoke.mjs CONTAINER` against an isolated hardened container. Do not add HSTS or change router/firewall policies without checking deployment consequences.
+- Release identity is shared: package version `X.Y.Z`, GitHub tag/release `vX.Y.Z`, GHCR image tag `vX.Y.Z`, OCI version label, and `release-manifest.json` all refer to the same commit/digest. Create a draft before deployment; publish it only after health passes. Retries reuse the recorded image, never replace an existing version with a different commit/digest.
+- Publication is on hold pending upstream licensing clarification: https://github.com/Vaspyyy/moder-wars/issues/5. Do not push/merge to main or publish releases/images/deployments until the user resumes that work. Repository variable `RELEASE_PUBLISHING_ENABLED` must be explicitly `true` to activate publication; leave it unset during this hold. Local checks and test port 4180 remain available.
+- GHCR cleanup defaults to dry-run and requires `REGISTRY_CLEANUP_ENABLED=true` to delete. Preserve the latest 20 images, images younger than 30 days, current/previous production digests and explicit pins; see `docs/DEPLOYMENT.md` for exceptions. Never run blanket Docker/registry pruning or remove rollback images during routine validation.
+- Keep private development addresses out of the README. Use loopback examples for local commands and environment configuration for deployment hosts.
 - Every module in `src/` (and other shell files) must be listed in `APP_SHELL_PATHS` in `workers/service-worker.js`. `module-graph-smoke.mjs` parses that list and fails if a reachable module is missing, so add new files there. The build rewrites the list with the emitted files.
 - The root `service-worker.js` only `importScripts` the real implementation in `workers/` so it can control the whole site scope. The service worker caches aggressively; hard-refresh after source changes.
 - Commit messages use conventional prefixes (`feat:`, `fix:`, `perf:`).
+- `Dockerfile` copies an existing `dist/` into an Nginx image; it does not build the application. The production game at `https://modern-wars.bald1nh0.net/` uses an explicitly packaged image with no workspace mounts. Source changes and test builds must remain separate from release image updates.
+- **Environment agreement:** Docker is production at `https://modern-wars.bald1nh0.net/` (LAN port 4174). Port **4180** is the sole development/test URL. The current test server uses `/tmp/moder-wars-test-4180/dist` and a matching source snapshot under `/tmp/moder-wars-test-4180/source`; verify these process details before updates. Browser simulation remains the default, with the optional matching server owner on the same port. Retain older hashed assets when updating static files, and update server source and client build together when protocol/rules change. Do not rebuild or restart production during routine development or validation.
 
 ## Architecture
 
@@ -42,13 +80,37 @@ Asset maintenance scripts (only run after changing their source data): `scripts/
 
 **Army AI** (detailed in `docs/army-ai.md`). Strategic pipeline PROPOSE → WEIGH → DECIDE → EXECUTE → REASSESS in `ai-proposals.js`, `ai-planning.js`, `ai-plan-execution.js`, `ai-task-forces.js`, composed by `ai-runtime.js`. `army-command.js` splits fronts into sectors and assigns coverage, `army-navigation.js` builds bounded reverse-Dijkstra route fields, and `army-encirclement.js` handles encirclement. Each ordinary land formation has a single `_armyOrder` movement authority. Per-unit combat/movement is in `ground-unit.js` and `ground-movement.js`. Keep these modules browser-free.
 
+**Experimental server owner.** `?simulation=server` opts into the Node/WebSocket prototype in `server/`; the default remains the browser worker. Each socket owns a separate Node simulation worker. Its scheduler adapter must yield through `setImmediate`: native Node MessageChannel self-posting can starve parent-port commands under sustained load. Keep the binary codec browser-free and preserve typed-buffer aliases and graph identity. Remote failures must visibly stop play rather than silently restarting a local simulation. No database, shared rooms, or reconnect persistence is provided. Build to an isolated directory and serve on a separate port; see `docs/SERVER-SIMULATION-PROTOTYPE.md`. Never update the frozen Docker release implicitly.
+
 **Presentation.** `presentation-runtime.js` paints snapshots at up to 30 Hz. `renderer.js` orchestrates rendering: PixiJS WebGL country meshes and unit sprites (`atlas-gpu.ts`, `atlas-scene.ts`, loaded on demand) under cached `render-*.js` Canvas overlays (labels, flags, selection, naval and battle markers, editor), with world-chunk caching and culling. The full Canvas path remains for capture, flag view and devices without WebGL. There is no Leaflet: `map-camera.ts` and `map-projection.ts` own the bounded Mercator camera, `camera-input.ts` owns drag, wheel, touch and keyboard input, and `map-runtime.ts` wires them together.
 
 **Data.** Scenarios are compiled to MWSC v3 binaries (`assets/maps/compiled/*.mwsc.gz`) by `scenario-codec.js`. The v2 decoder and JSON import/export are still supported. Decoding runs in `workers/scenario-worker.js`. Geography is Natural Earth GeoJSON at 110m/50m/10m with derived rasters (`assets/geodata/derived/*.mwr`) and packed coastlines (`assets/atlas/`). Raw reference geography is loaded only when an editing tool needs it. Influence grids use lazy Float32 pages (`influence-grid.js`).
 
 **Other subsystems.** Editor (`editor*.js`), community sharing via Firebase (`community-*.js`, `firebase.js`), i18n (`i18n.js`, `translations.js`), preferences/settings, and in-game performance profiling (`performance-*.js`).
 
+## Scenario and interface invariants
+
+- Modern Day 2026 is built offline from a pinned Overture Maps division-area snapshot; preserve ODbL attribution, source dates, and reproducibility in `assets/scenarios/modern-2026/`. Do not relabel inherited economic/game-balance parameters as 2026 statistics or infer military control from administrative boundaries. The benchmark's default 2022 package remains pinned independently so changing the play menu does not silently change its workload.
+- Regional theaters retain global cell coordinates but explicitly mask excluded countries and constrain the camera. Keep theater metadata through export/load/restart and reset camera constraints when switching back to a world scenario. Do not claim reduced grid allocation merely from masking geography.
+
+- `admin-regions.js` and `render-admin-regions.js` lazily load compact Natural Earth administrative boundaries for Earth maps. These are a modern reference overlay, not simulation provinces or historical frontlines. Preserve Ukrainian region grouping and source attribution in `assets/geodata/admin1/README.md`. `docs/GEOGRAPHIC-DATA.md` records source options and regional-scenario constraints.
+
+- The experimental Ukraine scenario is an approximate reconstruction for 2023-01-01, not a live map feed. Its armies are fictional game data. Preserve attribution and limitations in `assets/scenarios/ukraine-2023/README.md`. Regenerate its binary with `scripts/build-ukraine-scenario.mjs` only when its inputs change, and update the asset revision in `src/scenario-codec.js`.
+- Sovereignty (`deJureMap`) is distinct from military control (`worldControlMap` and wartime influence). Preserve `sovereigntyOverrides` and `historicalSource` across load, export, and restart. Update scenario context through `setCurrentScenarioContext`; do not assign to imported ES module bindings.
+- `occupation-regions.js` caches occupied regions within the scenario's `historicalSource.territoryOwnerIds` scope. `render-occupation.js` draws outlines, hatching, and localized controller labels on the existing dynamic canvas. Keep liberated and allied-controlled territory out of the occupation overlay; clear its cache after bulk static changes.
+- `leaderboard.js` counts living formations and their actual deployed personnel from the simulation mirror. Recruitment estimates and pooled reserves are not deployed units. Territory is a count of controlled grid cells, not square kilometres. Refresh an open leaderboard at most once per second.
+- **Menu → How to play** opens a reference guide that preserves the current map and country selections. Active campaign help moves the same tutorial card into the native Forces & economy dialog and restores it on close; do not duplicate its navigation or try to place it above a modal with z-index alone. Guide shortcuts only open the relevant controls, never issue gameplay orders.
+- **Menu → Main menu** is wired in `menu-controls.js`. It pauses a running battle while asking for confirmation; cancellation restores the prior pause state. Confirmation stops the simulation client and reloads the title screen without saving the current session. Language and saved preferences persist. Do not imply that this is a save/resume feature.
+- Relevant regressions: `occupation-regions-smoke.mjs`, `leaderboard-smoke.mjs`, `ukraine-scenario-smoke.mjs`, `scenario-territory-smoke.mjs`, `editor-startup-smoke.mjs`, `ui-modernization-smoke.mjs`, and `i18n-smoke.mjs`.
+
 ## Known state and performance
 
-- Only the 2022 Modern Day era is exposed in the Choose Era menu. Older era data, thumbnails, hidden cards, and dormant handlers still exist in the code and are not supported eras.
+- Server simulation has a separate persistent preference in Settings → Advanced, off by default (`mw.feature.serverSimulation`). Explicit `simulation=browser|server` URLs override it. Capture the session mode once at page load; changing the preference must not restart or migrate a live game. Use the fresh-game link to apply it. Benchmark links must explicitly select both modes so saved server opt-in cannot turn a browser test into a remote test.
+- `docs/GAMEPLAY-EXPANSION.md` records the broader design; `docs/CAMPAIGN-GUIDE.md` describes the playable campaign implementation. `campaign-core.js` owns country budgets, queues, role modifiers and aggregate missions; `campaign-events.js` owns bounded events and sparse Ukrainian region checks; `campaign-ui.js` sends acknowledged owner commands. `campaign-ai.js` plans bounded, deterministic country decisions from game aggregates; preserve its per-country deadlines and resource accounting. Keep `aiState` owner-only in presentation snapshots, retain it through full handoffs, and publish the bounded `aiDecision` explanation for the UI. Test scheduling across many countries and do not couple action availability to a shared global modulo. Campaign state must survive ownership handoffs, while presentation snapshots omit internal event baselines and region membership. Pinned benchmarks explicitly disable campaign mechanics. Preserve formation aggregation, source dates/licenses and the distinction between sourced observations and game assumptions; existing `overlordId` is game vassalage, not proof of real political control.
+
+- Device-test UI is opt-in via Settings → Advanced or `?performanceTest=1`. Keep the flag off by default, preserve normal games, and run tests in a separate tab. Reports must distinguish requested transport from actual owner/fallback and reject hidden, resized, disconnected or empty runs. Do not compare incompatible builds/settings/viewports or call raw packet sizes compressed network traffic. See `docs/SERVER-SIMULATION-PROTOTYPE.md` and `docs/PERFORMANCE-NEXT-STEPS.md`.
+
+- `docs/BACKLOG.md` separates browser optimization, backend persistence, and server simulation proposals. Measure the current release before choosing implementation; adding a database alone does not accelerate simulation. Keep reproducible benchmark workloads distinct from browser observations and real-device measurements. The earlier baseline is in `docs/PERFORMANCE-0.28.6.md` and `docs/PERFORMANCE-BROWSER-0.28.6.md`; campaign component CPU measurements are in `docs/PERFORMANCE-CAMPAIGN-0.29.0.md`. The headless browser used SwiftShader, so its frame rate is not a real-device FPS result.
+
+- The development scenario menu exposes Modern Day 2026 (political geography, not live frontlines) and Ukraine 2023 · Eurasia. Legacy 2022 data remains as a compatibility/reference input. The frozen Docker playtest remains on its explicitly packaged image; source edits and local builds do not deploy to it. See docs/DEPLOYMENT.md for Docker lifecycle and assets/scenarios/ukraine-2023/README.md for provenance and limitations. Older era data, thumbnails, hidden cards, and dormant handlers still exist and are not supported eras.
 - `docs/PERFORMANCE-AUDIT.md` records measured CPU bottlenecks: per-unit enemy scans in `ground-unit.js`, proposal scoring in `ai-plan-execution.js` (proposal generation is now budgeted across ticks; see `docs/army-ai.md`), and full-world frontier scans in `frontline-core.js`. Check it before doing performance work, and measure with `scripts/profile-performance.mjs`.

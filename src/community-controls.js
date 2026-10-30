@@ -1,12 +1,13 @@
 import { showAlert, showConfirm } from "./dialogs.js";
+import { gameText } from "./i18n.js";
 // Controls receive live state and commands; they do not import the application.
 export function createCommunityControls(runtime) {
 	function bindDeleteScenarioHandler() {
 		window.deleteScenario = async (id) => {
 			if (
-				!(await showConfirm("Are you sure you want to delete this scenario?", {
-					title: "Delete scenario",
-					okLabel: "Delete",
+				!(await showConfirm(gameText("APP_41"), {
+					title: gameText("APP_42"),
+					okLabel: gameText("APP_43"),
 					danger: true,
 				}))
 			)
@@ -15,9 +16,7 @@ export function createCommunityControls(runtime) {
 				await runtime.room.collection("scenario_v1").delete(id);
 			} catch (e) {
 				console.error(e);
-				showAlert(
-					"Failed to delete scenario. You can only delete your own posts.",
-				);
+				showAlert(gameText("APP_44"));
 			}
 		};
 	}
@@ -25,9 +24,9 @@ export function createCommunityControls(runtime) {
 	function bindDeleteFlagHandler() {
 		window.deleteFlag = async (id) => {
 			if (
-				!(await showConfirm("Remove this flag from the library?", {
-					title: "Delete flag",
-					okLabel: "Remove",
+				!(await showConfirm(gameText("APP_45"), {
+					title: gameText("APP_46"),
+					okLabel: gameText("COMMUNITY_REMOVE"),
 					danger: true,
 				}))
 			)
@@ -36,7 +35,7 @@ export function createCommunityControls(runtime) {
 				await runtime.room.collection("flag_library_v1").delete(id);
 			} catch (e) {
 				console.error(e);
-				showAlert("Delete failed.");
+				showAlert(gameText("APP_47"));
 			}
 		};
 	}
@@ -49,13 +48,9 @@ export function createCommunityControls(runtime) {
 
 			if (!flagData || runtime.editingCountryId <= 0) {
 				if (runtime.editingCountryId <= 0) {
-					showAlert(
-						"SATELLITE INTERFACE: You must select a nation on the map first to designate a target for the new national identity.",
-					);
+					showAlert(gameText("APP_48"));
 				} else {
-					showAlert(
-						"SATELLITE ERROR: Could not retrieve flag data from the hub archives.",
-					);
+					showAlert(gameText("APP_49"));
 				}
 				return;
 			}
@@ -65,7 +60,10 @@ export function createCommunityControls(runtime) {
 				runtime.updateCountryFlag(runtime.editingCountryId, flagData.flagUrl);
 				runtime.closeHub();
 				// Visual confirmation
-				runtime.statusText.innerText = `IDENTIFIED: ${meta.name} now using community flag '${flagData.name}'`;
+				runtime.statusText.innerText = gameText("APP_50", {
+					p0: meta.name,
+					p1: flagData.name,
+				});
 			}
 		};
 	}
@@ -73,17 +71,18 @@ export function createCommunityControls(runtime) {
 	function bindDeleteCountryHandler() {
 		window.deleteCountry = async (id) => {
 			if (
-				!(await showConfirm(
-					"Are you sure you want to delete this country from the library?",
-					{ title: "Delete country", okLabel: "Delete", danger: true },
-				))
+				!(await showConfirm(gameText("APP_51"), {
+					title: gameText("APP_52"),
+					okLabel: gameText("APP_43"),
+					danger: true,
+				}))
 			)
 				return;
 			try {
 				await runtime.room.collection("country_library_v1").delete(id);
 			} catch (e) {
 				console.error(e);
-				showAlert("Failed to delete.");
+				showAlert(gameText("APP_53"));
 			}
 		};
 	}
@@ -94,7 +93,9 @@ export function createCommunityControls(runtime) {
 			const countryData = list.find((c) => c.id === id);
 			if (!countryData) return;
 
-			runtime.loadingStatus.innerText = `Importing ${countryData.name}...`;
+			runtime.loadingStatus.innerText = gameText("APP_54", {
+				p0: countryData.name,
+			});
 			runtime.loadingOverlay.style.display = "flex";
 			runtime.closeHub();
 
@@ -121,14 +122,14 @@ export function createCommunityControls(runtime) {
 						cells = await resp.json();
 					} catch (e) {
 						console.error("Failed to fetch country cells", e);
-						showAlert("Error importing country geography.");
+						showAlert(gameText("APP_55"));
 						runtime.loadingOverlay.style.display = "none";
 						return;
 					}
 				}
 
 				if (!cells) {
-					showAlert("This country has no geography data.");
+					showAlert(gameText("APP_56"));
 					runtime.loadingOverlay.style.display = "none";
 					return;
 				}
@@ -166,10 +167,10 @@ export function createCommunityControls(runtime) {
 				runtime.recalculateAllBounds();
 				runtime.loadingOverlay.style.display = "none";
 				runtime.influenceLayer.render();
-				showAlert(`${countryData.name} imported successfully!`);
+				showAlert(gameText("APP_57", { p0: countryData.name }));
 			} catch (e) {
 				console.error(e);
-				showAlert("Import failed.");
+				showAlert(gameText("APP_58"));
 				runtime.loadingOverlay.style.display = "none";
 			}
 		};
@@ -179,7 +180,7 @@ export function createCommunityControls(runtime) {
 		window.playFromHub = async (url, id, name, ownerUsername) => {
 			runtime.primeAudio();
 			runtime.setLoadingThematic(true);
-			runtime.loadingStatus.innerText = "Downloading Scenario...";
+			runtime.loadingStatus.innerText = gameText("APP_59");
 			runtime.loadingOverlay.style.display = "flex";
 			runtime.scenarioHubModal.style.display = "none";
 
@@ -209,7 +210,7 @@ export function createCommunityControls(runtime) {
 				}
 			} catch (e) {
 				console.error(e);
-				showAlert("Failed to download scenario.");
+				showAlert(gameText("APP_60"));
 				runtime.loadingOverlay.style.display = "none";
 			}
 		};
@@ -219,7 +220,7 @@ export function createCommunityControls(runtime) {
 		window.remixFromHub = async (url, sourceId, sourceName, ownerUsername) => {
 			runtime.primeAudio();
 			runtime.setLoadingThematic(true);
-			runtime.loadingStatus.innerText = "Downloading for Remix...";
+			runtime.loadingStatus.innerText = gameText("APP_61");
 			runtime.loadingOverlay.style.display = "flex";
 			runtime.scenarioHubModal.style.display = "none";
 
@@ -239,7 +240,7 @@ export function createCommunityControls(runtime) {
 					ownerUsername,
 					blobUrl: url,
 				};
-				runtime.statusText.innerText = `REMIXING: ${sourceName}`;
+				runtime.statusText.innerText = gameText("APP_29", { p0: sourceName });
 
 				// If we remix our OWN work, allow updating it
 				runtime.activeScenarioId =
@@ -251,7 +252,7 @@ export function createCommunityControls(runtime) {
 				}
 			} catch (e) {
 				console.error(e);
-				showAlert("Failed to download scenario for remix.");
+				showAlert(gameText("APP_62"));
 				runtime.loadingOverlay.style.display = "none";
 			}
 		};
@@ -322,10 +323,11 @@ export function createCommunityControls(runtime) {
 				runtime.currentEditingCommentId = null;
 				runtime.itemReplyIndicator.style.display = "none";
 				runtime.itemCancelReplyBtn.style.display = "none";
-				runtime.itemCommentSubmit.textContent = "Post";
+				runtime.itemCommentSubmit.setAttribute("data-i18n", "APP_63");
+				runtime.itemCommentSubmit.textContent = gameText("APP_63");
 			} catch (e) {
 				console.error("Failed to post comment", e);
-				showAlert("Failed to post comment. Try again.");
+				showAlert(gameText("APP_64"));
 			}
 		});
 	}
@@ -336,7 +338,8 @@ export function createCommunityControls(runtime) {
 			runtime.currentEditingCommentId = null;
 			runtime.itemReplyIndicator.style.display = "none";
 			runtime.itemCancelReplyBtn.style.display = "none";
-			runtime.itemCommentSubmit.textContent = "Post";
+			runtime.itemCommentSubmit.setAttribute("data-i18n", "APP_63");
+			runtime.itemCommentSubmit.textContent = gameText("APP_63");
 		});
 	}
 
@@ -358,11 +361,13 @@ export function createCommunityControls(runtime) {
 
 	function bindConfirmUploadBtnClick() {
 		runtime.confirmUploadBtn.addEventListener("click", async () => {
-			const name = runtime.uploadNameInput.value.trim() || "Untitled Scenario";
+			const name =
+				runtime.uploadNameInput.value.trim() ||
+				gameText("COMMUNITY_UNTITLED_SCENARIO");
 			const desc = runtime.uploadDescInput.value.trim();
 
 			runtime.uploadDetailsModal.style.display = "none";
-			runtime.loadingStatus.innerText = "Uploading Scenario...";
+			runtime.loadingStatus.innerText = gameText("APP_65");
 			runtime.loadingOverlay.style.display = "flex";
 
 			try {
@@ -417,10 +422,10 @@ export function createCommunityControls(runtime) {
 				});
 
 				runtime.loadingOverlay.style.display = "none";
-				showAlert("Scenario uploaded successfully to the hub!");
+				showAlert(gameText("APP_66"));
 			} catch (e) {
 				console.error(e);
-				showAlert("Failed to upload scenario.");
+				showAlert(gameText("APP_67"));
 				runtime.loadingOverlay.style.display = "none";
 			}
 		});

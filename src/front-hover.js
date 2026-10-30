@@ -1,3 +1,4 @@
+import { gameText } from "./i18n.js";
 import { collectSoldierFrontGroups } from "./render-soldier-labels.js";
 
 // Hovering near a front shows both sides' troops on it and which way it moves.
@@ -145,7 +146,7 @@ export function createFrontHover(runtime) {
 		}
 		const first = hovered.samples[0];
 		const last = hovered.samples.at(-1);
-		let trend = "Front holding";
+		let trend = gameText("MAP_FRONT_HOLDING");
 		let trendSide = -1;
 		if (first && last && last.at - first.at >= REFRESH_MS * 1.5) {
 			const share = (c) => c[0] / Math.max(1, c[0] + c[1]);
@@ -153,9 +154,12 @@ export function createFrontHover(runtime) {
 			if (Math.abs(change) >= 0.01) trendSide = change > 0 ? 0 : 1;
 		}
 		const names = [a, b].map(
-			(side) => runtime.getSideDisplayName?.(side) || `Side ${side + 1}`,
+			(side) =>
+				runtime.getSideDisplayName?.(side) ||
+				gameText("MAP_HOVER_SIDE", { side: side + 1 }),
 		);
-		if (trendSide >= 0) trend = `${names[trendSide]} advancing`;
+		if (trendSide >= 0)
+			trend = gameText("MAP_ADVANCING", { side: names[trendSide] });
 		const format = (value) =>
 			runtime.influenceLayer?.formatSoldiers?.(value) ??
 			Math.round(value).toLocaleString();

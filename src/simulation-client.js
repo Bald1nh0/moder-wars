@@ -10,6 +10,7 @@ import {
 	collectTransferBuffers,
 	createControlDeltaTracker,
 	createPresentationSnapshot,
+	createPresentationSnapshotCache,
 	createPresentationUnitCache,
 	resetPresentationUnitCache,
 	SIMULATION_PROTOCOL_VERSION,
@@ -25,6 +26,10 @@ export function createSimulationClient(
 				new URL("../workers/war-simulation-worker.js", import.meta.url),
 				{ type: "module" },
 			),
+		allowLocalFallback = true,
+		startupTimeoutMs = 5000,
+		handoffTimeoutMs = 0,
+		onFailure = () => {},
 		onEvent = () => {},
 		onSnapshot = () => {},
 	} = {},
@@ -40,7 +45,17 @@ export function createSimulationClient(
 		queue = Promise.resolve(),
 		signature = "",
 		lastLocalSnapshot = 0;
+	let remoteFailed = false;
+	let ownerTermination = Promise.resolve();
 	let nextRequest = 0;
+	const pendingCommands = new Map();
+	function cancelCommands() {
+		for (const pending of pendingCommands.values()) {
+			clearTimeout(pending.timer);
+			pending.resolve({ ok: false, reason: "unavailable" });
+		}
+		pendingCommands.clear();
+	}
 	let pendingEdits = 0;
 	let presentationRevision = 0;
 	let pendingPresentationWorkMs = 0;
@@ -52,6 +67,30 @@ export function createSimulationClient(
 		perfResetGeneration = 0;
 	const events = [];
 	const now = () => globalThis.performance?.now?.() ?? Date.now();
+	const requestedOwner = allowLocalFallback ? "browser" : "server";
+	let startupStartedAt = null;
+	let diagnostics = {
+		requestedOwner,
+		owner: null,
+		status: "idle",
+		startupMs: null,
+		snapshots: 0,
+		lastTick: 0,
+		error: null,
+		fallbackReason: null,
+	};
+	function recordReady(owner) {
+		diagnostics.owner = owner;
+		diagnostics.status = "ready";
+		diagnostics.error = null;
+		diagnostics.startupMs ??= Math.max(0, now() - startupStartedAt);
+	}
+	function recordFailure(error) {
+		cancelCommands();
+		diagnostics.owner = null;
+		diagnostics.status = "error";
+		diagnostics.error = error?.message || String(error);
+	}
 	function runPresentationIntake(fullOwner, apply) {
 		const startedAt = now();
 		let applied = false;
@@ -126,6 +165,7 @@ export function createSimulationClient(
 			for (const event of pendingEvents) onEvent(event.type, ...event.args);
 			onEvent("onPoliticalMapChanged");
 		});
+		diagnostics.lastTick = state._simTickCount ?? diagnostics.lastTick;
 	}
 	function applySnapshot(snapshot) {
 		runPresentationIntake(false, () => {
@@ -156,13 +196,37 @@ export function createSimulationClient(
 			for (const event of snapshot.events || [])
 				onEvent(event.type, ...event.args);
 		});
+		diagnostics.snapshots++;
+		diagnostics.lastTick =
+			snapshot.values._simTickCount ?? diagnostics.lastTick;
+	}
+	function terminateWorker() {
+		const completion = worker?.terminate();
+		worker = null;
+		if (completion?.then) {
+			ownerTermination = Promise.resolve(completion);
+			ownerTermination.catch(() => {});
+		}
+	}
+	function failRemote(error) {
+		recordFailure(error);
+		remoteFailed = true;
+		active = false;
+		runtime.isPaused = true;
+		terminateWorker();
+		handoff?.reject(error);
+		handoff = null;
+		onFailure(error);
 	}
 	function stop({ invalidateEdits = true } = {}) {
+		cancelCommands();
+		diagnostics.owner = null;
+		diagnostics.status = "idle";
+		remoteFailed = false;
 		if (invalidateEdits) editGeneration++;
 		active = false;
 		epoch++;
-		worker?.terminate();
-		worker = null;
+		terminateWorker();
 		clearTimeout(localTimer);
 		localTimer = null;
 		local = null;
@@ -179,6 +243,7 @@ export function createSimulationClient(
 	}
 	function startLocal(state) {
 		const trackerState = {};
+		const presentationCache = createPresentationSnapshotCache();
 		local = createSimulationCore(state, {
 			onEvent: (type, ...args) => {
 				events.push({ type, args });
@@ -210,6 +275,7 @@ export function createSimulationClient(
 						local.state,
 						trackerState.tracker,
 						{
+							cache: presentationCache,
 							includeTopology: events.some(
 								(event) =>
 									event.type === "onConflictMapChanged" ||
@@ -223,31 +289,50 @@ export function createSimulationClient(
 				}
 			} catch (error) {
 				active = false;
+				recordFailure(error);
 				console.error("Simulation stopped", error);
 			}
 			if (active) localTimer = setTimeout(turn, 8);
 		};
 		localTimer = setTimeout(turn, 8);
+		recordReady("main-thread");
 	}
 	async function start() {
 		stop({ invalidateEdits: false });
 		const generation = epoch;
-		const initial = captureSimulationState(runtime);
-		// Edits and scenario resets may replace mirrors while reusing unit IDs.
-		resetPresentationUnitCache(presentationUnitCache, runtime.units);
+		startupStartedAt = now();
+		diagnostics = {
+			requestedOwner,
+			owner: null,
+			status: "starting",
+			startupMs: null,
+			snapshots: 0,
+			lastTick: runtime._simTickCount || 0,
+			error: null,
+			fallbackReason: null,
+		};
 		active = true;
+		let initial;
 		try {
+			initial = captureSimulationState(runtime);
+			// Edits and scenario resets may replace mirrors while reusing unit IDs.
+			resetPresentationUnitCache(presentationUnitCache, runtime.units);
+			if (!allowLocalFallback) {
+				await ownerTermination;
+				if (generation !== epoch) return;
+			}
 			worker = workerFactory();
 			await new Promise((resolve, reject) => {
 				const timeout = setTimeout(
 					() =>
 						ready?.reject(new Error("Simulation worker did not initialize")),
-					5000,
+					startupTimeoutMs,
 				);
 				ready = {
 					resolve: () => {
 						clearTimeout(timeout);
 						ready = null;
+						recordReady(allowLocalFallback ? "worker" : "server");
 						resolve();
 					},
 					reject: (error) => {
@@ -262,6 +347,13 @@ export function createSimulationClient(
 					else if (data.type === "SNAPSHOT") {
 						applySnapshot(data.snapshot);
 						worker?.postMessage({ type: "ACK", epoch });
+					} else if (data.type === "COMMAND_RESULT") {
+						const pending = pendingCommands.get(data.requestId);
+						if (pending) {
+							clearTimeout(pending.timer);
+							pendingCommands.delete(data.requestId);
+							pending.resolve(data.result);
+						}
 					} else if (data.type === "HANDOFF") {
 						if (!handoff || data.requestId !== handoff.requestId) return;
 						applyFullOwnerState(data.state, data.events);
@@ -270,6 +362,7 @@ export function createSimulationClient(
 					} else if (data.type === "ERROR") {
 						console.error("Simulation worker failed", data.message);
 						if (ready) ready.reject(new Error(data.message));
+						else if (!allowLocalFallback) failRemote(new Error(data.message));
 						else if (data.state) {
 							worker?.terminate();
 							worker = null;
@@ -277,9 +370,19 @@ export function createSimulationClient(
 							if (handoff) {
 								handoff.resolve();
 								handoff = null;
-							} else startLocal(data.state);
+							} else {
+								diagnostics.fallbackReason = data.message;
+								try {
+									startLocal(data.state);
+								} catch (error) {
+									active = false;
+									recordFailure(error);
+									throw error;
+								}
+							}
 						} else {
 							active = false;
+							recordFailure(new Error(data.message));
 							runtime.isPaused = true;
 							worker?.terminate();
 							worker = null;
@@ -289,9 +392,12 @@ export function createSimulationClient(
 					}
 				};
 				worker.onerror = (error) => {
+					if (generation !== epoch) return;
 					if (ready) ready.reject(error);
+					else if (!allowLocalFallback) failRemote(error);
 					else {
 						active = false;
+						recordFailure(error);
 						runtime.isPaused = true;
 						worker?.terminate();
 						worker = null;
@@ -317,10 +423,25 @@ export function createSimulationClient(
 				runtime.sideInfluenceMaps = [];
 		} catch (error) {
 			if (generation !== epoch) return;
-			worker?.terminate();
-			worker = null;
+			terminateWorker();
+			if (!allowLocalFallback) {
+				failRemote(error);
+				return;
+			}
+			if (!initial) {
+				active = false;
+				recordFailure(error);
+				throw error;
+			}
 			console.warn("Using local simulation owner:", error.message);
-			startLocal(captureSimulationState(runtime));
+			diagnostics.fallbackReason = error.message || String(error);
+			try {
+				startLocal(captureSimulationState(runtime));
+			} catch (localError) {
+				active = false;
+				recordFailure(localError);
+				throw localError;
+			}
 			if (Object.getOwnPropertyDescriptor(runtime, "sideInfluenceMaps")?.set)
 				runtime.sideInfluenceMaps = [];
 		}
@@ -334,6 +455,7 @@ export function createSimulationClient(
 			}
 			return;
 		}
+		const generation = epoch;
 		syncControls();
 		active = false;
 		clearTimeout(localTimer);
@@ -344,12 +466,32 @@ export function createSimulationClient(
 			);
 			local = null;
 			clock = null;
+			diagnostics.owner = null;
+			diagnostics.status = "suspended";
 			return;
 		}
 		if (worker) {
 			const pending = new Promise((resolve, reject) => {
 				const requestId = ++nextRequest;
-				handoff = { resolve, reject, requestId };
+				const timeout =
+					handoffTimeoutMs > 0
+						? setTimeout(() => {
+								const error = new Error("Simulation handoff timed out");
+								if (!allowLocalFallback) failRemote(error);
+								else handoff?.reject(error);
+							}, handoffTimeoutMs)
+						: null;
+				handoff = {
+					requestId,
+					resolve: () => {
+						clearTimeout(timeout);
+						resolve();
+					},
+					reject: (error) => {
+						clearTimeout(timeout);
+						reject(error);
+					},
+				};
 				worker.postMessage({
 					type: "HANDOFF",
 					epoch,
@@ -357,9 +499,20 @@ export function createSimulationClient(
 				});
 			});
 			handoffPromise = pending
-				.then(() => {
-					worker?.terminate();
-					worker = null;
+				.then(async () => {
+					terminateWorker();
+					if (!allowLocalFallback) await ownerTermination;
+					if (generation === epoch) {
+						diagnostics.owner = null;
+						diagnostics.status = "suspended";
+					}
+				})
+				.catch((error) => {
+					if (generation === epoch) {
+						if (!allowLocalFallback) failRemote(error);
+						else recordFailure(error);
+					}
+					throw error;
 				})
 				.finally(() => {
 					handoffPromise = null;
@@ -368,6 +521,12 @@ export function createSimulationClient(
 		}
 	}
 	function edit(mutation) {
+		if (remoteFailed)
+			return Promise.reject(
+				new Error(
+					"Server simulation is disconnected; reload to start a new game",
+				),
+			);
 		if (!active && !handoff && pendingEdits === 0) return mutation();
 		pendingEdits++;
 		const queuedGeneration = editGeneration;
@@ -400,11 +559,36 @@ export function createSimulationClient(
 		return result;
 	}
 	function command(command) {
+		if (command?.type === "campaign") {
+			if (!active || handoff || pendingCommands.size >= 32)
+				return Promise.resolve({ ok: false, reason: "unavailable" });
+			if (local) return Promise.resolve(local.command(command));
+			if (!worker) return Promise.resolve({ ok: false, reason: "unavailable" });
+			const requestId = ++nextRequest;
+			return new Promise((resolve) => {
+				const timer = setTimeout(() => {
+					pendingCommands.delete(requestId);
+					resolve({ ok: false, reason: "timeout" });
+				}, 15_000);
+				pendingCommands.set(requestId, { resolve, timer });
+				try {
+					worker.postMessage({ type: "COMMAND", epoch, requestId, command });
+				} catch {
+					clearTimeout(timer);
+					pendingCommands.delete(requestId);
+					resolve({ ok: false, reason: "unavailable" });
+				}
+			});
+		}
 		if (worker && active)
 			worker.postMessage({ type: "COMMAND", epoch, command });
 		else if (local && active) local.command(command);
 	}
 	function syncControls() {
+		if (remoteFailed) {
+			runtime.isPaused = true;
+			return;
+		}
 		if (!active) return;
 		if (runtime.perf !== lastPerf) {
 			lastPerf = runtime.perf;
@@ -460,11 +644,14 @@ export function createSimulationClient(
 		edit,
 		command,
 		syncControls,
+		get diagnostics() {
+			return { ...diagnostics };
+		},
 		get active() {
 			return active;
 		},
 		get ownsState() {
-			return !!(worker || local);
+			return !!(active || worker || local || remoteFailed || handoffPromise);
 		},
 		get presentationRevision() {
 			return presentationRevision;

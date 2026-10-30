@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { gameText } from "../src/i18n.js";
 import {createConflictSetup} from "../src/conflict-setup.js";
 import {createMenuControls} from "../src/menu-controls.js";
 
@@ -9,6 +10,7 @@ const button = { setAttribute(name, value) { this[name] = value; } };
 const note = { hidden: true };
 const sides = [[{ id: 1 }, { id: 2 }], []];
 const context = vm.createContext({
+ gameText,
 	ffaMode: false,
 	ffaToggleBtn: button,
 	addSideBtn: {},

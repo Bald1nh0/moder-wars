@@ -485,7 +485,13 @@ export function replenishArmyFormation(unit, context, tick) {
 	const current =
 		unit.personnel ??
 		Math.round((capacity * unit.health) / (unit.maxHealth || 100));
-	const reserve = context.sideRecruitableManpower?.[unit.sideIndex] || 0;
+	const country = context.campaign?.enabled
+		? context.campaign.countries[unit.sovereignId]
+		: null;
+	const reserve = Math.min(
+		context.sideRecruitableManpower?.[unit.sideIndex] || 0,
+		context.campaign?.enabled ? country?.reserve || 0 : Infinity,
+	);
 	const added = Math.max(
 		0,
 		Math.min(
@@ -497,6 +503,7 @@ export function replenishArmyFormation(unit, context, tick) {
 	unit._armyLastReinforceTick = tick;
 	if (!added) return 0;
 	context.sideRecruitableManpower[unit.sideIndex] -= added;
+	if (country) country.reserve -= added;
 	unit.personnel = current + added;
 	unit.personnelCapacity = capacity;
 	unit.strengthMultiplier =

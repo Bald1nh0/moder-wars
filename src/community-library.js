@@ -1,3 +1,4 @@
+import { gameText } from "./i18n.js";
 // Dependencies are supplied by the application; this module does not import it.
 export function createCommunityLibrary(runtime) {
 	async function initMultiplayer() {
@@ -53,7 +54,7 @@ export function createCommunityLibrary(runtime) {
 	function renderCountryLibrary(countries) {
 		runtime.hubCountryCache = {};
 		if (countries.length === 0) {
-			runtime.libraryList.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;">Library is empty. Contribute your nations!</div>`;
+			runtime.libraryList.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;" data-i18n="COMMUNITY_EMPTY_COUNTRY_LIBRARY">${gameText("COMMUNITY_EMPTY_COUNTRY_LIBRARY")}</div>`;
 			return;
 		}
 
@@ -72,7 +73,7 @@ export function createCommunityLibrary(runtime) {
 				const safeName = runtime.escapeHtml(c.name);
 				const safeUsername = runtime.escapeHtml(c.username);
 				const safeDescription = runtime.escapeHtml(
-					c.description || "No description provided.",
+					c.description || gameText("APP_68"),
 				);
 				const safeColor = runtime.escapeHtml(c.color || "#fff");
 				return `
@@ -96,10 +97,10 @@ export function createCommunityLibrary(runtime) {
                 <div class="hub-description">${safeDescription}</div>
                 <div class="hub-actions" style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
                     <div style="display: flex; gap: 5px;" class="hub-actions-buttons">
-                        ${canImport ? `<button class="mini-btn" style="background: #27ae60; padding: 6px 12px;" data-import-country-id="${safeId}">IMPORT</button>` : ""}
+                        ${canImport ? `<button class="mini-btn" style="background: #27ae60; padding: 6px 12px;" data-import-country-id="${safeId}" data-i18n="COMMUNITY_IMPORT">${gameText("COMMUNITY_IMPORT")}</button>` : ""}
                         ${
 													c.username === myUsername
-														? `<button class="mini-btn" style="background: #c0392b; padding: 6px 12px;" data-delete-country-id="${safeId}">DEL</button>`
+														? `<button class="mini-btn" style="background: #c0392b; padding: 6px 12px;" data-delete-country-id="${safeId}" data-i18n="COMMUNITY_DELETE">${gameText("COMMUNITY_DELETE")}</button>`
 														: ""
 												}
                     </div>
@@ -148,7 +149,7 @@ export function createCommunityLibrary(runtime) {
 	function renderFlagLibrary(flags) {
 		runtime.hubFlagCache = {};
 		if (flags.length === 0) {
-			runtime.flagLibraryList.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;">No custom flags shared yet. Be the first!</div>`;
+			runtime.flagLibraryList.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;" data-i18n="COMMUNITY_EMPTY_FLAG_LIBRARY">${gameText("COMMUNITY_EMPTY_FLAG_LIBRARY")}</div>`;
 			return;
 		}
 
@@ -163,7 +164,7 @@ export function createCommunityLibrary(runtime) {
 				const safeName = runtime.escapeHtml(f.name);
 				const safeUsername = runtime.escapeHtml(f.username);
 				const safeDescription = runtime.escapeHtml(
-					f.description || "No description.",
+					f.description || gameText("APP_69"),
 				);
 				return `
         <div class="hub-item" data-item-type="flag" data-item-id="${safeId}">
@@ -181,10 +182,10 @@ export function createCommunityLibrary(runtime) {
                 <div class="hub-description">${safeDescription}</div>
                 <div class="hub-actions" style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
                     <div style="display: flex; gap: 5px;" class="hub-actions-buttons">
-                        ${canImport ? `<button class="mini-btn" style="background: #2e86de; padding: 6px 12px;" data-import-flag-id="${safeId}">USE</button>` : ""}
+                        ${canImport ? `<button class="mini-btn" style="background: #2e86de; padding: 6px 12px;" data-import-flag-id="${safeId}" data-i18n="COMMUNITY_USE">${gameText("COMMUNITY_USE")}</button>` : ""}
                         ${
 													f.username === myUsername
-														? `<button class="mini-btn" style="background: #c0392b; padding: 6px 12px;" data-delete-flag-id="${safeId}">DEL</button>`
+														? `<button class="mini-btn" style="background: #c0392b; padding: 6px 12px;" data-delete-flag-id="${safeId}" data-i18n="COMMUNITY_DELETE">${gameText("COMMUNITY_DELETE")}</button>`
 														: ""
 												}
                     </div>

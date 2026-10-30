@@ -4,8 +4,9 @@ import {
 	PERF_COUNTER_DEFAULTS,
 } from "./simulation-metrics.js";
 import { createSimulationState } from "./simulation-state.js";
+import { createSimulationView, simulationViewType } from "./simulation-wire.js";
 
-export const SIMULATION_PROTOCOL_VERSION = 2;
+export const SIMULATION_PROTOCOL_VERSION = 4;
 export const CONTROL_TILE_SIZE = 32;
 export const CONTROL_MAP_FIELDS = [
 	"worldControlMap",
@@ -31,6 +32,7 @@ const stateKeys = Object.keys(createSimulationState()).filter(
 );
 stateKeys.push("isPaused", "initialCombatants", "initialOwnerMap", "perf");
 const assetKeys = new Set([
+	"displayName",
 	"feature",
 	"flag",
 	"tempFlag",
@@ -54,10 +56,12 @@ export function cloneSimulationData(value, seen = new Map()) {
 	}
 	if (ArrayBuffer.isView(value)) {
 		const buffer = cloneSimulationData(value.buffer, seen);
-		const result =
-			value instanceof DataView
-				? new DataView(buffer, value.byteOffset, value.byteLength)
-				: new value.constructor(buffer, value.byteOffset, value.length);
+		const result = createSimulationView(
+			simulationViewType(value),
+			buffer,
+			value.byteOffset,
+			value instanceof DataView ? value.byteLength : value.length,
+		);
 		seen.set(value, result);
 		return result;
 	}
@@ -89,6 +93,15 @@ export function cloneSimulationData(value, seen = new Map()) {
 	const result = Array.isArray(value) ? new Array(value.length) : {};
 	seen.set(value, result);
 	for (const key of Object.keys(value)) {
+		// Imported state must not introduce prototype setters or constructor chains.
+		if (
+			key === "__proto__" ||
+			key === "constructor" ||
+			key === "prototype" ||
+			Object.hasOwn(Object.prototype, key) ||
+			(Array.isArray(value) && Object.hasOwn(Array.prototype, key))
+		)
+			continue;
 		if (assetKeys.has(key)) continue;
 		const item = cloneSimulationData(value[key], seen);
 		if (item !== undefined) result[key] = item;
@@ -123,6 +136,19 @@ export function captureSimulationState(
 	return result;
 }
 
+function assignStateFields(target, source) {
+	for (const [key, value] of Object.entries(source)) {
+		if (
+			key === "__proto__" ||
+			key === "constructor" ||
+			key === "prototype" ||
+			Object.hasOwn(Object.prototype, key)
+		)
+			continue;
+		target[key] = value;
+	}
+}
+
 export function applySimulationState(
 	runtime,
 	incoming,
@@ -130,13 +156,21 @@ export function applySimulationState(
 ) {
 	for (const [key, value] of Object.entries(incoming)) {
 		if (
+			key === "__proto__" ||
+			key === "constructor" ||
+			key === "prototype" ||
+			Object.hasOwn(Object.prototype, key)
+		)
+			continue;
+		if (!stateKeys.includes(key)) continue;
+		if (
 			key === "gameState" &&
 			value === "SIMULATING" &&
 			runtime.gameState?.startsWith("PEACE_SELECT_")
 		)
 			continue;
 		if (key === "CONFIG") {
-			Object.assign(runtime.CONFIG, value);
+			assignStateFields(runtime.CONFIG, value);
 			continue;
 		}
 		if (key === "perf") continue;
@@ -149,6 +183,8 @@ export function applySimulationState(
 			const merge = (country) => {
 				if (!country) return country;
 				const old = oldCountries.get(country.id) || {};
+				const previousName = old.name;
+				const displayName = old.displayName;
 				const controls = {};
 				if (preserveCountryControls)
 					for (const field of [
@@ -160,7 +196,14 @@ export function applySimulationState(
 						"color",
 					])
 						if (Object.hasOwn(old, field)) controls[field] = old[field];
-				return Object.assign(old, country, controls);
+				assignStateFields(old, country);
+				assignStateFields(old, controls);
+				// Localized labels belong to the UI, including when an older owner
+				// returns a payload captured before the player changed language.
+				if (old.name === previousName && typeof displayName === "string")
+					old.displayName = displayName;
+				else delete old.displayName;
+				return old;
 			};
 			const merged =
 				key === "sides"
@@ -218,17 +261,20 @@ const unitFields = [
 	"deployTicks",
 	"lastCombatTick",
 ];
+const campaignRoles = ["infantry", "armor", "artillery", "airDefense"];
 export function packPresentationUnits(units) {
 	const numbers = new Float64Array(units.length * unitFields.length);
 	const flags = new Uint8Array(units.length);
+	const roles = new Uint8Array(units.length);
 	units.forEach((unit, index) => {
 		unitFields.forEach((key, column) => {
 			numbers[index * unitFields.length + column] = unit[key] ?? NaN;
 		});
+		roles[index] = Math.max(0, campaignRoles.indexOf(unit.campaignRole));
 		flags[index] =
 			(unit.isAlpenjager ? 1 : 0) | (unit.isAtSea || unit._isAtSea ? 2 : 0);
 	});
-	return { numbers, flags };
+	return { numbers, flags, roles };
 }
 
 /** A bounded owner for the stable unit lookup and result array used by snapshots. */
@@ -281,6 +327,7 @@ export function unpackPresentationUnits(packed, previous = [], cache = null) {
 			if (Number.isNaN(value)) delete unit[unitFields[column]];
 			else unit[unitFields[column]] = value;
 		}
+		unit.campaignRole = campaignRoles[packed.roles?.[index] ?? 0] || "infantry";
 		unit.isAlpenjager = !!(packed.flags[index] & 1);
 		unit.isAtSea = !!(packed.flags[index] & 2);
 		result[index] = unit;
@@ -624,6 +671,7 @@ export function collectTransferBuffers(
 	return Array.from(buffers);
 }
 const snapshotKeys = [
+	"campaign",
 	"gameState",
 	"encirclementPockets",
 	"_simTickCount",
@@ -790,6 +838,34 @@ export function createPresentationSnapshot(
 		reuseBaselineForWorker = false,
 	} = {},
 ) {
+	const campaign = state.campaign;
+	let visibleCampaign;
+	const readValue = (key) => {
+		if (key !== "campaign") return state[key];
+		if (!campaign) return null;
+		// Build the display projection only when publication is due. Planner
+		// history/timers belong to the owner and survive full handoffs instead.
+		visibleCampaign ??= {
+			...campaign,
+			countries: Object.fromEntries(
+				Object.entries(campaign.countries || {}).map(([id, country]) => {
+					const { aiState: _aiState, ...visibleCountry } = country;
+					return [id, visibleCountry];
+				}),
+			),
+			eventBaseline: undefined,
+			regions: campaign.regions
+				? {
+						regions: campaign.regions.regions.map(({ id, names, summary }) => ({
+							id,
+							names,
+							summary,
+						})),
+					}
+				: null,
+		};
+		return visibleCampaign;
+	};
 	const values = {};
 	const valueCache = cache?.values instanceof Map ? cache.values : null;
 	const wireSeen = new Map();
@@ -797,10 +873,10 @@ export function createPresentationSnapshot(
 	const publishBaseline = (key, baseline) => {
 		values[key] = reuseBaselineForWorker
 			? baseline
-			: cloneSimulationData(state[key], wireSeen);
+			: cloneSimulationData(readValue(key), wireSeen);
 	};
 	const publishValue = (key) => {
-		const value = state[key];
+		const value = readValue(key);
 		if (!valueCache) {
 			values[key] = cloneSimulationData(value, wireSeen);
 			return;
@@ -844,7 +920,26 @@ export function createPresentationSnapshot(
 		);
 		publishBaseline(key, baseline);
 	};
-	for (const key of snapshotKeys) publishValue(key);
+	for (const key of snapshotKeys) {
+		if (key === "campaign" && valueCache && campaign) {
+			// Logistics is displayed once per second; commands and new events bypass the budget.
+			const tick = state._simTickCount || 0;
+			const revision = campaign.commandRevision || 0;
+			const events = campaign.nextEventId || 0;
+			if (
+				cache.campaignTick != null &&
+				tick >= cache.campaignTick &&
+				tick - cache.campaignTick < 60 &&
+				cache.campaignCommandRevision === revision &&
+				cache.campaignEventId === events
+			)
+				continue;
+			cache.campaignTick = tick;
+			cache.campaignCommandRevision = revision;
+			cache.campaignEventId = events;
+		}
+		publishValue(key);
+	}
 	if (includeTopology) {
 		for (const key of [
 			"countryMetadata",

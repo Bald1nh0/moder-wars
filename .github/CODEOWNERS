@@ -1,0 +1,4 @@
+# All source, build inputs and review rules require the repository owner's review.
+# Enforce this with main branch protection: Require review from Code Owners.
+# This routes reviews; it does not authorize or isolate workflow execution.
+* @Bald1nh0

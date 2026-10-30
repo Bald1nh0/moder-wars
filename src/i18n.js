@@ -4,75 +4,114 @@ import { TRANSLATIONS } from "./translations.js";
 export { TRANSLATIONS };
 
 let hooks = {};
+const ATTRIBUTES = ["title", "placeholder", "aria-label"];
 export function configureLanguageUi(callbacks) {
 	hooks = callbacks;
 }
-export function applyLanguage(lang) {
-	if (!lang) lang = getCookie("mw_lang") || "en";
-	const dict = TRANSLATIONS[lang] || TRANSLATIONS.en;
+
+export function getLanguage() {
+	const saved =
+		typeof document !== "undefined" && typeof document.cookie === "string"
+			? getCookie("mw_lang")
+			: "en";
+	return Object.hasOwn(TRANSLATIONS, saved) ? saved : "en";
+}
+
+function translateStatus(text, previous, lang) {
+	const source = Object.entries(TRANSLATIONS[previous]).filter(
+		([, value]) => typeof value === "string",
+	);
+	const exact = source.find(([, value]) => value === text);
+	if (exact) return getTranslation(exact[0], lang);
+	// Only the status label is reverse-matched. User-authored DOM content is
+	// never scanned or translated. Prefer the most specific message template.
+	const templates = source.filter(([, value]) => /\{\w+\}/.test(value));
+	templates.sort(
+		(a, b) =>
+			b[1].replace(/\{\w+\}/g, "").length - a[1].replace(/\{\w+\}/g, "").length,
+	);
+	for (const [key, value] of templates) {
+		const names = [];
+		let pattern = "",
+			end = 0;
+		const escapePattern = (part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+		for (const match of value.matchAll(/\{([A-Za-z][A-Za-z0-9_]*)\}/g)) {
+			pattern += `${escapePattern(value.slice(end, match.index))}([\\s\\S]*?)`;
+			names.push(match[1]);
+			end = match.index + match[0].length;
+		}
+		const match = new RegExp(
+			`^${pattern}${escapePattern(value.slice(end))}$`,
+		).exec(text);
+		if (match)
+			return getTranslation(
+				key,
+				lang,
+				null,
+				Object.fromEntries(names.map((name, i) => [name, match[i + 1]])),
+			);
+	}
+	return text;
+}
+
+export function applyLanguage(language = getLanguage()) {
+	const lang = Object.hasOwn(TRANSLATIONS, language) ? language : "en";
+	const previous = getLanguage();
+	// Dynamic refresh callbacks must see the newly selected language.
+	setCookie("mw_lang", lang);
+	document.documentElement?.setAttribute("lang", lang);
 	document.querySelectorAll("[data-i18n]").forEach((el) => {
 		const key = el.getAttribute("data-i18n");
-		const value = dict[key] || TRANSLATIONS.en[key];
-		if (value) {
-			el.innerText = value;
-		}
+		if (TRANSLATIONS[lang][key] || TRANSLATIONS.en[key])
+			el.innerText = getTranslation(key, lang);
 	});
-
-	// Update dynamic status messages if they are currently set to default strings
-	const statusText = hooks.statusText?.();
-	if (statusText) {
-		const currentText = statusText.innerText;
-
-		// Handle complex status strings like "REMIXING: World"
-		if (currentText.includes(": ")) {
-			const parts = currentText.split(": ");
-			const prefixKey =
-				parts[0] === "REMIXING"
-					? "REMIXING"
-					: parts[0] === "PLAYING"
-						? "PLAYING"
-						: null;
-			if (prefixKey && dict[prefixKey]) {
-				statusText.innerText = `${dict[prefixKey]}: ${parts[1]}`;
-			}
-		} else {
-			for (const [key, val] of Object.entries(TRANSLATIONS.en)) {
-				if (currentText === val && dict[key]) {
-					statusText.innerText = dict[key];
-					break;
-				}
-			}
-		}
-	}
-
-	const select = document.getElementById("language-select");
-	if (select) select.value = lang;
-	setCookie("mw_lang", lang);
-
-	// Re-translate country metadata
-	const countryMetadata = hooks.countryMetadata?.();
-	if (countryMetadata) {
-		countryMetadata.forEach((m) => {
-			if (m?.name) {
-				const trans = getTranslation(m.name, lang, "NATIONS");
-				if (trans !== m.name) m.displayName = trans;
-				else m.displayName = m.name;
-			}
+	for (const attribute of ATTRIBUTES) {
+		document.querySelectorAll(`[data-i18n-${attribute}]`).forEach((el) => {
+			const key = el.getAttribute(`data-i18n-${attribute}`);
+			if (TRANSLATIONS[lang][key] || TRANSLATIONS.en[key])
+				el.setAttribute(attribute, getTranslation(key, lang));
 		});
 	}
 
-	// Re-translate current simulation side UI
+	// Existing status text may have been rendered in any previously selected language.
+	const status = hooks.statusText?.();
+	if (status)
+		status.innerText = translateStatus(status.innerText, previous, lang);
+	for (const id of ["treaty-msg", "treaty-status"]) {
+		const message = document.getElementById(id);
+		if (message)
+			message.innerText = translateStatus(message.innerText, previous, lang);
+	}
+	const select = document.getElementById("language-select");
+	if (select) select.value = lang;
+	for (const country of hooks.countryMetadata?.() || []) {
+		if (country?.name)
+			country.displayName = getTranslation(country.name, lang, "NATIONS");
+	}
 	hooks.refreshSides?.();
+	hooks.refreshDynamic?.();
+	if (typeof CustomEvent !== "undefined")
+		document.dispatchEvent?.(
+			new CustomEvent("languagechange", { detail: { language: lang } }),
+		);
 }
 
 export function getTranslation(
 	key,
-	lang = getCookie("mw_lang") || "en",
+	lang = getLanguage(),
 	subDict = null,
+	params = {},
 ) {
 	const dict = TRANSLATIONS[lang] || TRANSLATIONS.en;
-	if (subDict && dict[subDict]) {
-		return dict[subDict][key] || TRANSLATIONS.en[subDict]?.[key] || key;
-	}
-	return dict[key] || TRANSLATIONS.en[key] || key;
+	const value = subDict
+		? dict[subDict]?.[key] || TRANSLATIONS.en[subDict]?.[key] || key
+		: dict[key] || TRANSLATIONS.en[key] || key;
+	if (typeof value !== "string") return key;
+	return value.replace(/\{([A-Za-z][A-Za-z0-9_]*)\}/g, (placeholder, name) =>
+		Object.hasOwn(params, name) ? String(params[name]) : placeholder,
+	);
+}
+
+export function gameText(key, params = {}) {
+	return getTranslation(key, undefined, null, params);
 }

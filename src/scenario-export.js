@@ -1,3 +1,8 @@
+import {
+	normalizeCountryDependency,
+	normalizeCountryIso3,
+	normalizeForceProfile,
+} from "./country-force-profiles.js";
 import { expandSavedCells } from "./saved-cells.js";
 
 /** Serialize scenario state without depending on the simulation bootstrap. */
@@ -5,6 +10,10 @@ export function generateScenarioSnapshot(
 	name,
 	{
 		worldControlMap,
+		deJureMap,
+		historicalSource,
+		theater,
+		useScenarioLand,
 		landMask,
 		biomeMask,
 		isCustomTerrain,
@@ -31,12 +40,32 @@ export function generateScenarioSnapshot(
 		refAboveTerrain,
 	},
 ) {
+	if (deJureMap && deJureMap.length !== worldControlMap.length) {
+		throw new RangeError(
+			"Scenario sovereignty and control grid dimensions do not match",
+		);
+	}
 	const mapData = [];
+	const sovereignCells = new Map();
+	const knownOwners = new Set(
+		countryMetadata.filter(Boolean).map((meta) => meta.id),
+	);
 	// Save all cells that are land (mask != 0), even if they don't have a country owner (id == 0)
 	for (let i = 0; i < worldControlMap.length; i++) {
 		if (landMask[i] !== 0) {
 			// Store as [index, ownerId, biomeId]
 			mapData.push([i, worldControlMap[i], biomeMask[i] || 0]);
+			const sovereignId = deJureMap?.[i];
+			if (
+				worldControlMap[i] > 0 &&
+				sovereignId > 0 &&
+				sovereignId !== worldControlMap[i] &&
+				knownOwners.has(sovereignId)
+			) {
+				if (!sovereignCells.has(sovereignId))
+					sovereignCells.set(sovereignId, []);
+				sovereignCells.get(sovereignId).push(i);
+			}
 		}
 	}
 
@@ -56,6 +85,7 @@ export function generateScenarioSnapshot(
 		.filter((m) => m && typeof m === "object" && m.id)
 		.map((m) => ({
 			id: m.id,
+			...(normalizeCountryIso3(m) ? { iso3: normalizeCountryIso3(m) } : {}),
 			name: m.name || m.feature?.properties?.NAME || "Unnamed Nation",
 			color: m.color || "rgba(150, 150, 150, 0.5)",
 			isCustom: !!m.isCustom,
@@ -64,6 +94,12 @@ export function generateScenarioSnapshot(
 			allianceFlagUrl: m.allianceFlagUrl || null,
 			role: m.role || "OFFENSE",
 			overlordId: m.overlordId || null,
+			...(m.forceProfile
+				? { forceProfile: normalizeForceProfile(m.forceProfile) }
+				: {}),
+			...(m.dependency
+				? { dependency: normalizeCountryDependency(m.dependency) }
+				: {}),
 			releasableBy: m.releasableBy || null,
 			savedCells: expandSavedCells(m),
 			buffState: m.buffState || "none",
@@ -87,8 +123,29 @@ export function generateScenarioSnapshot(
 
 	return {
 		name: name,
+		...(useScenarioLand ? { useScenarioLand: true } : {}),
+		...(theater
+			? {
+					theater: {
+						...structuredClone(theater),
+						countryIds: Array.from(cleanMetadata, (meta) => meta.id),
+					},
+				}
+			: {}),
 		metadata: cleanMetadata,
 		mapData: mapData,
+		...(deJureMap ? { sovereigntyBase: "control" } : {}),
+		...(historicalSource
+			? { historicalSource: structuredClone(historicalSource) }
+			: {}),
+		...(sovereignCells.size > 0
+			? {
+					sovereigntyOverrides: Array.from(
+						sovereignCells,
+						([ownerId, cells]) => ({ ownerId, cells }),
+					),
+				}
+			: {}),
 		mountainData: mountainData.length > 0 ? mountainData : null,
 		mapRes: mapRes,
 		gridRes: gridRes,

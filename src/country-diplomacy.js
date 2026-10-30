@@ -1,3 +1,4 @@
+import { gameText } from "./i18n.js";
 // Dependencies are supplied by the application; this module does not import it.
 export function createCountryDiplomacy(runtime) {
 	function openReleaseModal(releaserId, sideIdx) {
@@ -65,7 +66,10 @@ export function createCountryDiplomacy(runtime) {
 			if (idx > -1) side.splice(idx, 1);
 		});
 
-		runtime.statusText.innerText = `${rMeta.name} is now a releasable of ${hostMeta.name}`;
+		runtime.statusText.innerText = gameText("APP_14", {
+			p0: rMeta.name,
+			p1: hostMeta.name,
+		});
 		runtime.countryInspector.style.display = "none";
 		runtime.recalculateAllBounds();
 		runtime.updateSidesUI();
@@ -92,7 +96,10 @@ export function createCountryDiplomacy(runtime) {
 			});
 
 		const overlordMeta = runtime.countryMetadata[overlordId - 1];
-		runtime.statusText.innerText = `${vassalMeta.name} is now a vassal of ${overlordMeta ? overlordMeta.name : "Unknown"}`;
+		runtime.statusText.innerText = gameText("APP_15", {
+			p0: vassalMeta.name,
+			p1: overlordMeta ? overlordMeta.name : "Unknown",
+		});
 
 		// Generate a dynamic half-and-half puppet flag for vassals created after game start
 		// (existing historical puppets keep their original flags unless re-vassalized through this function).
@@ -148,7 +155,10 @@ export function createCountryDiplomacy(runtime) {
 		runtime.influenceLayer.render();
 
 		const sideLabel = String.fromCharCode(65 + newSideIdx);
-		runtime.statusText.innerText = `${newCountry.name} HAS JOINED AS SIDE ${sideLabel} — WAR ON ALL`;
+		runtime.statusText.innerText = gameText("APP_16", {
+			p0: newCountry.name,
+			p1: sideLabel,
+		});
 		runtime.playWarStartSound();
 	}
 
@@ -235,7 +245,10 @@ export function createCountryDiplomacy(runtime) {
 			runtime.updateSidesUI();
 			runtime.influenceLayer.render();
 			runtime.reconcileOperationalAiLifecycle("country-changed-side");
-			runtime.statusText.innerText = `${country?.name || meta.name} HAS SWITCHED TO ${runtime.getSideDisplayName(sideIdx)}`;
+			runtime.statusText.innerText = gameText("APP_17", {
+				p0: country?.name || meta.name,
+				p1: runtime.getSideDisplayName(sideIdx),
+			});
 			runtime.playWarStartSound();
 			return;
 		}
@@ -259,7 +272,10 @@ export function createCountryDiplomacy(runtime) {
 		runtime.influenceLayer.render();
 
 		const sideLabel = String.fromCharCode(65 + sideIdx);
-		runtime.statusText.innerText = `${newCountry.name} HAS DEPLOYED TO SIDE ${sideLabel}`;
+		runtime.statusText.innerText = gameText("APP_18", {
+			p0: newCountry.name,
+			p1: sideLabel,
+		});
 
 		// Play sound if possible
 		runtime.playWarStartSound();

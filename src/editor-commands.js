@@ -48,14 +48,22 @@ export function createEditorCommands(runtime) {
 		if (sideIdx >= 0 && sideIdx < runtime.MAX_SIDES) {
 			const representedPersonnel =
 				runtime.getLiveFormationPersonnel(placedUnit);
-			const available = Math.max(
+			const country = runtime.campaign?.enabled
+				? runtime.campaign.countries[sovereignId]
+				: null;
+			const sideReserve = Math.max(
 				0,
 				runtime.sideRecruitableManpower[sideIdx] || 0,
 			);
+			const available = country
+				? Math.min(sideReserve, country.reserve)
+				: sideReserve;
+			if (country)
+				country.reserve = Math.max(0, country.reserve - representedPersonnel);
 			const unfundedPersonnel = Math.max(0, representedPersonnel - available);
 			runtime.sideRecruitableManpower[sideIdx] = Math.max(
 				0,
-				available - representedPersonnel,
+				sideReserve - Math.min(available, representedPersonnel),
 			);
 			// God-mode placement may create a formation even when the reserve is empty.
 			if (unfundedPersonnel > 0) {

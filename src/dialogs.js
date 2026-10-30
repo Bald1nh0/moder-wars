@@ -1,3 +1,5 @@
+import { gameText } from "./i18n.js";
+
 /**
  * In-game replacements for window.alert, confirm and prompt. Dialogs queue, so
  * only one is open at a time; each call returns a promise that settles when the
@@ -119,7 +121,10 @@ function enqueue(request) {
 }
 
 /** Shows a message. Resolves when the player dismisses it. */
-export function showAlert(message, { title = "", okLabel = "OK" } = {}) {
+export function showAlert(
+	message,
+	{ title = "", okLabel = gameText("GAME_OK") } = {},
+) {
 	return enqueue({ kind: "alert", message: String(message), title, okLabel });
 }
 
@@ -128,8 +133,8 @@ export function showConfirm(
 	message,
 	{
 		title = "",
-		okLabel = "Confirm",
-		cancelLabel = "Cancel",
+		okLabel = gameText("GAME_CONFIRM"),
+		cancelLabel = gameText("GAME_CANCEL"),
 		danger = false,
 	} = {},
 ) {
@@ -147,7 +152,11 @@ export function showConfirm(
 export function showPrompt(
 	message,
 	defaultValue = "",
-	{ title = "", okLabel = "OK", cancelLabel = "Cancel" } = {},
+	{
+		title = "",
+		okLabel = gameText("GAME_OK"),
+		cancelLabel = gameText("GAME_CANCEL"),
+	} = {},
 ) {
 	return enqueue({
 		kind: "prompt",

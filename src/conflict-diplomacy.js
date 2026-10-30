@@ -1,4 +1,5 @@
 import { showAlert } from "./dialogs.js";
+import { gameText } from "./i18n.js";
 // Explicit live context keeps replacements of arrays/state visible across awaits and callbacks.
 export function createConflictDiplomacy(runtime) {
 	function unilateralExitConflict(country, sideIdx) {
@@ -59,7 +60,7 @@ export function createConflictDiplomacy(runtime) {
 		runtime.influenceLayer.render();
 
 		runtime.playPeaceSound();
-		runtime.statusText.innerText = `${country.name} has exited the conflict and annexed occupied land.`;
+		runtime.statusText.innerText = gameText("APP_9", { p0: country.name });
 
 		const activePoles = new Set();
 		runtime.sides.forEach((s, idx) => {
@@ -144,8 +145,7 @@ export function createConflictDiplomacy(runtime) {
 		} else {
 			runtime.playPeaceSound();
 			runtime.gameState = "SIMULATING";
-			runtime.statusText.innerText =
-				"Separate peace signed. Conflict continues.";
+			runtime.statusText.innerText = gameText("APP_10");
 			cancelAnimationFrame(runtime.animationFrameId);
 			requestAnimationFrame(runtime.updateLoop);
 		}
@@ -167,11 +167,9 @@ export function createConflictDiplomacy(runtime) {
 			withdrawingSideIdx === -1 ||
 			opponentSideIdx === withdrawingSideIdx
 		) {
-			showAlert(
-				"Diplomatic error: Negotiating nations must be on opposing sides.",
-			);
+			showAlert(gameText("APP_11"));
 			runtime.gameState = "SIMULATING";
-			runtime.statusText.innerText = "Conflict Continued";
+			runtime.statusText.innerText = gameText("APP_12");
 			requestAnimationFrame(runtime.updateLoop);
 			return;
 		}
@@ -308,7 +306,9 @@ export function createConflictDiplomacy(runtime) {
 		} else {
 			runtime.playPeaceSound();
 			runtime.gameState = "SIMULATING";
-			runtime.statusText.innerText = `${withdrawing.name} signed separate peace. Conflict continues.`;
+			runtime.statusText.innerText = gameText("APP_13", {
+				p0: withdrawing.name,
+			});
 			cancelAnimationFrame(runtime.animationFrameId);
 			requestAnimationFrame(runtime.updateLoop);
 		}

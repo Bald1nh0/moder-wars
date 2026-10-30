@@ -1,3 +1,4 @@
+import { gameText } from "./i18n.js";
 // Controls receive live state and commands; they do not import the application.
 export function createSimulationControls(runtime) {
 	function bindDocumentKeydown() {
@@ -11,6 +12,7 @@ export function createSimulationControls(runtime) {
 					e.ctrlKey ||
 					e.metaKey ||
 					e.altKey ||
+					active?.closest?.("#campaign-panel") ||
 					active?.isContentEditable ||
 					["TEXTAREA", "SELECT"].includes(active?.tagName) ||
 					(active?.tagName === "INPUT" &&
@@ -66,7 +68,7 @@ export function createSimulationControls(runtime) {
 						e.preventDefault();
 						runtime.gameState = "SIMULATING";
 						runtime.simulationClient.syncControls();
-						runtime.statusText.innerText = "Conflict Continued";
+						runtime.statusText.innerText = gameText("GAME_CONFLICT_CONTINUED");
 						requestAnimationFrame(runtime.updateLoop);
 					} else if (runtime.countryInspector.style.display === "block") {
 						runtime.closeInspectorBtn.click();
@@ -83,7 +85,14 @@ export function createSimulationControls(runtime) {
 			if (runtime.animationFrameId !== null)
 				cancelAnimationFrame(runtime.animationFrameId);
 			runtime.animationFrameId = null;
-			if (!document.hidden && runtime.gameState === "SIMULATING")
+			// Resume every presentation mode accepted by updateLoop, including
+			// sandbox editing of an active or completed conflict.
+			const shouldPaint =
+				runtime.gameState === "SIMULATING" ||
+				(runtime.godModeActive &&
+					(runtime.preGodModeState === "SIMULATING" ||
+						runtime.preGodModeState === "WAR_OVER"));
+			if (!document.hidden && shouldPaint)
 				runtime.animationFrameId = requestAnimationFrame(runtime.updateLoop);
 		});
 	}

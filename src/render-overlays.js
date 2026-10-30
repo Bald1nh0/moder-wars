@@ -1,3 +1,5 @@
+import { gameText, getLanguage } from "./i18n.js";
+import { translateMapLabel } from "./translations-map.js";
 // This pass receives a frame snapshot; surface caches stay on the map layer.
 export function drawOverlays(frame) {
 	const {
@@ -37,6 +39,7 @@ export function drawOverlays(frame) {
 	} = frame;
 	let { ctx } = frame;
 	const overlaysCacheKey = [
+		getLanguage(),
 		viewportKey,
 		isWar ? 1 : 0,
 		showWarPlans ? 1 : 0,
@@ -193,7 +196,7 @@ export function drawOverlays(frame) {
 					const midP = project(mid.lat, mid.lng);
 					ctx.font = "bold 9px monospace";
 					ctx.fillStyle = color.replace(rgbaRe, "0.8)");
-					ctx.fillText("DEFEND", midP.x + 8, midP.y - 6);
+					ctx.fillText(gameText("MAP_DEFEND"), midP.x + 8, midP.y - 6);
 					if (plan.frontIntel) {
 						ctx.font = "8px monospace";
 						ctx.fillText(
@@ -229,7 +232,7 @@ export function drawOverlays(frame) {
 
 					ctx.font = "bold 9px monospace";
 					ctx.fillStyle = color.replace(rgbaRe, "0.6)");
-					ctx.fillText("PUSH", midX + 8, midY);
+					ctx.fillText(gameText("MAP_PUSH"), midX + 8, midY);
 					if (plan.scoreBreakdown) {
 						ctx.font = "8px monospace";
 						ctx.fillText(
@@ -288,7 +291,10 @@ export function drawOverlays(frame) {
 
 				ctx.font = "bold 10px monospace";
 				ctx.fillStyle = color;
-				const planLabel = plan.type ? `${plan.type} ${plan.phase}` : plan.phase;
+				const planLabel = [plan.type, plan.phase]
+					.filter(Boolean)
+					.map((value) => translateMapLabel(value, gameText))
+					.join(" ");
 				ctx.fillText(planLabel, midX + 10, midY - 2);
 				if (plan.scoreBreakdown) {
 					ctx.font = "8px monospace";
@@ -377,7 +383,13 @@ export function drawOverlays(frame) {
 					if (!operationsSnapshot || window.innerWidth >= 480) {
 						ctx.font = "bold 9px monospace";
 						ctx.fillStyle = sideColor.replace(rgbaRe, "0.9)");
-						ctx.fillText(`NAVAL: ${np.phase}`, midX + 10, midY - 2);
+						ctx.fillText(
+							gameText("MAP_NAVAL_PHASE", {
+								phase: translateMapLabel(np.phase, gameText),
+							}),
+							midX + 10,
+							midY - 2,
+						);
 					}
 				}
 			}
@@ -434,7 +446,13 @@ export function drawOverlays(frame) {
 					if (!operationsSnapshot || window.innerWidth >= 480) {
 						ctx.font = "bold 8px monospace";
 						ctx.fillStyle = sideColor.replace(rgbaRe, "0.85)");
-						ctx.fillText(`SUPPLY: ${sp.phase}`, midX + 10, midY + 10);
+						ctx.fillText(
+							gameText("MAP_SUPPLY_PHASE", {
+								phase: translateMapLabel(sp.phase, gameText),
+							}),
+							midX + 10,
+							midY + 10,
+						);
 					}
 				}
 			}
@@ -490,7 +508,7 @@ export function drawOverlays(frame) {
 					ctx.font = "bold 9px monospace";
 					ctx.fillStyle = sideColor.replace(rgbaRe, "0.8)");
 					ctx.fillText(
-						`TRANSPORT (${tp.activeUnitCount || 0})`,
+						gameText("MAP_TRANSPORT_COUNT", { count: tp.activeUnitCount || 0 }),
 						midX + 10,
 						midY - 2,
 					);
@@ -528,7 +546,9 @@ export function drawOverlays(frame) {
 							ctx.font = "bold 7px monospace";
 							ctx.fillStyle = color.replace(rgbaRe, "0.35)");
 							ctx.fillText(
-								`COASTAL (${cp.activeUnitCount || 0})`,
+								gameText("MAP_COASTAL_COUNT", {
+									count: cp.activeUnitCount || 0,
+								}),
 								tp.x + 6,
 								tp.y - 4,
 							);
@@ -568,7 +588,9 @@ export function drawOverlays(frame) {
 							ctx.font = "bold 7px monospace";
 							ctx.fillStyle = color.replace(rgbaRe, "0.3)");
 							ctx.fillText(
-								`GARRISON (${gp.activeUnitCount || 0})`,
+								gameText("MAP_GARRISON_COUNT", {
+									count: gp.activeUnitCount || 0,
+								}),
 								tp.x + 6,
 								tp.y - 4,
 							);
