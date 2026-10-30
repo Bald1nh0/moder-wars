@@ -44,6 +44,7 @@ jobs:
           node scripts/github-release-smoke.mjs
           node scripts/registry-cleanup-smoke.mjs
           node scripts/publish-image-smoke.mjs
+          node scripts/deployment-routing-smoke.mjs
       - name: Build and exercise the production container
         env:
           IMAGE: modern-wars-ci:${{ github.sha }}
@@ -145,7 +146,7 @@ jobs:
         run: node scripts/codeql-gate.mjs "$SARIF_DIR"
 
   publish-dev:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && github.repository == 'Bald1nh0/moder-wars' && vars.DEV_DEPLOY_ENABLED == 'true'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && github.repository == 'Bald1nh0/moder-wars'
     needs: [check, source-security, codeql]
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -209,23 +210,23 @@ jobs:
         env:
           IMAGE: ${{ needs.publish-dev.outputs.image }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          EXPECTED_HOST: ${{ vars.DEV_HOSTNAME }}
         run: |
-          if [ -z "$EXPECTED_HOST" ] || [ "$(hostname -s)" != "$EXPECTED_HOST" ]; then
-            echo 'Set development environment variable DEV_HOSTNAME to the deployment machine hostname.' >&2
-            exit 1
-          fi
           export DOCKER_CONFIG
           DOCKER_CONFIG=$(mktemp -d)
           trap 'rm -rf -- "$DOCKER_CONFIG"' EXIT
           printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          deploy_dir="$HOME/moder-wars-dev"
+          mkdir -p -- "$deploy_dir"
+          if [ ! -e "$deploy_dir/runtime.env" ]; then
+            (umask 077; set -o noclobber; printf 'MW_BIND_ADDRESS=192.168.30.17\nMW_PORT=4180\n' > "$deploy_dir/runtime.env")
+          fi
           bash scripts/deploy-production.sh "$IMAGE" "$HOME/moder-wars-dev" dev
           deployed=$(sed -n 's/^MW_IMAGE=//p' "$HOME/moder-wars-dev/.env")
           [ "$deployed" = "$IMAGE" ]
           printf 'Healthy development deployment: `%s`\n' "$IMAGE" >> "$GITHUB_STEP_SUMMARY"
 
   publish:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'Bald1nh0/moder-wars' && vars.RELEASE_PUBLISHING_ENABLED == 'true'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'Bald1nh0/moder-wars'
     needs: [check, source-security, codeql]
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -335,16 +336,16 @@ jobs:
         env:
           IMAGE: ${{ needs.publish.outputs.image }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          EXPECTED_HOST: ${{ vars.PRODUCTION_HOSTNAME }}
         run: |
-          if [ -z "$EXPECTED_HOST" ] || [ "$(hostname -s)" != "$EXPECTED_HOST" ]; then
-            echo 'Set production environment variable PRODUCTION_HOSTNAME to the deployment machine hostname.' >&2
-            exit 1
-          fi
           export DOCKER_CONFIG
           DOCKER_CONFIG=$(mktemp -d)
           trap 'rm -rf -- "$DOCKER_CONFIG"' EXIT
           printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          deploy_dir="$HOME/moder-wars-production"
+          mkdir -p -- "$deploy_dir"
+          if [ ! -e "$deploy_dir/runtime.env" ]; then
+            (umask 077; set -o noclobber; printf 'MW_BIND_ADDRESS=192.168.30.17\nMW_PORT=4174\n' > "$deploy_dir/runtime.env")
+          fi
           bash scripts/deploy-production.sh "$IMAGE"
           deployed=$(sed -n 's/^MW_IMAGE=//p' "$HOME/moder-wars-production/.env")
           [ "$deployed" = "$IMAGE" ]

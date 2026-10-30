@@ -14,9 +14,11 @@ do not represent complete current military inventories.
 Play at **[modern-wars.bald1nh0.net](https://modern-wars.bald1nh0.net/)**.
 Production uses a packaged Docker/Nginx image with browser simulation.
 
-**4180 is the only persistent local game test port.** Editing source or running
-a test build does not deploy a release. The `dev` branch also supports a separate
-internal Docker deployment; it cannot replace the production Compose project.
+**4180 is the only local game test port.** Run the local preview when needed
+for development checks. Shared testing uses the separate internal Docker
+deployment: a successful push to `dev` updates it automatically. Editing source
+or running a local test build does not deploy a release, and the dev deployment
+cannot replace the production Compose project.
 Vite uses a strict port, so an occupied port causes an error instead of opening
 another preview. See [deployment setup](docs/DEPLOYMENT.md) for the automated
 `main` → checks → image → production workflow and
@@ -195,12 +197,14 @@ builds when measuring normal campaign play. See the
 
 ## Docker production releases
 
-The GitHub Actions workflow runs checks for pull requests and pushes to `main`.
-Once publication is enabled, a successful push to `main` publishes the checked
-image to GHCR, deploys it using the dedicated production runner, and publishes
-a matching GitHub Release after health checks pass. Publication is currently on
-hold pending [upstream licensing clarification](https://github.com/Vaspyyy/moder-wars/issues/5). Manually dispatched runs check the
-code without releasing it. The earlier GitHub Pages workflow is replaced.
+The GitHub Actions workflow checks pull requests and pushes to `dev` and `main`.
+A successful push to `dev` publishes and deploys the internal development image.
+A successful push to `main` publishes the checked production image to GHCR,
+deploys it using the dedicated runner, and publishes a matching GitHub Release
+after health checks pass. No deployment enablement or hostname variables are
+required. Manually dispatched runs check code without releasing it. The earlier
+GitHub Pages workflow is replaced. [Upstream licensing clarification](https://github.com/Vaspyyy/moder-wars/issues/5)
+remains separate from the deployment configuration.
 
 - GitHub-hosted runners run TypeScript, lint, simulation/build checks, deployment
   regression tests, container health checks and an image vulnerability/secret scan.

@@ -1,11 +1,12 @@
 # Docker production deployment
 
-Production is served at <https://modern-wars.bald1nh0.net/>. Development stays
-local on port **4180**. No local development URL belongs in the README.
+Production is served at <https://modern-wars.bald1nh0.net/>. Local checks use
+port **4180**, with a separate internal Docker deployment for shared development
+testing. No private development URL belongs in the README.
 
 The owner resumed production pipeline testing and merged the integration on
-2026-10-30. `RELEASE_PUBLISHING_ENABLED=true` still explicitly enables production
-publication. Upstream licensing remains a separate unresolved question tracked
+2026-10-30. Successful pushes to `main` publish and deploy automatically after
+checks pass. Upstream licensing remains a separate unresolved question tracked
 in [issue #5](https://github.com/Vaspyyy/moder-wars/issues/5); resuming deployment
 is not evidence of a license grant.
 
@@ -16,13 +17,13 @@ below remains specific to `main`.
 
 ## Release flow
 
-1. Develop and test on feature branches. Open a PR into `main`.
+1. Develop on `dev` or feature branches targeting it. Test the internal dev
+   deployment, then open a PR from reviewed `dev` changes into `main`.
 2. GitHub-hosted runners run `npm run check`, deployment regression checks,
    a Docker build, container health/HTTP checks, Trivy, npm advisory, full-history
    secret and CodeQL analysis checks. All must pass before publication. Fixable
    HIGH and CRITICAL image vulnerabilities and matching secret findings fail CI.
-3. With `RELEASE_PUBLISHING_ENABLED=true`, a successful **push to `main`**
-   publishes the checked image to `ghcr.io/bald1nh0/moder-wars:sha-<COMMIT_SHA>`
+3. A successful **push to `main`** publishes the checked image to `ghcr.io/bald1nh0/moder-wars:sha-<COMMIT_SHA>`
    and `:v<VERSION>`. A draft GitHub Release records the exact commit and image.
    Deployment uses the immutable `@sha256:...` digest. PRs and manual workflow
    dispatches never publish or deploy.
@@ -128,9 +129,8 @@ References: [runner registration](https://docs.github.com/en/actions/how-tos/man
 
 1. If Actions is disabled for this fork, enable it in the Actions tab.
 2. Create **Settings → Environments → production**. Set deployment branches to
-   **Selected branches and tags**, allow the branch `main` only, and add variable
-   **`PRODUCTION_HOSTNAME`** equal to `hostname -s` on the Docker instance. The
-   deployment fails before changing containers if the runner is on another host.
+   **Selected branches and tags** and allow the branch `main` only. The dedicated
+   runner label `mw` selects the deployment host; no hostname variable is needed.
 3. Protect `main` with a PR requirement and the required checks listed below.
    Avoid direct development pushes to `main`.
 4. Ensure Actions can publish packages. The publish job requests `packages: write`
@@ -140,10 +140,11 @@ References: [runner registration](https://docs.github.com/en/actions/how-tos/man
    Registry login uses a temporary Docker config removed at the end of the step.
 5. Confirm runner `mw` is online and has the `mw` label before merging.
 
-6. When the user authorizes production publication, set
-   repository **Settings → Secrets and variables → Actions → Variables →
-   `RELEASE_PUBLISHING_ENABLED=true`**. It is a repository variable because the
-   publish job runs before the production environment deployment job.
+No repository or environment variables are required to publish or deploy.
+Pushes to `dev` deploy development; pushes to `main` deploy production. All
+checks, branch/environment restrictions and release identity checks still apply.
+The optional registry-cleanup variable controls deletion only and never blocks
+publication or deployment.
 
 The workflow creates release tags but does not choose/bump application versions.
 Use the version helper before merging a release.
@@ -305,25 +306,30 @@ and [package deletion rules](https://docs.github.com/en/rest/packages/packages).
 
 ## Prepare the Docker host
 
-As the **runner service user**, create the runtime configuration outside the
-checkout. Deployment defaults to `$HOME/moder-wars-production`:
+The CI deployment initializes a missing runtime configuration outside the
+checkout, under the **runner service user's** home directory:
+
+| Profile | Directory | Default bind address | Port |
+| --- | --- | --- | --- |
+| Production | `~/moder-wars-production` | `192.168.30.17` | `4174` |
+| Development | `~/moder-wars-dev` | `192.168.30.17` | `4180` |
+
+No manual `runtime.env` creation is required for the first CI deployment. The
+workflow preserves an existing file, including an older loopback binding; check
+it if the reverse proxy cannot reach an already configured installation. Runtime
+changes apply on the next successful deploy. Restrict access to the published
+ports through the existing network/firewall.
+
+Verify Docker access as the runner service user:
 
 ```sh
-install -d -m 700 "$HOME/moder-wars-production"
-cat > "$HOME/moder-wars-production/runtime.env" <<'EOF'
-MW_BIND_ADDRESS=127.0.0.1
-MW_PORT=4174
-EOF
-chmod 600 "$HOME/moder-wars-production/runtime.env"
 docker info >/dev/null
 docker compose version
 ```
 
-If the HTTPS reverse proxy runs on another machine, replace the loopback bind
-with the Docker instance's private interface address. Restrict access to that
-port to the reverse proxy on the network/firewall. Keep the port and bind address
-in this host-local file, not in repository source. Missing configuration defaults
-to loopback intentionally. Runtime changes apply on the next successful deploy.
+For direct manual invocation outside CI, the deployment script still defaults
+a missing runtime configuration to loopback. Use the host-local `runtime.env`
+for deliberate overrides; do not copy runtime or rollback files between profiles.
 
 The Compose project is **`modern-wars-production`**; it is separate from the old
 `moder-wars-playtest` project. The image has no source mounts, and Nginx runs

@@ -9,9 +9,7 @@ promote reviewed changes from `dev` to `main` through a pull request.
 | Setting | Production | Development |
 | --- | --- | --- |
 | Source branch | `main` | `dev` |
-| Repository opt-in variable | `RELEASE_PUBLISHING_ENABLED=true` | `DEV_DEPLOY_ENABLED=true` |
 | GitHub environment | `production` | `development` |
-| Hostname guard variable | `PRODUCTION_HOSTNAME` | `DEV_HOSTNAME` |
 | GHCR package | `bald1nh0/moder-wars` | `bald1nh0/moder-wars-dev` |
 | Image tag | `v<VERSION>` and `sha-<COMMIT>` | `sha-<COMMIT>-run-<RUN>-<ATTEMPT>` |
 | Compose project | `modern-wars-production` | `modern-wars-dev` |
@@ -38,40 +36,29 @@ package is outside the production registry-cleanup script's scope. Dev retention
 is not automated yet: preserve the current and previous digests recorded on the
 host if manually retiring older dev images.
 
-## One-time activation
+## One-time setup
 
 1. Create GitHub environment **development**. Under deployment branches select
-   **Selected branches and tags** and allow the branch **dev** only. Add
-   environment variable **DEV_HOSTNAME** equal to `hostname -s` on the Docker
-   instance (for example `mw`, only if that is the actual hostname).
+   **Selected branches and tags** and allow the branch **dev** only.
 2. Keep runner `mw` online with Docker access. The same production runner is
    privileged; retain owner-only Actions execution policies and never allow
    unreviewed PR jobs to run on it. A separate container/project does not isolate
    arbitrary workflow code from the host or production Docker daemon.
-3. On `192.168.30.17`, as the runner service user (`ubuntu`), prepare the dev-only
-   runtime settings. Preserve an existing file if the environment is already
-   configured:
+3. Deploy the internal Traefik provider described below.
+4. Push the reviewed `dev` branch. After checks pass, publication and deployment
+   start automatically. The first dev publish creates the separate GHCR package.
+   If the package already exists, grant this repository Actions access in the
+   package settings; no long-lived registry token is required.
 
-   ```sh
-   install -d -m 700 "$HOME/moder-wars-dev"
-   if [ ! -e "$HOME/moder-wars-dev/runtime.env" ]; then
-     (umask 077; printf 'MW_BIND_ADDRESS=192.168.30.17\nMW_PORT=4180\n' > "$HOME/moder-wars-dev/runtime.env")
-   fi
-   ```
+No GitHub deployment variables or hostname variables are required. The workflow
+initializes a missing `~/moder-wars-dev/runtime.env` with bind address
+`192.168.30.17` and port `4180`, using the runner service user's home directory.
+It preserves an existing file; review that file if an older manual setup still
+binds to loopback. Dev settings must use port 4180 and a literal bind address.
+Do not copy production `.env`, Compose or rollback files into the dev directory.
 
-   Without this file, the safe default is `127.0.0.1:4180`, which a remote
-   Traefik cannot reach. Dev settings must use port 4180 and a literal bind
-   address. Do not copy production `.env`, Compose or rollback files here.
-4. Add repository variable **DEV_DEPLOY_ENABLED=true** in
-   **Settings → Secrets and variables → Actions → Variables** when ready to
-   enable dev publication. Leaving it unset prepares the branch without deploying.
-   This is independent of `RELEASE_PUBLISHING_ENABLED`.
-5. Push the reviewed `dev` branch. The first dev publish creates the separate
-   GHCR package. If the package already exists, grant this repository Actions
-   access in the package settings; no long-lived registry token is required.
-
-The branch and configuration can be prepared locally before these settings are
-enabled. Creating the branch does not itself deploy a container or change DNS.
+Creating a local branch does not itself deploy a container or change DNS. A push
+to `dev` is the deployment trigger; manual workflow dispatch only runs checks.
 
 ## Internal Traefik and DNS
 
@@ -154,11 +141,13 @@ describe the underlying configuration mechanisms.
   wrong commit/version labels fail before push. No registry mutation was made.
 - All 22 published-digest regressions passed against the actual workflow shell,
   including a CI alias before the GHCR reference and absent/ambiguous matches.
+- All 100 branch/event/repository routing and runtime-bootstrap checks passed
+  without deployment variables, including preservation of existing host settings.
 - The full CodeQL security-extended scan retained the same 13 reviewed findings
   with no new findings. The exact review gate and all 21 gate tests passed.
   Analysis input digest:
-  `195068f415f60647f6bcaf049299e41d798384356822453034c525447bbd0df8`.
-  Local analysis artifacts: `/tmp/mw-codeql-publish-h0_3cdkh/`.
+  `d2d23c72928611a9caaedb0928cefe241297b9545882eb5c72b7e33e265f86b4`.
+  Local analysis artifacts: `/tmp/mw-codeql-auto-deploy-final-had49oo3/`.
 - Provider YAML and router/service/middleware references passed local validation;
   the hostname resolved to `192.168.31.181` from the development machine.
 

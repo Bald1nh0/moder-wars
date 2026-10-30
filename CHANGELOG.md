@@ -2,6 +2,11 @@
 
 ## 2026-10-30
 
+### Automatic branch deployments (unreleased)
+
+- Remove mandatory publication switches and hostname variables: successful pushes to `dev` and `main` automatically publish/deploy their respective environments on runner `mw`. Preserve repository/branch/event restrictions, all security checks, immutable images and environment protections.
+- Initialize missing deployment runtime configuration automatically for the existing host and each environment's port; preserve existing host configuration. Remove the corresponding manual setup steps from deployment guidance.
+
 ### Registry publication fix (unreleased)
 
 - Select the unique GHCR repository digest after publishing instead of assuming the first Docker `RepoDigests` entry belongs to GHCR. Preserve commit/version checks and digest-only deployments for production and development; reject absent or ambiguous matches.
