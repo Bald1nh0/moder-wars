@@ -244,6 +244,9 @@ Git tags. After the chosen bump, validate the synchronized metadata:
 npm run version:check
 ```
 
+A version-only bump preserves the CodeQL review; no manual review-hash update
+is needed. Dependency, script and source changes still require security review.
+
 Vite injects the version
 into the menu/reports and generates the service-worker cache identifier.
 The browser tab stays **Modern Wars**, with a shield-and-compass favicon.
@@ -254,6 +257,20 @@ are distinguished by commit/run tags. Update the changelog after a version bump.
 a small image manifest; the Docker image itself is stored in GHCR. Registry
 cleanup defaults to dry-run and preserves current/rollback images. Keep previous images
 for rollback and do not restart production during ordinary development.
+
+### Link previews
+
+`index.html` contains static Open Graph and Twitter Card metadata, including an
+English description and the public production URL. Bots can read it without
+running the game. Dev and production share this metadata so promotion does not
+rewrite the artifact or expose the internal dev hostname.
+
+The share image is `assets/images/social-preview-v1.png` (1200 × 630). Its editable
+source is `assets/images/social-preview.svg`, which uses the existing title map
+and favicon. To update the artwork, render the SVG in a browser at 1200 × 630
+with device scale 1 and export a PNG. Use a new image filename when changing the
+artwork and update both image URLs in `index.html`; social services cache previews
+independently. Deploy the HTML and image together before checking a public link.
 
 ## Architecture and further reading
 

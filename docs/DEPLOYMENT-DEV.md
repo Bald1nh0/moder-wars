@@ -149,11 +149,11 @@ describe the underlying configuration mechanisms.
 - All 100 branch/event/repository routing and runtime-bootstrap checks passed
   without deployment variables, including preservation of existing host settings.
 - The full CodeQL security-extended scan retained the same 13 reviewed findings
-  with no new findings. The exact review gate and all 21 gate tests passed.
+  with no new findings. The exact review gate and all 36 gate tests passed.
   Analysis input digest:
-  `4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda`.
-  Repeated after the single-source version/favicon change; local analysis
-  artifacts: `output/playwright/version-branding/codeql/` (locally ignored by Git).
+  `30317e3938a66e173bf7ee3a35abe138a1784dc448b4ceb0bb3a8166abc556ce`.
+  Repeated after fixing version-bump review stability; local analysis artifacts:
+  `output/playwright/version-bump-codeql/` (locally ignored by Git).
 - Provider YAML and router/service/middleware references passed local validation;
   the hostname resolved to `192.168.31.181` from the development machine.
 

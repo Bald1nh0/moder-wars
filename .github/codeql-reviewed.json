@@ -8,7 +8,7 @@
 		"endColumn": 11,
 		"count": 1,
 		"sourceSha256": "95360fc00506f9e52330eec0ed944eecbfbd2c7e6891e067c69642ee8b1915fd",
-		"analysisSha256": "4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda",
+		"analysisSha256": "be7c243006a7d3e80dd2728f7c35aef1b32ffac199364e0a5acbfd424d1de363",
 		"reason": "Math.random selects an in-game allied formation beneficiary. It does not generate a credential, authorization identifier, cryptographic nonce or secret. Predictable game choices do not cross an authentication boundary."
 	},
 	{
@@ -20,7 +20,7 @@
 		"endColumn": 11,
 		"count": 1,
 		"sourceSha256": "95360fc00506f9e52330eec0ed944eecbfbd2c7e6891e067c69642ee8b1915fd",
-		"analysisSha256": "4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda",
+		"analysisSha256": "be7c243006a7d3e80dd2728f7c35aef1b32ffac199364e0a5acbfd424d1de363",
 		"reason": "Math.random selects an in-game allied formation beneficiary. It does not generate a credential, authorization identifier, cryptographic nonce or secret. Predictable game choices do not cross an authentication boundary."
 	},
 	{
@@ -32,7 +32,7 @@
 		"endColumn": 74,
 		"count": 1,
 		"sourceSha256": "95360fc00506f9e52330eec0ed944eecbfbd2c7e6891e067c69642ee8b1915fd",
-		"analysisSha256": "4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda",
+		"analysisSha256": "be7c243006a7d3e80dd2728f7c35aef1b32ffac199364e0a5acbfd424d1de363",
 		"reason": "Math.random selects an in-game allied formation beneficiary. It does not generate a credential, authorization identifier, cryptographic nonce or secret. Predictable game choices do not cross an authentication boundary."
 	},
 	{
@@ -44,7 +44,7 @@
 		"endColumn": 37,
 		"count": 1,
 		"sourceSha256": "9e6feaf65daea9ffab7c849a90326899765ef7f1744012a2f244c30f5cf46bc6",
-		"analysisSha256": "4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda",
+		"analysisSha256": "be7c243006a7d3e80dd2728f7c35aef1b32ffac199364e0a5acbfd424d1de363",
 		"reason": "cloneSimulationData intentionally copies game records into fresh data objects. It strips functions and asset fields and excludes prototype-chain keys, all Object.prototype names and array prototype names before assignment. Country/config merges use the same safeguards and root state fields are allowlisted; attacker data cannot replace inherited methods through this sink."
 	},
 	{
@@ -56,7 +56,7 @@
 		"endColumn": 37,
 		"count": 1,
 		"sourceSha256": "0eac3d30a349b0f81a35540e190f4be1486eccb3261e3a9f4ca372382cc135dd",
-		"analysisSha256": "4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda",
+		"analysisSha256": "be7c243006a7d3e80dd2728f7c35aef1b32ffac199364e0a5acbfd424d1de363",
 		"reason": "The decoder reconstructs fresh data records using Object.defineProperty after rejecting duplicate keys, prototype-chain keys, Object.prototype names and array methods/length/out-of-bounds indexes. Property descriptors are fixed and decoded values cannot be functions. The assignment is required to preserve ordinary custom game fields, without invoking a prototype setter or inherited method."
 	},
 	{
@@ -68,7 +68,7 @@
 		"endColumn": 63,
 		"count": 1,
 		"sourceSha256": "9f7dcdda5c490235631f4904be6bc741b4189461de9b6e1c51b60b7493426ea2",
-		"analysisSha256": "4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda",
+		"analysisSha256": "be7c243006a7d3e80dd2728f7c35aef1b32ffac199364e0a5acbfd424d1de363",
 		"reason": "The owner-operated release CLI intentionally reads the selected changelog/notes file and publishes release notes to GitHub. It is only called in the trusted main publication job with fixed CLI arguments. The client restricts destinations to api.github.com or uploads.github.com. This is the documented release operation, not a path supplied by a remote request."
 	},
 	{
@@ -80,7 +80,7 @@
 		"endColumn": 22,
 		"count": 1,
 		"sourceSha256": "8a1a7fec15aa28497e1e6b0843c9d35cf05c00f28efefadf4f0f0cc7b1fe18c8",
-		"analysisSha256": "4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda",
+		"analysisSha256": "be7c243006a7d3e80dd2728f7c35aef1b32ffac199364e0a5acbfd424d1de363",
 		"reason": "This handler belongs to a dedicated Worker created by the application, not a Window message listener. Only the creating document/parent has its private Worker channel; event.origin is not a Window-origin authentication signal here. Input and download restrictions are handled separately and must remain in place."
 	},
 	{
@@ -92,7 +92,7 @@
 		"endColumn": 30,
 		"count": 1,
 		"sourceSha256": "3fb3b97ef7429137a84f4850e7720e37ec17637882269bf91724f8e1e2bb6218",
-		"analysisSha256": "4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda",
+		"analysisSha256": "be7c243006a7d3e80dd2728f7c35aef1b32ffac199364e0a5acbfd424d1de363",
 		"reason": "This handler belongs to a dedicated Worker created by the application, not a Window message listener. Only the creating document/parent has its private Worker channel; event.origin is not a Window-origin authentication signal here. Input and download restrictions are handled separately and must remain in place."
 	},
 	{
@@ -104,7 +104,7 @@
 		"endColumn": 33,
 		"count": 1,
 		"sourceSha256": "1591e180b84ce0e52dc774838ea4be41fae9b7447a4f5acf34de4cd496c86bb9",
-		"analysisSha256": "4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda",
+		"analysisSha256": "be7c243006a7d3e80dd2728f7c35aef1b32ffac199364e0a5acbfd424d1de363",
 		"reason": "This handler belongs to a dedicated Worker created by the application, not a Window message listener. Only the creating document/parent has its private Worker channel; event.origin is not a Window-origin authentication signal here. Input and download restrictions are handled separately and must remain in place."
 	},
 	{
@@ -116,7 +116,7 @@
 		"endColumn": 24,
 		"count": 1,
 		"sourceSha256": "ffb33f7d39659fa5cc7f48d996fdfa845704de52945122775e4161d9ff8b1e98",
-		"analysisSha256": "4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda",
+		"analysisSha256": "be7c243006a7d3e80dd2728f7c35aef1b32ffac199364e0a5acbfd424d1de363",
 		"reason": "This handler belongs to a dedicated Worker created by the application, not a Window message listener. Only the creating document/parent has its private Worker channel; event.origin is not a Window-origin authentication signal here. Input and download restrictions are handled separately and must remain in place."
 	},
 	{
@@ -128,7 +128,7 @@
 		"endColumn": 27,
 		"count": 1,
 		"sourceSha256": "24a86ef9d46f42ea84b3463c59624677fa7ffd6350f13ac2f0ae9a0bb77d454d",
-		"analysisSha256": "4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda",
+		"analysisSha256": "be7c243006a7d3e80dd2728f7c35aef1b32ffac199364e0a5acbfd424d1de363",
 		"reason": "This handler belongs to a dedicated Worker created by the application, not a Window message listener. Only the creating document/parent has its private Worker channel; event.origin is not a Window-origin authentication signal here. Input and download restrictions are handled separately and must remain in place."
 	},
 	{
@@ -140,7 +140,7 @@
 		"endColumn": 6,
 		"count": 1,
 		"sourceSha256": "3fb3b97ef7429137a84f4850e7720e37ec17637882269bf91724f8e1e2bb6218",
-		"analysisSha256": "4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda",
+		"analysisSha256": "be7c243006a7d3e80dd2728f7c35aef1b32ffac199364e0a5acbfd424d1de363",
 		"reason": "Worker requests pass through resolveWorkerAssetUrl: only this application origin and packaged assets (plus explicitly allowed same-origin scenario blobs) survive. Userinfo, foreign origins and encoded path escapes are rejected; fetch omits credentials and rejects redirects. There is no arbitrary external URL or authenticated endpoint request."
 	},
 	{
@@ -152,7 +152,7 @@
 		"endColumn": 4,
 		"count": 1,
 		"sourceSha256": "1591e180b84ce0e52dc774838ea4be41fae9b7447a4f5acf34de4cd496c86bb9",
-		"analysisSha256": "4b4e0163ef918bd610d8b3431276b980179701ae238c20e3960924bfe4d47bda",
+		"analysisSha256": "be7c243006a7d3e80dd2728f7c35aef1b32ffac199364e0a5acbfd424d1de363",
 		"reason": "Worker requests pass through resolveWorkerAssetUrl: only this application origin and packaged assets (plus explicitly allowed same-origin scenario blobs) survive. Userinfo, foreign origins and encoded path escapes are rejected; fetch omits credentials and rejects redirects. There is no arbitrary external URL or authenticated endpoint request."
 	}
 ]

@@ -152,3 +152,52 @@ The exact review gate and all 21 gate regression tests passed. Local SARIF and
 logs are retained in `output/playwright/version-branding/codeql/` (locally
 ignored by Git). This full scan supersedes the focused numeric-metadata review
 above for the current working tree; CI must still scan the pushed revision.
+
+## 2026-10-30 — Version-bump review stability
+
+Run `41043886139` analyzed commit `924cdf4` successfully, but the review gate
+rejected the analysis-input digest. The application had been bumped from
+`0.30.0` to `0.30.1` after the previous review. Reconstructing only the three
+package/lockfile version values recovered the exact previously reviewed digest;
+dependencies, scripts and all other analysis inputs were unchanged.
+
+The input identity now validates package SemVer and lockfile synchronization
+before normalizing exactly `package.json.version`, `package-lock.json.version`
+and `package-lock.json.packages[""].version`. These two root JSON documents are
+serialized consistently, so whitespace-only formatting is also ignored. All
+other metadata, dependency versions/ranges/integrity/download URLs, npm scripts
+and source/configuration files remain part of the digest. Finding locations,
+counts, rationales and source-file hashes remain exact; the bump command never
+updates or approves review entries.
+
+All 36 gate regression cases passed, including real patch/minor/major helper
+calls, Git staging, JSON formatting, changed dependencies/scripts and rejection
+of invalid or inconsistent version metadata. Release-version regressions,
+version synchronization and Biome also passed.
+
+Repeated the full security-extended scan with CLI 2.27.3 and JavaScript queries
+2.4.8 after changing the identity calculation: the same 13 findings remain,
+with identical locations/counts and source hashes. Verified all 293 analysis
+inputs against the scan snapshot and rebound the existing reviews to normalized
+digest `30317e3938a66e173bf7ee3a35abe138a1784dc448b4ceb0bb3a8166abc556ce`.
+The exact review gate passes; no findings were added to the exception list.
+SARIF, logs and a per-file source manifest are retained locally under
+`output/playwright/version-bump-codeql/` (ignored by Git).
+
+## 2026-10-30 — Static share metadata review
+
+Compared all 293 analysis inputs with the per-file manifest from the full
+version-bump scan. Only `index.html` changed: 18 static `meta`/canonical `link`
+lines for the public production origin. Removing that block reproduces the
+previous file byte-for-byte; executable code, CSP, dependencies and every
+reviewed finding source hash are unchanged. The new artwork is a PNG rendered
+from an SVG containing local map/icon references and text, without scripts.
+
+Rebound the same 13 exact reviews to
+`be7c243006a7d3e80dd2728f7c35aef1b32ffac199364e0a5acbfd424d1de363`.
+The gate passes against the previous full SARIF. This is a focused static
+metadata review, not a new full scan; CI must still analyze the pushed revision.
+The isolated production build and build-output checks passed. A raw HTTP crawler
+check verified matching OG/Twitter descriptions and HTTPS image URLs, a served
+PNG with HTTP 200 and `image/png`, and its actual 1200 × 630 dimensions. The
+artwork was also inspected in Chromium. No deployment or push was performed.

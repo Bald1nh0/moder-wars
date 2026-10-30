@@ -2,6 +2,11 @@
 
 ## 2026-10-30
 
+### 0.30.1 (unreleased)
+
+- Add static Open Graph/Twitter Card metadata and a 1200 × 630 PNG share image using the game's map and compass branding, with an editable SVG source and the canonical production URL.
+- Keep the CodeQL review valid across application-version-only bumps by normalizing the three validated root package/lockfile version fields and JSON formatting. Continue rejecting changed dependencies, scripts, code, invalid SemVer and mismatched lockfile metadata; cover patch/minor/major bumps and dependency tampering with regression tests.
+
 ### 0.30.0 (unreleased)
 
 - Document copyable patch/minor/major version-bump commands, expected version changes and pre-1.0 policy in the README.

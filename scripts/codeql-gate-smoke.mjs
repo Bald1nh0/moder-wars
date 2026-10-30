@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { analysisSourceIdentity } from "./codeql-source-identity.mjs";
+import { bumpVersion } from "./release-version.mjs";
 
 const gate = fileURLToPath(new URL("./codeql-gate.mjs", import.meta.url));
 const root = mkdtempSync(join(tmpdir(), "mw-codeql-gate-"));
@@ -113,6 +114,101 @@ try {
 		JSON.stringify([{ ...reviewed, path: "../outside.js" }]),
 	);
 	check(report([finding]), 1);
+
+	// Only application-version metadata may change without invalidating the review.
+	const packagePath = join(root, "package.json");
+	const lockPath = join(root, "package-lock.json");
+	const pkg = {
+		name: "fixture",
+		version: "0.30.0",
+		scripts: { build: "node build.mjs" },
+		dependencies: { dependency: "1.0.0" },
+	};
+	const lock = {
+		name: "fixture",
+		version: "0.30.0",
+		lockfileVersion: 3,
+		packages: {
+			"": {
+				name: "fixture",
+				version: "0.30.0",
+				dependencies: { dependency: "1.0.0" },
+			},
+			"node_modules/dependency": {
+				version: "1.0.0",
+				integrity: "sha512-fixture",
+				resolved: "https://example.com/dependency.tgz",
+			},
+		},
+	};
+	const resetMetadata = () => {
+		writeFileSync(packagePath, JSON.stringify(pkg));
+		writeFileSync(lockPath, JSON.stringify(lock));
+	};
+	resetMetadata();
+	const metadataReview = {
+		...reviewed,
+		analysisSha256: analysisSourceIdentity(root, reviewPath),
+	};
+	writeFileSync(reviewPath, JSON.stringify([metadataReview]));
+	check(report([finding]), 0);
+	for (const increment of ["patch", "minor", "major"]) {
+		bumpVersion(increment, root);
+		check(report([finding]), 0);
+	}
+	assert.equal(
+		spawnSync("git", [
+			"-C",
+			root,
+			"add",
+			"game.js",
+			"package.json",
+			"package-lock.json",
+		]).status,
+		0,
+	);
+	check(report([finding]), 0);
+	resetMetadata();
+	writeFileSync(packagePath, JSON.stringify(pkg, null, 2));
+	writeFileSync(lockPath, JSON.stringify(lock, null, "\t"));
+	check(report([finding]), 0);
+	for (const mutate of [
+		(p) => {
+			p.scripts.build = "node other-build.mjs";
+		},
+		(p) => {
+			p.dependencies.dependency = "2.0.0";
+		},
+		(_p, l) => {
+			l.packages["node_modules/dependency"].version = "2.0.0";
+		},
+		(_p, l) => {
+			l.packages["node_modules/dependency"].integrity = "sha512-changed";
+		},
+		(_p, l) => {
+			l.packages["node_modules/dependency"].resolved =
+				"https://example.com/other.tgz";
+		},
+		(_p, l) => {
+			l.packages[""].dependencies.dependency = "2.0.0";
+		},
+		(p) => {
+			p.version = "0.30.1";
+		},
+		(p, l) => {
+			p.version = l.version = l.packages[""].version = "invalid";
+		},
+		(_p, l) => {
+			delete l.packages[""].version;
+		},
+	]) {
+		const changedPackage = structuredClone(pkg);
+		const changedLock = structuredClone(lock);
+		mutate(changedPackage, changedLock);
+		writeFileSync(packagePath, JSON.stringify(changedPackage));
+		writeFileSync(lockPath, JSON.stringify(changedLock));
+		check(report([finding]), 1);
+	}
 	console.log(`CodeQL gate: ${tests} checks passed.`);
 } finally {
 	rmSync(root, { recursive: true, force: true });
